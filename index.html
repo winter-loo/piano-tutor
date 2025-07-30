@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piano Tutor App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+        }
+
+        .staff-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 40px 20px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+            min-height: 200px;
+        }
+
+        .playback-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background-color: #e74c3c;
+            left: 120px;
+            z-index: 10;
+            opacity: 0.8;
+        }
+
+        /* Static staff lines that remain fixed during animation */
+        .staff-lines {
+            position: absolute;
+            top: 60px;
+            /* 40px margin + 20px staff top */
+            left: 0;
+            right: 0;
+            height: 80px;
+            z-index: 1;
+        }
+
+        .staff-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: #2c3e50;
+        }
+
+        /* Animated content container - only this moves */
+        .staff {
+            position: relative;
+            /* make some room to prevent hidden */
+            height: 140px;
+            margin-left: 70px;
+            overflow: hidden;
+            transition: transform 0.1s linear;
+            z-index: 2;
+        }
+
+        .staff-line:nth-child(1) {
+            top: 0;
+        }
+
+        .staff-line:nth-child(2) {
+            top: 20px;
+        }
+
+        .staff-line:nth-child(3) {
+            top: 40px;
+        }
+
+        .staff-line:nth-child(4) {
+            top: 60px;
+        }
+
+        .staff-line:nth-child(5) {
+            top: 80px;
+        }
+
+        .treble-clef {
+            position: absolute;
+            left: 20px;
+            top: 0px;
+            font-size: 10rem;
+            color: #2c3e50;
+            z-index: 4;
+        }
+
+        .notes-container {
+            position: absolute;
+            left: 30px;
+            top: 0;
+            height: 120px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            min-width: 100px;
+        }
+
+        .control-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .control-btn:active {
+            transform: translateY(1px);
+        }
+
+        .control-btn.play {
+            background-color: #27ae60;
+        }
+
+        .control-btn.play:hover {
+            background-color: #229954;
+        }
+
+        .control-btn.pause {
+            background-color: #f39c12;
+        }
+
+        .control-btn.pause:hover {
+            background-color: #e67e22;
+        }
+
+        .control-btn.reset {
+            background-color: #e74c3c;
+        }
+
+        .control-btn.reset:hover {
+            background-color: #c0392b;
+        }
+
+        .info-panel {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .info-panel h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .info-panel p {
+            color: #7f8c8d;
+            line-height: 1.6;
+        }
+
+        /* Note rectangle styles */
+        .note-rectangle {
+            position: absolute;
+            height: 8px;
+            border-radius: 2px;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        /* Note colors based on pitch */
+        .note-rectangle.pitch-C {
+            background-color: #e74c3c;
+            border-color: #c0392b;
+        }
+
+        .note-rectangle.pitch-D {
+            background-color: #f39c12;
+            border-color: #e67e22;
+        }
+
+        .note-rectangle.pitch-F {
+            background-color: #27ae60;
+            border-color: #229954;
+        }
+
+        .note-rectangle.pitch-G {
+            background-color: #3498db;
+            border-color: #2980b9;
+        }
+
+        .note-rectangle.pitch-A {
+            background-color: #9b59b6;
+            border-color: #8e44ad;
+        }
+
+        .note-rectangle.pitch-C5 {
+            background-color: #e67e22;
+            border-color: #d35400;
+        }
+
+        /* Note highlighting for current playback */
+        .note-rectangle.current {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.6);
+            z-index: 5;
+        }
+
+        /* Measure bar styles */
+        .measure-bar {
+            position: absolute;
+            top: 20px;
+            height: 80px;
+            width: 1px;
+            background-color: #2c3e50;
+            z-index: 3;
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .staff-container {
+                padding: 20px 10px;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .control-btn {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <header class="header">
+            <h1>Piano Tutor App</h1>
+            <p>Learn to play "Different Colors" by Walk the Moon</p>
+        </header>
+
+        <div class="staff-container">
+            <div class="playback-line"></div>
+
+            <!-- Static staff lines that don't move -->
+            <div class="staff-lines">
+                <div class="staff-line"></div>
+                <div class="staff-line"></div>
+                <div class="staff-line"></div>
+                <div class="staff-line"></div>
+                <div class="staff-line"></div>
+            </div>
+
+            <!-- Static treble clef that doesn't move -->
+            <div class="treble-clef">𝄞</div>
+
+            <!-- Animated content container -->
+            <div class="staff">
+                <div class="notes-container">
+                    <!-- Notes will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn play" id="playBtn">Play</button>
+            <button class="control-btn pause" id="pauseBtn">Pause</button>
+            <button class="control-btn reset" id="resetBtn">Reset</button>
+        </div>
+
+        <div class="info-panel">
+            <h3>How to Use</h3>
+            <p>
+                Watch the red line as the musical staff moves underneath it.
+                Each note will be highlighted as it passes through the line,
+                showing you the timing and sequence for playing the song.
+            </p>
+            <div id="debug-info" style="margin-top: 20px; font-family: monospace; font-size: 0.9em; text-align: left;">
+                <!-- Debug information will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Hardcoded note data structure for "Different Colors" by Walk the Moon
+        const SONG_DATA = {
+            title: "Different Colors",
+            artist: "Walk the Moon",
+            measures: [
+                {
+                    number: 1,
+                    notes: [
+                        { pitch: "D", duration: "quarter", fingering: 2 },
+                        { pitch: "F", duration: "quarter", fingering: 4 },
+                        { pitch: "C", duration: "quarter", fingering: 1 },
+                        { pitch: "rest", duration: "quarter", fingering: null }
+                    ]
+                },
+                {
+                    number: 2,
+                    notes: [
+                        { pitch: "G", duration: "quarter", fingering: 5 },
+                        { pitch: "A", duration: "eighth", fingering: 1 },
+                        { pitch: "G", duration: "eighth", fingering: 5 },
+                        { pitch: "F", duration: "quarter", fingering: 4 },
+                        { pitch: "rest", duration: "quarter", fingering: null }
+                    ]
+                },
+                {
+                    number: 3,
+                    notes: [
+                        { pitch: "D", duration: "quarter", fingering: 2 },
+                        { pitch: "F", duration: "quarter", fingering: 4 },
+                        { pitch: "C", duration: "quarter", fingering: 1 },
+                        { pitch: "rest", duration: "quarter", fingering: null }
+                    ]
+                },
+                {
+                    number: 4,
+                    notes: [
+                        { pitch: "G", duration: "quarter", fingering: 5 },
+                        { pitch: "A", duration: "eighth", fingering: 1 },
+                        { pitch: "G", duration: "eighth", fingering: 5 },
+                        { pitch: "F", duration: "quarter", fingering: 4 },
+                        { pitch: "rest", duration: "quarter", fingering: null }
+                    ]
+                },
+                {
+                    number: 5,
+                    notes: [
+                        { pitch: "A", duration: "quarter", fingering: 1 },
+                        { pitch: "C5", duration: "quarter", fingering: 3 },
+                        { pitch: "A", duration: "dotted_quarter", fingering: 1 },
+                        { pitch: "F", duration: "eighth", fingering: 4 }
+                    ]
+                },
+                {
+                    number: 6,
+                    notes: [
+                        { pitch: "A", duration: "dotted_quarter", fingering: 1 },
+                        { pitch: "G", duration: "eighth", fingering: 5 },
+                        { pitch: "F", duration: "half", fingering: 4 }
+                    ]
+                },
+                {
+                    number: 7,
+                    notes: [
+                        { pitch: "A", duration: "quarter", fingering: 1 },
+                        { pitch: "C5", duration: "quarter", fingering: 3 },
+                        { pitch: "A", duration: "dotted_quarter", fingering: 1 },
+                        { pitch: "F", duration: "eighth", fingering: 4 }
+                    ]
+                },
+                {
+                    number: 8,
+                    notes: [
+                        { pitch: "A", duration: "dotted_quarter", fingering: 1 },
+                        { pitch: "G", duration: "eighth", fingering: 5 },
+                        { pitch: "F", duration: "half", fingering: 4 }
+                    ]
+                },
+                {
+                    number: 9,
+                    notes: [
+                        { pitch: "A", duration: "quarter", fingering: 1 },
+                        { pitch: "C5", duration: "quarter", fingering: 3 },
+                        { pitch: "A", duration: "dotted_quarter", fingering: 1 },
+                        { pitch: "F", duration: "eighth", fingering: 4 }
+                    ]
+                },
+                {
+                    number: 10,
+                    notes: [
+                        { pitch: "A", duration: "quarter", fingering: 1 },
+                        { pitch: "G", duration: "quarter", fingering: 5 },
+                        { pitch: "F", duration: "half", fingering: 4 }
+                    ]
+                },
+                {
+                    number: 11,
+                    notes: [
+                        { pitch: "D", duration: "quarter", fingering: 2 },
+                        { pitch: "F", duration: "quarter", fingering: 4 },
+                        { pitch: "C", duration: "quarter", fingering: 1 },
+                        { pitch: "rest", duration: "quarter", fingering: null }
+                    ]
+                },
+                {
+                    number: 12,
+                    notes: [
+                        { pitch: "G", duration: "quarter", fingering: 5 },
+                        { pitch: "A", duration: "eighth", fingering: 1 },
+                        { pitch: "G", duration: "eighth", fingering: 5 },
+                        { pitch: "F", duration: "half", fingering: 4 }
+                    ]
+                }
+            ]
+        };
+
+        // Note duration values in milliseconds (for timing calculations)
+        const NOTE_DURATIONS = {
+            "eighth": 250,
+            "quarter": 500,
+            "dotted_quarter": 750,
+            "half": 1000
+        };
+
+        // Note positioning system for treble clef staff
+        class NotePositioning {
+            constructor() {
+                // Staff configuration
+                this.staffTop = 20; // Top of staff lines container
+                this.staffLineSpacing = 20; // Distance between staff lines
+                this.staffHeight = 80; // Total height of staff lines area
+
+                // Staff line positions (y-coordinates from staff container top)
+                this.staffLines = {
+                    1: this.staffTop + 0,  // Top line (F5)
+                    2: this.staffTop + 20, // Second line (D5) 
+                    3: this.staffTop + 40, // Middle line (B4)
+                    4: this.staffTop + 60, // Fourth line (G4)
+                    5: this.staffTop + 80  // Bottom line (E4)
+                };
+
+                // Note pitch to position mapping
+                this.notePositions = {
+                    "A3": 6 * this.staffLineSpacing + 12,
+                    "B3": 6 * this.staffLineSpacing + 2,
+                    "C": 5 * this.staffLineSpacing + 12,  // C4 (middle C) - ledger line below staff
+                    "D": 5 * this.staffLineSpacing + 2,   // D4 - below staff space
+                    "E": 4 * this.staffLineSpacing + 12,
+                    "F": 4 * this.staffLineSpacing + 2,
+                    "G": 3 * this.staffLineSpacing + 12,  // G4 - fourth line
+                    "A": 3 * this.staffLineSpacing + 2,   // A4 - third space
+                    "B": 2 * this.staffLineSpacing + 12,
+                    "C5": 2 * this.staffLineSpacing + 2,  // C5 - second space
+                    "D5": 1 * this.staffLineSpacing + 12,
+                    "E5": 1 * this.staffLineSpacing + 2,
+                    "F5": 0 * this.staffLineSpacing + 12,
+                    "G5": 0 * this.staffLineSpacing + 2,
+                    "A5": 0 * this.staffLineSpacing - 8,
+                    "B5": -1 * this.staffLineSpacing - 8,
+                };
+            }
+
+            /**
+             * Get the vertical position for a note on the staff
+             * @param {string} pitch - Note pitch (e.g., "D", "F", "C", "G", "A", "C5")
+             * @returns {number} Y-coordinate position from top of staff container
+             */
+            getVerticalPosition(pitch) {
+                if (!this.notePositions.hasOwnProperty(pitch)) {
+                    console.warn(`Unknown pitch: ${pitch}. Using default position.`);
+                    return this.staffLines[3]; // Default to middle line
+                }
+                return this.notePositions[pitch];
+            }
+
+            /**
+             * Get note width based on duration
+             * @param {string} duration - Note duration type
+             * @returns {number} Width in pixels for the note rectangle
+             */
+            getNoteWidth(duration) {
+                const widthMap = {
+                    "eighth": 20,
+                    "quarter": 40,
+                    "dotted_quarter": 60,
+                    "half": 80
+                };
+                return widthMap[duration] || 40; // Default to quarter note width
+            }
+
+            /**
+             * Check if a note position is on a staff line (vs space)
+             * @param {string} pitch - Note pitch
+             * @returns {boolean} True if note is on a staff line
+             */
+            isOnStaffLine(pitch) {
+                const position = this.getVerticalPosition(pitch);
+                return Object.values(this.staffLines).includes(position);
+            }
+
+            /**
+             * Calculate positions for all notes in the song
+             * @param {Array} measures - Array of measure objects with notes
+             * @returns {Array} Array of positioned note objects
+             */
+            calculateAllNotePositions(measures) {
+                const positionedNotes = [];
+                let noteIndex = 0;
+                let cumulativeX = 0;
+                const noteSpacing = 20; // 20 pixels between notes
+                const measureBarMargin = 10; // 10 pixels from measure bar to notes
+                this.measurePositions = []; // Track measure start positions
+
+                measures.forEach((measure, measureIndex) => {
+                    // Record the start position of this measure
+                    this.measurePositions.push(cumulativeX);
+
+                    // Add margin after measure bar for first note in measure
+                    if (measureIndex > 0) {
+                        cumulativeX += measureBarMargin;
+                    }
+
+                    measure.notes.forEach((note, noteInMeasureIndex) => {
+                        const noteWidth = this.getNoteWidth(note.duration);
+
+                        const positionData = {
+                            ...note,
+                            measureIndex: measureIndex,
+                            noteIndex: noteIndex,
+                            x: cumulativeX,
+                            y: this.getVerticalPosition(note.pitch),
+                            width: noteWidth,
+                            height: 16,
+                            isOnLine: this.isOnStaffLine(note.pitch)
+                        };
+
+                        positionedNotes.push(positionData);
+
+                        // Move to next note position
+                        cumulativeX += noteWidth + noteSpacing;
+                        noteIndex++;
+                    });
+
+                    // Remove the last note spacing and add margin before next measure bar
+                    cumulativeX -= noteSpacing;
+                    cumulativeX += measureBarMargin;
+                });
+
+                return positionedNotes;
+            }
+
+            /**
+             * Get measure bar positions
+             * @returns {Array} Array of x-positions for measure bars
+             */
+            getMeasureBarPositions() {
+                return this.measurePositions || [];
+            }
+        }
+
+        // Piano Tutor App main class
+        class PianoTutorApp {
+            constructor() {
+                this.isPlaying = false;
+                this.isPaused = false;
+                this.notePositioning = new NotePositioning();
+                this.positionedNotes = [];
+                this.animationId = null;
+                this.startTime = null;
+                this.pausedTime = 0;
+                this.currentPosition = 0;
+                this.playbackSpeed = 0.05; // pixels per millisecond
+                this.initializeControls();
+                this.initializeNotePositioning();
+            }
+
+            initializeControls() {
+                const playBtn = document.getElementById('playBtn');
+                const pauseBtn = document.getElementById('pauseBtn');
+                const resetBtn = document.getElementById('resetBtn');
+
+                playBtn.addEventListener('click', () => this.handlePlay());
+                pauseBtn.addEventListener('click', () => this.handlePause());
+                resetBtn.addEventListener('click', () => this.handleReset());
+            }
+
+            initializeNotePositioning() {
+                // Calculate positions for all notes in the song
+                this.positionedNotes = this.notePositioning.calculateAllNotePositions(SONG_DATA.measures);
+
+                // Render the note rectangles
+                this.renderNoteRectangles();
+
+                // Render the measure bars
+                this.renderMeasureBars();
+
+                // Display debug information on the page
+                this.displayDebugInfo();
+            }
+
+            renderNoteRectangles() {
+                const notesContainer = document.querySelector('.notes-container');
+                if (!notesContainer) {
+                    console.error('Notes container not found');
+                    return;
+                }
+
+                // Clear any existing notes
+                notesContainer.innerHTML = '';
+
+                // Create and position each note rectangle (skip rest notes)
+                this.positionedNotes.forEach((note, index) => {
+                    // Skip rendering rest notes - they are silent and shouldn't be visible
+                    if (note.pitch === 'rest') {
+                        return;
+                    }
+
+                    const noteElement = document.createElement('div');
+                    noteElement.className = `note-rectangle pitch-${note.pitch}`;
+                    noteElement.id = `note-${index}`;
+
+                    // Set position and size
+                    noteElement.style.left = `${note.x}px`;
+                    noteElement.style.top = `${note.y}px`;
+                    noteElement.style.width = `${note.width}px`;
+                    noteElement.style.height = `${note.height}px`;
+
+                    // Add data attributes for debugging and future use
+                    noteElement.setAttribute('data-pitch', note.pitch);
+                    noteElement.setAttribute('data-duration', note.duration);
+                    noteElement.setAttribute('data-measure', note.measureIndex + 1);
+                    noteElement.setAttribute('data-fingering', note.fingering);
+
+                    // Add tooltip with note information
+                    noteElement.title = `${note.pitch} (${note.duration}) - Measure ${note.measureIndex + 1} - Finger ${note.fingering}`;
+
+                    notesContainer.appendChild(noteElement);
+                });
+
+                const visibleNotes = this.positionedNotes.filter(note => note.pitch !== 'rest');
+                console.log(`Rendered ${visibleNotes.length} note rectangles`);
+
+                // Update the notes container width to accommodate all notes
+                const maxX = Math.max(...this.positionedNotes.map(note => note.x + note.width));
+                notesContainer.style.width = `${maxX + 100}px`; // Add some padding
+            }
+
+            renderMeasureBars() {
+                const notesContainer = document.querySelector('.notes-container');
+                if (!notesContainer) {
+                    console.error('Notes container not found for measure bars');
+                    return;
+                }
+
+                // Get measure bar positions from the positioning system
+                const measurePositions = this.notePositioning.getMeasureBarPositions();
+
+                // Create measure bars at each measure start position
+                measurePositions.forEach((xPosition, measureIndex) => {
+                    const measureBar = document.createElement('div');
+                    measureBar.className = 'measure-bar';
+                    measureBar.id = `measure-bar-${measureIndex}`;
+
+                    // Position the measure bar
+                    measureBar.style.left = `${xPosition}px`;
+
+                    // Add data attribute for debugging
+                    measureBar.setAttribute('data-measure', measureIndex + 1);
+
+                    // Add tooltip
+                    measureBar.title = `Measure ${measureIndex + 1}`;
+
+                    notesContainer.appendChild(measureBar);
+                });
+
+                console.log(`Rendered ${measurePositions.length} measure bars`);
+            }
+
+            displayDebugInfo() {
+                const debugElement = document.getElementById('debug-info');
+                if (!debugElement) return;
+
+                const uniquePitches = [...new Set(this.positionedNotes.map(note => note.pitch))];
+
+                let debugHTML = '<strong>Piano Tutor App Ready!</strong><br><br>';
+                debugHTML += `Total notes: ${this.positionedNotes.length}<br><br>`;
+
+                debugHTML += '<strong>Note Colors by Pitch:</strong><br>';
+                debugHTML += '• C notes: <span style="color: #e74c3c;">Red</span><br>';
+                debugHTML += '• D notes: <span style="color: #f39c12;">Orange</span><br>';
+                debugHTML += '• F notes: <span style="color: #27ae60;">Green</span><br>';
+                debugHTML += '• G notes: <span style="color: #3498db;">Blue</span><br>';
+                debugHTML += '• A notes: <span style="color: #9b59b6;">Purple</span><br>';
+                debugHTML += '• C5 notes: <span style="color: #e67e22;">Dark Orange</span><br><br>';
+
+                debugHTML += '<strong>Animation Controls:</strong><br>';
+                debugHTML += '• Click Play to start staff movement<br>';
+                debugHTML += '• Click Pause to pause animation<br>';
+                debugHTML += '• Click Reset to return to beginning<br>';
+
+                debugElement.innerHTML = debugHTML;
+            }
+
+            /**
+             * Start or resume playback animation
+             */
+            handlePlay() {
+                if (this.isPlaying) return; // Already playing
+
+                console.log('Starting playback animation');
+                this.isPlaying = true;
+                this.isPaused = false;
+
+                // If resuming from pause, adjust start time
+                if (this.pausedTime > 0) {
+                    this.startTime = performance.now() - this.pausedTime;
+                } else {
+                    this.startTime = performance.now();
+                }
+
+                this.startAnimation();
+            }
+
+            /**
+             * Pause playback animation
+             */
+            handlePause() {
+                if (!this.isPlaying) return; // Not playing
+
+                console.log('Pausing playback animation');
+                this.isPlaying = false;
+                this.isPaused = true;
+
+                // Store the current playback time for resuming
+                this.pausedTime = performance.now() - this.startTime;
+
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+            }
+
+            /**
+             * Reset playback to beginning
+             */
+            handleReset() {
+                console.log('Resetting playback');
+
+                // Stop any current animation
+                this.isPlaying = false;
+                this.isPaused = false;
+
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+
+                // Reset timing variables
+                this.startTime = null;
+                this.pausedTime = 0;
+                this.currentPosition = 0;
+
+                // Reset staff position to beginning
+                this.updateStaffPosition(0);
+            }
+
+            /**
+             * Start the animation loop using requestAnimationFrame
+             */
+            startAnimation() {
+                if (!this.isPlaying) return;
+
+                const animate = (timestamp) => {
+                    if (!this.isPlaying) return;
+
+                    // Calculate elapsed time since start
+                    const elapsedTime = timestamp - this.startTime;
+
+                    // Calculate new position based on playback speed
+                    this.currentPosition = elapsedTime * this.playbackSpeed;
+
+                    // Update staff position
+                    this.updateStaffPosition(-this.currentPosition);
+
+                    // Check if we've reached the end of the song
+                    const totalSongWidth = this.getTotalSongWidth();
+                    if (this.currentPosition >= totalSongWidth) {
+                        console.log('Playback complete');
+                        this.handleReset();
+                        return;
+                    }
+
+                    // Continue animation
+                    this.animationId = requestAnimationFrame(animate);
+                };
+
+                this.animationId = requestAnimationFrame(animate);
+            }
+
+            /**
+             * Update the staff position using CSS transform
+             * @param {number} xOffset - Horizontal offset in pixels (negative moves left)
+             */
+            updateStaffPosition(xOffset) {
+                const notesContainerElement = document.querySelector('.notes-container');
+                if (notesContainerElement) {
+                    notesContainerElement.style.transform = `translateX(${xOffset}px)`;
+                }
+            }
+
+            /**
+             * Calculate the total width of the song for determining when playback ends
+             * @returns {number} Total width in pixels
+             */
+            getTotalSongWidth() {
+                if (this.positionedNotes.length === 0) return 0;
+
+                // Find the rightmost note position
+                const maxX = Math.max(...this.positionedNotes.map(note => note.x + note.width));
+                return maxX + 200; // Add some padding for smooth ending
+            }
+
+            // Method to get positioning data for external use
+            getPositionedNotes() {
+                return this.positionedNotes;
+            }
+
+            // Method to get positioning system for external use
+            getNotePositioning() {
+                return this.notePositioning;
+            }
+        }
+
+        // Initialize the app when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            const app = new PianoTutorApp();
+            console.log('Piano Tutor App initialized successfully');
+
+            // Make app available globally for debugging
+            window.pianoApp = app;
+        });
+    </script>
+</body>
+
+</html>
