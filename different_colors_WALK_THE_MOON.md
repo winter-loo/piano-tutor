@@ -12,15 +12,15 @@ Measure 11: D, F, C
 Measure 12: G, A, G, F
 
 
-measure 1: quarter note D, quarter note F, quarter note C
-measure 2: quarter note G, Eighth note A, Eighth note G, quarter note F
-measure 3: quarter note D, quarter note F, quarter C
-measure 4: quarter note G, Eighth note A, Eighth note G, quarter note F
+measure 1: quarter note D, quarter note F, quarter note C, quarter rest
+measure 2: quarter note G, Eighth note A, Eighth note G, quarter note F, quarter rest
+measure 3: quarter note D, quarter note F, quarter C, quarter rest
+measure 4: quarter note G, Eighth note A, Eighth note G, quarter note F, quarter rest
 measure 5: quarter note A, quarter note C, dotted quarter note A, eighth note F
 measure 6: dotted quarter note A, eighth note G, half note F
 measure 7: quarter note A, quarter note C, dotted quarter note A, eighth note F
 measure 8: dotted quarter note A, eighth note G, half note F
 measure 9: quarter note A, quarter note C, dotted quarter note A, eighth note F
-measure 10: dotted quarter note A, eighth note G, half note F
-measure 11: quarter note D, quarter note F, quarter note C
-measure 12: quarter note G, Eighth note A, Eighth note G, quarter note F
+measure 10: quarter note A, quarter note G, half note F
+measure 11: quarter note D, quarter note F, quarter note C, quarter rest
+measure 12: quarter note G, Eighth note A, Eighth note G, half note F
