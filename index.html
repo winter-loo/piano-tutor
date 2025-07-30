@@ -180,6 +180,22 @@
             background-color: #c0392b;
         }
 
+        .control-btn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .control-btn:disabled:hover {
+            background-color: #bdc3c7;
+            transform: none;
+        }
+
+        .control-btn.active {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            transform: scale(0.98);
+        }
+
         .info-panel {
             background-color: white;
             border-radius: 8px;
@@ -201,7 +217,7 @@
         /* Note rectangle styles */
         .note-rectangle {
             position: absolute;
-            height: 8px;
+            height: 16px;
             border-radius: 2px;
             border: 1px solid rgba(0, 0, 0, 0.2);
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
@@ -244,6 +260,22 @@
             transform: scale(1.1);
             box-shadow: 0 0 10px rgba(231, 76, 60, 0.6);
             z-index: 5;
+        }
+
+        /* Fingering number display inside note rectangles */
+        .fingering-number {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            font-size: 11px;
+            font-family: Arial, sans-serif;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            pointer-events: none;
+            z-index: 6;
+            line-height: 1;
         }
 
         /* Measure bar styles */
@@ -607,13 +639,19 @@
             }
 
             initializeControls() {
-                const playBtn = document.getElementById('playBtn');
-                const pauseBtn = document.getElementById('pauseBtn');
-                const resetBtn = document.getElementById('resetBtn');
+                this.playBtn = document.getElementById('playBtn');
+                this.pauseBtn = document.getElementById('pauseBtn');
+                this.resetBtn = document.getElementById('resetBtn');
 
-                playBtn.addEventListener('click', () => this.handlePlay());
-                pauseBtn.addEventListener('click', () => this.handlePause());
-                resetBtn.addEventListener('click', () => this.handleReset());
+                this.playBtn.addEventListener('click', () => this.handlePlay());
+                this.pauseBtn.addEventListener('click', () => this.handlePause());
+                this.resetBtn.addEventListener('click', () => this.handleReset());
+
+                // Add keyboard shortcuts
+                document.addEventListener('keydown', (event) => this.handleKeydown(event));
+
+                // Initialize button states
+                this.updateButtonStates();
             }
 
             initializeNotePositioning() {
@@ -665,6 +703,14 @@
 
                     // Add tooltip with note information
                     noteElement.title = `${note.pitch} (${note.duration}) - Measure ${note.measureIndex + 1} - Finger ${note.fingering}`;
+
+                    // Add fingering number inside the note rectangle if fingering is available
+                    if (note.fingering !== null && note.fingering !== undefined) {
+                        const fingeringElement = document.createElement('span');
+                        fingeringElement.className = 'fingering-number';
+                        fingeringElement.textContent = note.fingering.toString();
+                        noteElement.appendChild(fingeringElement);
+                    }
 
                     notesContainer.appendChild(noteElement);
                 });
@@ -725,12 +771,97 @@
                 debugHTML += '• A notes: <span style="color: #9b59b6;">Purple</span><br>';
                 debugHTML += '• C5 notes: <span style="color: #e67e22;">Dark Orange</span><br><br>';
 
+                debugHTML += '<strong>Fingering Guide:</strong><br>';
+                debugHTML += '• White numbers inside each note show recommended finger positions<br>';
+                debugHTML += '• Finger numbers: 1=Thumb, 2=Index, 3=Middle, 4=Ring, 5=Pinky<br><br>';
+
                 debugHTML += '<strong>Animation Controls:</strong><br>';
                 debugHTML += '• Click Play to start staff movement<br>';
                 debugHTML += '• Click Pause to pause animation<br>';
                 debugHTML += '• Click Reset to return to beginning<br>';
+                debugHTML += '• Press Spacebar to toggle play/pause<br>';
+                debugHTML += '• Press R to reset<br>';
 
                 debugElement.innerHTML = debugHTML;
+            }
+
+            /**
+             * Update debug info with current playback state
+             */
+            updateDebugPlaybackState() {
+                const debugElement = document.getElementById('debug-info');
+                if (!debugElement) return;
+
+                // Find the playback state section and update it
+                let currentHTML = debugElement.innerHTML;
+
+                // Add or update playback state info
+                const stateInfo = `<br><strong>Playback State:</strong> ${this.isPlaying ? '<span style="color: #27ae60;">Playing</span>' :
+                        this.isPaused ? '<span style="color: #f39c12;">Paused</span>' :
+                            '<span style="color: #e74c3c;">Stopped</span>'
+                    }<br>`;
+
+                // Remove existing state info if present
+                currentHTML = currentHTML.replace(/<br><strong>Playback State:.*?<br>/g, '');
+
+                // Add new state info before the closing
+                debugElement.innerHTML = currentHTML + stateInfo;
+            }
+
+            /**
+             * Handle keyboard shortcuts for playback control
+             * @param {KeyboardEvent} event - The keyboard event
+             */
+            handleKeydown(event) {
+                // Prevent shortcuts when user is typing in input fields
+                if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+                    return;
+                }
+
+                switch (event.code) {
+                    case 'Space':
+                        event.preventDefault();
+                        if (this.isPlaying) {
+                            this.handlePause();
+                        } else {
+                            this.handlePlay();
+                        }
+                        break;
+                    case 'KeyR':
+                        event.preventDefault();
+                        this.handleReset();
+                        break;
+                }
+            }
+
+            /**
+             * Update button states based on current playback state
+             */
+            updateButtonStates() {
+                if (!this.playBtn || !this.pauseBtn || !this.resetBtn) return;
+
+                if (this.isPlaying) {
+                    // Playing state: disable play, enable pause and reset
+                    this.playBtn.disabled = true;
+                    this.playBtn.classList.remove('active');
+                    this.pauseBtn.disabled = false;
+                    this.pauseBtn.classList.add('active');
+                    this.resetBtn.disabled = false;
+                } else if (this.isPaused) {
+                    // Paused state: enable play and reset, disable pause
+                    this.playBtn.disabled = false;
+                    this.playBtn.classList.remove('active');
+                    this.pauseBtn.disabled = true;
+                    this.pauseBtn.classList.remove('active');
+                    this.resetBtn.disabled = false;
+                } else {
+                    // Stopped/Reset state: enable play, disable pause and reset
+                    this.playBtn.disabled = false;
+                    this.playBtn.classList.remove('active');
+                    this.pauseBtn.disabled = true;
+                    this.pauseBtn.classList.remove('active');
+                    this.resetBtn.disabled = this.currentPosition === 0; // Only disable reset if at beginning
+                }
             }
 
             /**
@@ -749,6 +880,10 @@
                 } else {
                     this.startTime = performance.now();
                 }
+
+                // Update button states
+                this.updateButtonStates();
+                this.updateDebugPlaybackState();
 
                 this.startAnimation();
             }
@@ -770,6 +905,10 @@
                     cancelAnimationFrame(this.animationId);
                     this.animationId = null;
                 }
+
+                // Update button states
+                this.updateButtonStates();
+                this.updateDebugPlaybackState();
             }
 
             /**
@@ -794,6 +933,10 @@
 
                 // Reset staff position to beginning
                 this.updateStaffPosition(0);
+
+                // Update button states
+                this.updateButtonStates();
+                this.updateDebugPlaybackState();
             }
 
             /**
@@ -817,7 +960,7 @@
                     // Check if we've reached the end of the song
                     const totalSongWidth = this.getTotalSongWidth();
                     if (this.currentPosition >= totalSongWidth) {
-                        console.log('Playback complete');
+                        console.log('Playback complete - auto resetting');
                         this.handleReset();
                         return;
                     }
