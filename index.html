@@ -63,7 +63,7 @@
             position: absolute;
             top: 0;
             bottom: 0;
-            width: 3px;
+            width: 4px;
             background-color: #e74c3c;
             left: 120px;
             z-index: 10;
@@ -455,7 +455,22 @@
             artist: "Walk the Moon",
             measures: [
                 {
-                    number: 1,
+                    notes: [
+                        { pitch: "D", duration: "quarter", fingering: 1 },
+                        { pitch: "rest", duration: "quarter", fingering: null },
+                        { pitch: "rest", duration: "quarter", fingering: null },
+                        { pitch: "rest", duration: "quarter", fingering: null }
+                    ]
+                },
+                {
+                    notes: [
+                        { pitch: "rest", duration: "quarter", fingering: null },
+                        { pitch: "rest", duration: "quarter", fingering: null },
+                        { pitch: "rest", duration: "quarter", fingering: null },
+                        { pitch: "rest", duration: "quarter", fingering: null }
+                    ]
+                },
+                {
                     notes: [
                         { pitch: "D", duration: "quarter", fingering: 2 },
                         { pitch: "F", duration: "quarter", fingering: 4 },
@@ -464,7 +479,6 @@
                     ]
                 },
                 {
-                    number: 2,
                     notes: [
                         { pitch: "G", duration: "quarter", fingering: 5 },
                         { pitch: "A", duration: "eighth", fingering: 1 },
@@ -474,7 +488,6 @@
                     ]
                 },
                 {
-                    number: 3,
                     notes: [
                         { pitch: "D", duration: "quarter", fingering: 2 },
                         { pitch: "F", duration: "quarter", fingering: 4 },
@@ -483,7 +496,6 @@
                     ]
                 },
                 {
-                    number: 4,
                     notes: [
                         { pitch: "G", duration: "quarter", fingering: 5 },
                         { pitch: "A", duration: "eighth", fingering: 1 },
@@ -493,7 +505,6 @@
                     ]
                 },
                 {
-                    number: 5,
                     notes: [
                         { pitch: "A", duration: "quarter", fingering: 1 },
                         { pitch: "C5", duration: "quarter", fingering: 3 },
@@ -502,7 +513,6 @@
                     ]
                 },
                 {
-                    number: 6,
                     notes: [
                         { pitch: "A", duration: "dotted_quarter", fingering: 1 },
                         { pitch: "G", duration: "eighth", fingering: 5 },
@@ -510,7 +520,6 @@
                     ]
                 },
                 {
-                    number: 7,
                     notes: [
                         { pitch: "A", duration: "quarter", fingering: 1 },
                         { pitch: "C5", duration: "quarter", fingering: 3 },
@@ -519,7 +528,6 @@
                     ]
                 },
                 {
-                    number: 8,
                     notes: [
                         { pitch: "A", duration: "dotted_quarter", fingering: 1 },
                         { pitch: "G", duration: "eighth", fingering: 5 },
@@ -527,7 +535,6 @@
                     ]
                 },
                 {
-                    number: 9,
                     notes: [
                         { pitch: "A", duration: "quarter", fingering: 1 },
                         { pitch: "C5", duration: "quarter", fingering: 3 },
@@ -536,7 +543,6 @@
                     ]
                 },
                 {
-                    number: 10,
                     notes: [
                         { pitch: "A", duration: "quarter", fingering: 1 },
                         { pitch: "G", duration: "quarter", fingering: 5 },
@@ -544,7 +550,6 @@
                     ]
                 },
                 {
-                    number: 11,
                     notes: [
                         { pitch: "D", duration: "quarter", fingering: 2 },
                         { pitch: "F", duration: "quarter", fingering: 4 },
@@ -553,7 +558,6 @@
                     ]
                 },
                 {
-                    number: 12,
                     notes: [
                         { pitch: "G", duration: "quarter", fingering: 5 },
                         { pitch: "A", duration: "eighth", fingering: 1 },
@@ -680,12 +684,12 @@
              */
             getNoteWidth(duration) {
                 const widthMap = {
-                    "eighth": 20,
-                    "quarter": 40,
-                    "dotted_quarter": 60,
-                    "half": 80
+                    "eighth": 30,
+                    "quarter": 60,
+                    "dotted_quarter": 90,
+                    "half": 120
                 };
-                return widthMap[duration] || 40; // Default to quarter note width
+                return widthMap[duration] || widthMap["quarter"];
             }
 
             /**
