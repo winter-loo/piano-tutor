@@ -45,12 +45,11 @@
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 40px 20px;
+            padding: 40px 0px;
             margin-bottom: 30px;
             position: relative;
             overflow: hidden;
             min-height: 200px;
-            cursor: grab;
             user-select: none;
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -94,7 +93,7 @@
             position: relative;
             /* make some room to prevent hidden */
             height: 140px;
-            margin-left: 70px;
+            margin-left: 90px;
             overflow: hidden;
             transition: transform 0.1s linear;
             z-index: 2;
@@ -103,7 +102,8 @@
         /* Smooth transitions for notes container during manual interaction */
         .notes-container {
             transition: transform 0.1s linear;
-            will-change: transform; /* Optimize for transform animations */
+            will-change: transform;
+            /* Optimize for transform animations */
         }
 
         .staff-line:nth-child(1) {
@@ -137,124 +137,66 @@
 
         .notes-container {
             position: absolute;
-            left: 30px;
+            /* include the width of the playback line */
+            left: calc(30px + 4px);
             top: 0;
             height: 120px;
         }
 
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .control-btn {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            min-width: 100px;
-        }
-
-        .control-btn:hover {
-            background-color: #2980b9;
-        }
-
-        .control-btn:active {
-            transform: translateY(1px);
-        }
-
-        .control-btn.play {
-            background-color: #27ae60;
-        }
-
-        .control-btn.play:hover {
-            background-color: #229954;
-        }
-
-        .control-btn.pause {
-            background-color: #f39c12;
-        }
-
-        .control-btn.pause:hover {
-            background-color: #e67e22;
-        }
-
-        .control-btn.reset {
-            background-color: #e74c3c;
-        }
-
-        .control-btn.reset:hover {
-            background-color: #c0392b;
-        }
-
-        .control-btn:disabled {
-            background-color: #bdc3c7;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        .control-btn:disabled:hover {
-            background-color: #bdc3c7;
-            transform: none;
-        }
-
-        .control-btn.active {
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-            transform: scale(0.98);
-        }
-
-        /* Tempo control styles */
+        /* Tempo control styles - clean minimal design */
         .tempo-control {
+            position: absolute;
+            top: 4px;
+            right: 25px;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
             gap: 8px;
-            margin: 0 10px;
+            z-index: 15;
+            background: #ffffff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
         }
 
-        .tempo-label {
-            font-size: 0.9rem;
-            color: #2c3e50;
-            font-weight: 600;
-            margin: 0;
+        .tempo-control:hover {
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+            border-color: #dee2e6;
+        }
+
+        .tempo-control .tempo-label {
+            color: #6c757d;
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
         }
 
         .tempo-selector {
-            background-color: #34495e;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 6px;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            min-width: 160px;
-            text-align: center;
+            background: #f8f9fa;
+            color: #495057;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 13px;
             font-weight: 500;
-        }
-
-        .tempo-selector:hover {
-            background-color: #2c3e50;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 80px;
         }
 
         .tempo-selector:focus {
             outline: none;
-            box-shadow: 0 0 0 3px rgba(52, 73, 94, 0.3);
+            border-color: #80bdff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+            background: #ffffff;
         }
 
-        .tempo-display {
-            font-size: 0.8rem;
-            color: #7f8c8d;
-            text-align: center;
-            margin: 0;
-            line-height: 1.2;
+        .tempo-selector:hover {
+            background: #ffffff;
+            border-color: #adb5bd;
         }
+
+
 
         .info-panel {
             background-color: white;
@@ -322,6 +264,49 @@
             z-index: 5;
         }
 
+        /* Positive feedback for correct note matches */
+        .note-rectangle.correct-note {
+            transform: scale(1.2);
+            box-shadow: 0 0 15px rgba(40, 167, 69, 0.8);
+            z-index: 10;
+            animation: correctNoteFeedback 0.5s ease-out;
+        }
+
+        @keyframes correctNoteFeedback {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 5px rgba(40, 167, 69, 0.4);
+            }
+
+            50% {
+                transform: scale(1.3);
+                box-shadow: 0 0 20px rgba(40, 167, 69, 1);
+            }
+
+            100% {
+                transform: scale(1.2);
+                box-shadow: 0 0 15px rgba(40, 167, 69, 0.8);
+            }
+        }
+
+        /* Simple Progress Bar Styles */
+        .simple-progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: rgba(0, 0, 0, 0.1);
+            z-index: 5;
+        }
+
+        .simple-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
         /* Fingering number display inside note rectangles */
         .fingering-number {
             position: absolute;
@@ -348,6 +333,234 @@
             z-index: 3;
         }
 
+        /* Virtual Piano Keyboard Styles */
+        .keyboard-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+        }
+
+        .keyboard {
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            height: 200px;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        /* White piano keys */
+        .piano-key {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 500;
+            color: #666;
+            padding-bottom: 8px;
+        }
+
+        .piano-key.white {
+            width: 87px;
+            height: 200px;
+            background-color: #ffffff;
+            border: 1px solid #333333;
+            border-radius: 0 0 6px 6px;
+            margin-right: 1px;
+            z-index: 1;
+            align-self: flex-start;
+        }
+
+        .piano-key.white:hover {
+            background-color: #f0f0f0;
+        }
+
+        .piano-key.white:active,
+        .piano-key.white.pressed {
+            background-color: #e0e0e0;
+            transform: translateY(2px);
+        }
+
+        /* Black piano keys */
+        .piano-key.black {
+            width: 49px;
+            height: 130px;
+            background-color: #333333;
+            border: 1px solid #000000;
+            border-radius: 0 0 3px 3px;
+            position: absolute;
+            top: 0;
+            z-index: 2;
+            color: #ffffff;
+            font-size: 12px;
+        }
+
+        .piano-key.black:hover {
+            background-color: #555555;
+        }
+
+        .piano-key.black:active,
+        .piano-key.black.pressed {
+            background-color: #666666;
+            transform: translateY(2px);
+        }
+
+        /* Key highlighting states */
+        .piano-key.active {
+            background-color: #007bff !important;
+            color: white;
+            box-shadow: 0 0 10px rgba(0, 123, 255);
+            transform: translateY(1px);
+        }
+
+        .piano-key.correct {
+            background-color: #28a745 !important;
+            color: white;
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.6);
+            animation: correctFeedback 0.5s ease-out;
+        }
+
+        .piano-key.incorrect {
+            background-color: #dc3545 !important;
+            color: white;
+            box-shadow: 0 0 10px rgba(220, 53, 69, 0.6);
+            animation: incorrectFeedback 0.3s ease-out;
+        }
+
+        /* Feedback animations */
+        @keyframes correctFeedback {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes incorrectFeedback {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-3px);
+            }
+
+            75% {
+                transform: translateX(3px);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        /* Learning progress display */
+        .learning-progress {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .progress-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 80px;
+        }
+
+        .progress-stat .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .progress-stat .label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            text-align: center;
+        }
+
+        .progress-stat.correct .value {
+            color: #27ae60;
+        }
+
+        .progress-stat.incorrect .value {
+            color: #e74c3c;
+        }
+
+        .progress-stat.accuracy .value {
+            color: #3498db;
+        }
+
+        @media (max-width: 768px) {
+            .learning-progress {
+                justify-content: center;
+                text-align: center;
+            }
+
+            .progress-stat {
+                min-width: 60px;
+            }
+
+            .progress-stat .value {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Black key positioning - positioned between white keys */
+        .piano-key.black[data-note="C#4"] {
+            left: 63px;
+            /* Between C and D */
+        }
+
+        .piano-key.black[data-note="D#4"] {
+            left: 151px;
+            /* Between D and E */
+        }
+
+        .piano-key.black[data-note="F#4"] {
+            left: 327px;
+            /* Between F and G */
+        }
+
+        .piano-key.black[data-note="G#4"] {
+            left: 415px;
+            /* Between G and A */
+        }
+
+        .piano-key.black[data-note="A#4"] {
+            left: 503px;
+            /* Between A and B */
+        }
+
+        .piano-key.black[data-note="C#5"] {
+            left: 679px;
+            /* Between C5 and D5 */
+        }
+
         @media (max-width: 768px) {
             .app-container {
                 padding: 10px;
@@ -361,24 +574,71 @@
                 padding: 20px 10px;
             }
 
-            .controls {
-                flex-direction: column;
-                align-items: center;
-                gap: 20px;
-            }
-
-            .control-btn {
-                width: 200px;
-            }
-
+            /* Responsive tempo control styles */
             .tempo-control {
-                margin: 0;
-                width: 200px;
+                top: 10px;
+                right: 15px;
+                padding: 6px 10px;
+                gap: 6px;
+            }
+
+            .tempo-control .tempo-label {
+                font-size: 12px;
             }
 
             .tempo-selector {
-                width: 100%;
-                min-width: auto;
+                min-width: 70px;
+                font-size: 12px;
+                padding: 3px 6px;
+            }
+
+
+
+            /* Responsive keyboard styles */
+            .keyboard-container {
+                padding: 20px 10px;
+                overflow-x: auto;
+            }
+
+            .keyboard {
+                min-width: 500px;
+                /* Ensure keyboard doesn't get too small */
+            }
+
+            .piano-key.white {
+                width: 50px;
+                height: 120px;
+                align-self: flex-start;
+            }
+
+            .piano-key.black {
+                width: 28px;
+                height: 80px;
+            }
+
+            /* Adjust black key positions for smaller white keys */
+            .piano-key.black[data-note="C#4"] {
+                left: 37px;
+            }
+
+            .piano-key.black[data-note="D#4"] {
+                left: 88px;
+            }
+
+            .piano-key.black[data-note="F#4"] {
+                left: 190px;
+            }
+
+            .piano-key.black[data-note="G#4"] {
+                left: 241px;
+            }
+
+            .piano-key.black[data-note="A#4"] {
+                left: 292px;
+            }
+
+            .piano-key.black[data-note="C#5"] {
+                left: 394px;
             }
         }
     </style>
@@ -392,6 +652,11 @@
         </header>
 
         <div class="staff-container">
+            <!-- Simple Progress Bar -->
+            <div class="simple-progress-bar">
+                <div class="simple-progress-fill" id="progressFill"></div>
+            </div>
+
             <div class="playback-line"></div>
 
             <!-- Static staff lines that don't move -->
@@ -412,13 +677,7 @@
                     <!-- Notes will be dynamically added here -->
                 </div>
             </div>
-        </div>
-
-        <div class="controls">
-            <button class="control-btn play" id="playBtn">Play</button>
-            <button class="control-btn pause" id="pauseBtn">Pause</button>
-            <button class="control-btn reset" id="resetBtn">Reset</button>
-            
+            <!-- Tempo control - integrated musical design -->
             <div class="tempo-control">
                 <label class="tempo-label" for="tempoSelector">Tempo</label>
                 <select class="tempo-selector" id="tempoSelector">
@@ -431,19 +690,40 @@
                     <option value="180">180 BPM</option>
                     <option value="200">200 BPM</option>
                 </select>
-                <p class="tempo-display" id="tempoDisplay">120 BPM</p>
             </div>
         </div>
 
-        <div class="info-panel">
-            <h3>How to Use</h3>
-            <p>
-                Watch the red line as the musical staff moves underneath it.
-                Each note will be highlighted as it passes through the line,
-                showing you the timing and sequence for playing the song.
-            </p>
-            <div id="debug-info" style="margin-top: 20px; font-family: monospace; font-size: 0.9em; text-align: left;">
-                <!-- Debug information will be displayed here -->
+
+
+        <!-- Virtual Piano Keyboard -->
+        <div class="keyboard-container">
+            <div class="keyboard" id="virtualKeyboard">
+                <!-- White keys will be generated here -->
+                <!-- Black keys will be generated here -->
+            </div>
+        </div>
+
+        <!-- Learning Progress Display -->
+        <div class="learning-progress" id="learningProgress">
+            <div class="progress-stat correct">
+                <div class="value" id="correctCount">0</div>
+                <div class="label">Correct</div>
+            </div>
+            <div class="progress-stat incorrect">
+                <div class="value" id="incorrectCount">0</div>
+                <div class="label">Incorrect</div>
+            </div>
+            <div class="progress-stat">
+                <div class="value" id="totalAttempts">0</div>
+                <div class="label">Total</div>
+            </div>
+            <div class="progress-stat accuracy">
+                <div class="value" id="accuracyRate">0%</div>
+                <div class="label">Accuracy</div>
+            </div>
+            <div class="progress-stat">
+                <div class="value" id="currentStreak">0</div>
+                <div class="label">Streak</div>
             </div>
         </div>
     </div>
@@ -671,7 +951,7 @@
              */
             getVerticalPosition(pitch) {
                 if (!this.notePositions.hasOwnProperty(pitch)) {
-                    console.warn(`Unknown pitch: ${pitch}. Using default position.`);
+                    // console.warn(`Unknown pitch: ${pitch}. Using default position.`);
                     return this.staffLines[3]; // Default to middle line
                 }
                 return this.notePositions[pitch];
@@ -762,6 +1042,1188 @@
             }
         }
 
+        // Audio Engine class for synthetic piano sound generation
+        class AudioEngine {
+            constructor() {
+                this.audioContext = null;
+                this.masterGain = null;
+                this.isInitialized = false;
+                this.isAudioEnabled = true;
+
+                // Audio configuration
+                this.config = {
+                    masterVolume: 0.3,        // 0.0 to 1.0
+                    noteLength: 1.0,          // Default note duration in seconds
+                    envelope: {
+                        attack: 0.01,         // Attack time in seconds
+                        decay: 0.3,           // Decay time in seconds
+                        sustain: 0.1,         // Sustain level (0.0 to 1.0)
+                        release: 0.8          // Release time in seconds
+                    },
+                    waveform: 'triangle'      // Oscillator type for piano-like sound
+                };
+
+                // Note frequency mapping (C4=261.63Hz, D4=293.66Hz, etc.)
+                this.noteFrequencies = {
+                    'C4': 261.63,
+                    'C#4': 277.18,
+                    'D4': 293.66,
+                    'D#4': 311.13,
+                    'E4': 329.63,
+                    'F4': 349.23,
+                    'F#4': 369.99,
+                    'G4': 392.00,
+                    'G#4': 415.30,
+                    'A4': 440.00,
+                    'A#4': 466.16,
+                    'B4': 493.88,
+                    'C5': 523.25,
+                    'C#5': 554.37,
+                    'D5': 587.33,
+                    'D#5': 622.25,
+                    'E5': 659.25,
+                    'F5': 698.46,
+                    'F#5': 739.99,
+                    'G5': 783.99,
+                    'G#5': 830.61,
+                    'A5': 880.00,
+                    'A#5': 932.33,
+                    'B5': 987.77
+                };
+
+                console.log('AudioEngine initialized');
+            }
+
+            /**
+             * Initialize the Web Audio API context
+             * @returns {Promise<boolean>} True if initialization successful
+             */
+            async initializeAudioContext() {
+                try {
+                    // Clean up existing context if it exists and is in error state
+                    if (this.audioContext && (this.audioContext.state === 'closed' || this.audioContext.state === 'interrupted')) {
+                        this.audioContext = null;
+                        this.masterGain = null;
+                        this.isInitialized = false;
+                    }
+
+                    // Don't create new context if one already exists and is working
+                    if (this.audioContext && this.audioContext.state !== 'closed') {
+                        console.log('AudioContext already exists with state:', this.audioContext.state);
+                        return await this.resumeAudioContext();
+                    }
+
+                    // Create audio context with fallback for older browsers
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+                    // Create master gain node for volume control
+                    this.masterGain = this.audioContext.createGain();
+                    this.masterGain.gain.setValueAtTime(this.config.masterVolume, this.audioContext.currentTime);
+                    this.masterGain.connect(this.audioContext.destination);
+
+                    // Handle audio context state changes with recovery
+                    this.audioContext.addEventListener('statechange', () => {
+                        console.log('Audio context state changed to:', this.audioContext.state);
+                        if (this.audioContext.state === 'interrupted' || this.audioContext.state === 'closed') {
+                            console.warn('AudioContext interrupted or closed, will reinitialize on next use');
+                            this.isInitialized = false;
+                        }
+                    });
+
+                    // Try to resume immediately if suspended
+                    if (this.audioContext.state === 'suspended') {
+                        try {
+                            await this.audioContext.resume();
+                        } catch (resumeError) {
+                            console.warn('Could not resume AudioContext immediately:', resumeError);
+                        }
+                    }
+
+                    this.isInitialized = true;
+                    console.log('Web Audio API initialized successfully');
+                    console.log('Audio context state:', this.audioContext.state);
+                    console.log('Sample rate:', this.audioContext.sampleRate);
+
+                    return true;
+                } catch (error) {
+                    console.error('Failed to initialize Web Audio API:', error);
+                    this.handleAudioInitializationError(error);
+                    return false;
+                }
+            }
+
+            /**
+             * Handle audio initialization errors and implement fallback
+             * @param {Error} error - The initialization error
+             */
+            handleAudioInitializationError(error) {
+                console.warn('Web Audio API not available, implementing fallback strategy');
+
+                // Check if HTML5 audio is available as fallback
+                if (typeof Audio !== 'undefined') {
+                    console.log('HTML5 Audio available as fallback');
+                    this.isAudioEnabled = true; // Keep audio enabled but use fallback
+                } else {
+                    console.warn('No audio support available - running in silent mode');
+                    this.isAudioEnabled = false;
+                }
+
+                this.isInitialized = false;
+            }
+
+            /**
+             * Resume audio context if suspended (required for user interaction)
+             * @returns {Promise<boolean>} True if audio context is ready
+             */
+            async resumeAudioContext() {
+                try {
+                    // Initialize if not already done or if context is closed
+                    if (!this.audioContext || this.audioContext.state === 'closed') {
+                        const initialized = await this.initializeAudioContext();
+                        if (!initialized) {
+                            return false;
+                        }
+                    }
+
+                    // Resume if suspended
+                    if (this.audioContext && this.audioContext.state === 'suspended') {
+                        try {
+                            await this.audioContext.resume();
+                            console.log('Audio context resumed successfully');
+                        } catch (resumeError) {
+                            console.error('Failed to resume audio context:', resumeError);
+                            // Try to reinitialize if resume fails
+                            this.audioContext = null;
+                            this.isInitialized = false;
+                            return await this.initializeAudioContext();
+                        }
+                    }
+
+                    // Check if context is now running
+                    const isReady = this.audioContext && this.audioContext.state === 'running';
+                    if (isReady) {
+                        this.isInitialized = true;
+                    }
+
+                    return isReady;
+                } catch (error) {
+                    console.error('Error in resumeAudioContext:', error);
+                    this.handleAudioInitializationError(error);
+                    return false;
+                }
+            }
+
+            /**
+             * Play a note with the specified frequency and duration
+             * @param {number} frequency - Note frequency in Hz
+             * @param {number} duration - Note duration in seconds (optional)
+             * @returns {Promise<void>}
+             */
+            async playNote(frequency, duration = null) {
+                if (!this.isAudioEnabled) {
+                    console.log(`Audio disabled - would play ${frequency}Hz`);
+                    return;
+                }
+
+                try {
+                    console.log(`🎹 [DEBUG] playNote called: ${frequency}Hz, duration: ${duration || this.config.noteLength}s`);
+                    console.log(`🎹 [DEBUG] Audio enabled: ${this.isAudioEnabled}, Initialized: ${this.isInitialized}`);
+
+                    // Ensure audio context is ready with better error handling
+                    console.log(`🎹 [DEBUG] Calling resumeAudioContext...`);
+                    const audioReady = await this.resumeAudioContext();
+                    console.log(`🎹 [DEBUG] resumeAudioContext result: ${audioReady}`);
+
+                    if (!audioReady) {
+                        console.warn('🎹 [WARN] Audio context not ready, attempting to reinitialize...');
+
+                        // Try to reinitialize the audio context
+                        const reinitSuccess = await this.initializeAudioContext();
+                        if (reinitSuccess) {
+                            const retryReady = await this.resumeAudioContext();
+                            if (!retryReady) {
+                                console.error('🎹 [ERROR] Failed to initialize audio after retry');
+                                await this.tryFallbackAudio();
+                                return;
+                            }
+                        } else {
+                            console.error('🎹 [ERROR] Failed to reinitialize audio context');
+                            await this.tryFallbackAudio();
+                            return;
+                        }
+                    }
+
+                    // Double-check audio context state
+                    console.log(`🎹 [DEBUG] AudioContext state: ${this.audioContext?.state}`);
+                    console.log(`🎹 [DEBUG] AudioContext exists: ${!!this.audioContext}`);
+
+                    if (!this.audioContext || this.audioContext.state !== 'running') {
+                        console.warn('🎹 [WARN] Audio context not in running state:', this.audioContext?.state);
+                        return;
+                    }
+
+                    const noteDuration = duration || this.config.noteLength;
+                    const currentTime = this.audioContext.currentTime;
+
+                    console.log(`🎹 [DEBUG] Creating audio nodes - Duration: ${noteDuration}s, CurrentTime: ${currentTime}`);
+                    console.log(`🎹 [DEBUG] Master volume: ${this.config.masterVolume}`);
+
+                    // Create oscillator for the main tone
+                    const oscillator = this.audioContext.createOscillator();
+                    const gainNode = this.audioContext.createGain();
+
+                    console.log(`🎹 [DEBUG] Audio nodes created successfully`);
+
+                    // Configure oscillator for piano-like tone
+                    oscillator.type = this.config.waveform;
+                    oscillator.frequency.setValueAtTime(frequency, currentTime);
+
+                    console.log(`🎹 [DEBUG] Oscillator configured - Type: ${this.config.waveform}, Frequency: ${frequency}Hz`);
+                    console.log(`🎹 [DEBUG] Master gain node exists: ${!!this.masterGain}`);
+                    console.log(`🎹 [DEBUG] Master gain value: ${this.masterGain?.gain?.value}`);
+
+                    // Create ADSR envelope for realistic piano attack and decay
+                    const envelope = this.config.envelope;
+
+                    // Attack phase
+                    gainNode.gain.setValueAtTime(0, currentTime);
+                    gainNode.gain.linearRampToValueAtTime(0.8, currentTime + envelope.attack);
+
+                    // Decay phase
+                    gainNode.gain.exponentialRampToValueAtTime(
+                        envelope.sustain,
+                        currentTime + envelope.attack + envelope.decay
+                    );
+
+                    // Sustain phase (maintained until release)
+                    const releaseStartTime = currentTime + noteDuration - envelope.release;
+
+                    // Release phase
+                    gainNode.gain.exponentialRampToValueAtTime(
+                        0.001, // Very small value instead of 0 for exponential ramp
+                        currentTime + noteDuration
+                    );
+
+                    // Connect audio nodes
+                    console.log(`🎹 [DEBUG] Connecting audio nodes...`);
+                    oscillator.connect(gainNode);
+                    gainNode.connect(this.masterGain);
+                    console.log(`🎹 [DEBUG] Audio nodes connected: oscillator → gainNode → masterGain → destination`);
+
+                    // Start and stop the oscillator with error handling
+                    console.log(`🎹 [DEBUG] Starting oscillator at time: ${currentTime}`);
+                    console.log(`🎹 [DEBUG] Stopping oscillator at time: ${currentTime + noteDuration}`);
+
+                    oscillator.start(currentTime);
+                    oscillator.stop(currentTime + noteDuration);
+
+                    console.log(`🎹 [DEBUG] Oscillator start/stop scheduled successfully`);
+
+                    // Handle oscillator errors
+                    oscillator.addEventListener('ended', () => {
+                        console.log(`🎹 [DEBUG] Oscillator ended for ${frequency}Hz`);
+                    });
+
+                    oscillator.addEventListener('error', (error) => {
+                        console.error(`🎹 [ERROR] Oscillator error:`, error);
+                    });
+
+                    console.log(`🎹 [SUCCESS] Playing note: ${frequency}Hz for ${noteDuration}s`);
+
+                } catch (error) {
+                    console.error('Error playing note:', error);
+                    this.handlePlaybackError(error);
+
+                    // Try fallback audio on error
+                    await this.tryFallbackAudio();
+                }
+            }
+
+            /**
+             * Play a note by name (e.g., 'C4', 'D4', 'F4')
+             * @param {string} noteName - Name of the note to play
+             * @param {number} duration - Note duration in seconds (optional)
+             * @returns {Promise<void>}
+             */
+            async playNoteByName(noteName, duration = null) {
+                console.log(`🎼 [DEBUG] AudioEngine.playNoteByName called: ${noteName}, duration: ${duration}`);
+
+                const frequency = this.noteFrequencies[noteName];
+                console.log(`🎼 [DEBUG] Note frequency lookup: ${noteName} → ${frequency}Hz`);
+
+                if (!frequency) {
+                    console.warn(`🎼 [ERROR] Unknown note name: ${noteName}`);
+                    return;
+                }
+
+                console.log(`🎼 [DEBUG] Calling playNote with frequency: ${frequency}Hz`);
+                await this.playNote(frequency, duration);
+                console.log(`🎼 [DEBUG] playNote completed for ${noteName}`);
+            }
+
+            /**
+             * Handle playback errors with graceful degradation
+             * @param {Error} error - The playback error
+             */
+            handlePlaybackError(error) {
+                console.error('Audio playback error:', error);
+
+                // Implement fallback strategies
+                if (error.name === 'NotAllowedError') {
+                    console.warn('Audio playback blocked - user interaction required');
+                } else if (error.name === 'NotSupportedError') {
+                    console.warn('Audio format not supported - trying fallback');
+                    this.tryFallbackAudio();
+                } else {
+                    console.warn('Unknown audio error - continuing with visual-only feedback');
+                }
+            }
+
+            /**
+             * Implement fallback audio using HTML5 Audio elements
+             */
+            tryFallbackAudio() {
+                console.log('Attempting HTML5 Audio fallback');
+
+                // For now, just log that we would use fallback
+                // In a full implementation, we could generate or load audio files
+                console.log('Fallback: Would use HTML5 audio elements or pre-recorded samples');
+            }
+
+            /**
+             * Set master volume
+             * @param {number} volume - Volume level (0.0 to 1.0)
+             */
+            setMasterVolume(volume) {
+                this.config.masterVolume = Math.max(0, Math.min(1, volume));
+
+                if (this.masterGain) {
+                    this.masterGain.gain.setValueAtTime(
+                        this.config.masterVolume,
+                        this.audioContext.currentTime
+                    );
+                }
+
+                console.log(`Master volume set to: ${this.config.masterVolume}`);
+            }
+
+            /**
+             * Enable or disable audio playback
+             * @param {boolean} enabled - True to enable, false to disable
+             */
+            setAudioEnabled(enabled) {
+                this.isAudioEnabled = enabled;
+                console.log(`Audio playback ${enabled ? 'enabled' : 'disabled'}`);
+            }
+
+            /**
+             * Get current audio engine status
+             * @returns {Object} Status information
+             */
+            getStatus() {
+                return {
+                    isInitialized: this.isInitialized,
+                    isAudioEnabled: this.isAudioEnabled,
+                    audioContextState: this.audioContext ? this.audioContext.state : 'not created',
+                    masterVolume: this.config.masterVolume,
+                    supportedNotes: Object.keys(this.noteFrequencies).length,
+                    webAudioSupported: !!(window.AudioContext || window.webkitAudioContext),
+                    htmlAudioSupported: typeof Audio !== 'undefined'
+                };
+            }
+
+            /**
+             * Test audio functionality by playing a test note
+             * @returns {Promise<boolean>} True if test successful
+             */
+            async testAudio() {
+                console.log('Testing audio functionality...');
+
+                try {
+                    await this.playNoteByName('C4', 0.5);
+                    console.log('Audio test successful');
+                    return true;
+                } catch (error) {
+                    console.error('Audio test failed:', error);
+                    return false;
+                }
+            }
+
+            /**
+             * Clean up audio resources
+             */
+            dispose() {
+                if (this.audioContext) {
+                    this.audioContext.close();
+                    this.audioContext = null;
+                    this.masterGain = null;
+                    this.isInitialized = false;
+                    console.log('Audio engine disposed');
+                }
+            }
+        }
+
+        // Virtual Piano Keyboard class
+        class VirtualPianoKeyboard {
+            constructor() {
+                this.keyboardContainer = null;
+                this.keys = new Map(); // Store key elements by note name
+                this.activeKeys = new Set(); // Currently highlighted keys
+                this.pressedKeys = new Set(); // Currently pressed keys
+
+                // Initialize audio engine for note playback
+                this.audioEngine = new AudioEngine();
+                this.audioInitialized = false;
+
+                // Define the keyboard layout with note names and frequencies
+                this.keyLayout = [
+                    // White keys with their positions and note names
+                    { note: 'C4', type: 'white', frequency: 261.63, label: 'C' },
+                    { note: 'D4', type: 'white', frequency: 293.66, label: 'D' },
+                    { note: 'E4', type: 'white', frequency: 329.63, label: 'E' },
+                    { note: 'F4', type: 'white', frequency: 349.23, label: 'F' },
+                    { note: 'G4', type: 'white', frequency: 392.00, label: 'G' },
+                    { note: 'A4', type: 'white', frequency: 440.00, label: 'A' },
+                    { note: 'B4', type: 'white', frequency: 493.88, label: 'B' },
+                    { note: 'C5', type: 'white', frequency: 523.25, label: 'C' },
+
+                    // Black keys positioned between white keys
+                    { note: 'C#4', type: 'black', frequency: 277.18, label: 'C#' },
+                    { note: 'D#4', type: 'black', frequency: 311.13, label: 'D#' },
+                    { note: 'F#4', type: 'black', frequency: 369.99, label: 'F#' },
+                    { note: 'G#4', type: 'black', frequency: 415.30, label: 'G#' },
+                    { note: 'A#4', type: 'black', frequency: 466.16, label: 'A#' },
+                    { note: 'C#5', type: 'black', frequency: 554.37, label: 'C#' }
+                ];
+
+                console.log('VirtualPianoKeyboard initialized with audio engine');
+            }
+
+            /**
+             * Initialize audio engine (called on first user interaction)
+             * @returns {Promise<boolean>} True if audio is ready
+             */
+            async initializeAudio() {
+                if (this.audioInitialized) {
+                    // Verify audio context is still working
+                    const audioReady = await this.audioEngine.resumeAudioContext();
+                    return audioReady;
+                }
+
+                try {
+                    console.log('🎵 [INIT] Initializing keyboard audio on user interaction...');
+
+                    // Initialize and resume audio context
+                    const success = await this.audioEngine.initializeAudioContext();
+                    console.log(`🎵 [INIT] AudioContext initialization result: ${success}`);
+
+                    if (success) {
+                        // Ensure context is resumed (required for user interaction)
+                        console.log('🎵 [INIT] Resuming audio context...');
+                        const audioReady = await this.audioEngine.resumeAudioContext();
+                        console.log(`🎵 [INIT] Audio context ready: ${audioReady}`);
+
+                        if (audioReady) {
+                            this.audioInitialized = true;
+                            console.log('🎵 [INIT] Keyboard audio engine initialized and ready');
+
+                            // Test audio functionality with a simple beep
+                            try {
+                                console.log('🎵 [INIT] Testing audio with simple beep...');
+
+                                // Create a simple test tone to verify audio is working
+                                const ctx = this.audioEngine.audioContext;
+                                const osc = ctx.createOscillator();
+                                const gain = ctx.createGain();
+
+                                osc.frequency.setValueAtTime(440, ctx.currentTime);
+                                osc.type = 'sine';
+                                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+
+                                osc.connect(gain);
+                                gain.connect(this.audioEngine.masterGain);
+
+                                osc.start(ctx.currentTime);
+                                osc.stop(ctx.currentTime + 0.1);
+
+                                console.log('🎵 [INIT] Audio test beep played successfully');
+                                return true;
+
+                            } catch (testError) {
+                                console.warn('🎵 [INIT] Audio test failed but continuing:', testError);
+                                return true; // Still consider it initialized
+                            }
+                        } else {
+                            console.warn('🎵 [INIT] Audio context not ready after initialization');
+                            return false;
+                        }
+                    } else {
+                        console.warn('🎵 [INIT] Audio engine initialization failed - keyboard will work without sound');
+                        return false;
+                    }
+                } catch (error) {
+                    console.error('Error initializing keyboard audio:', error);
+                    // Try to enable fallback audio
+                    try {
+                        await this.audioEngine.tryFallbackAudio();
+                        console.log('Fallback audio enabled');
+                        return true;
+                    } catch (fallbackError) {
+                        console.error('Fallback audio also failed:', fallbackError);
+                        return false;
+                    }
+                }
+
+                return this.audioInitialized;
+            }
+
+            /**
+             * Create and render the virtual piano keyboard
+             * @param {HTMLElement} containerElement - The container element to render the keyboard in
+             */
+            createKeyboard(containerElement) {
+                if (!containerElement) {
+                    console.error('Container element not provided for keyboard creation');
+                    return;
+                }
+
+                this.keyboardContainer = containerElement;
+
+                // Clear any existing keyboard content
+                containerElement.innerHTML = '';
+
+                // Create white keys first (they form the base layer)
+                const whiteKeys = this.keyLayout.filter(key => key.type === 'white');
+                whiteKeys.forEach(keyData => {
+                    this.createKey(keyData, containerElement);
+                });
+
+                // Create black keys second (they overlay the white keys)
+                const blackKeys = this.keyLayout.filter(key => key.type === 'black');
+                blackKeys.forEach(keyData => {
+                    this.createKey(keyData, containerElement);
+                });
+
+                console.log(`Virtual piano keyboard created with ${this.keyLayout.length} keys`);
+            }
+
+            /**
+             * Create an individual piano key element
+             * @param {Object} keyData - Key configuration object
+             * @param {HTMLElement} container - Container to append the key to
+             */
+            createKey(keyData, container) {
+                const keyElement = document.createElement('div');
+                keyElement.className = `piano-key ${keyData.type}`;
+                keyElement.setAttribute('data-note', keyData.note);
+                keyElement.setAttribute('data-frequency', keyData.frequency);
+                keyElement.setAttribute('tabindex', '0'); // Make keyboard accessible
+                keyElement.textContent = keyData.label;
+
+                // Add mouse event handlers
+                keyElement.addEventListener('mousedown', (event) => this.handleKeyPress(event, keyData));
+                keyElement.addEventListener('mouseenter', (event) => this.handleKeyHover(event, keyData, true));
+                keyElement.addEventListener('mouseleave', (event) => this.handleKeyHover(event, keyData, false));
+
+                // Add touch event handlers with better touch support
+                keyElement.addEventListener('touchstart', (event) => this.handleKeyPress(event, keyData), { passive: false });
+                keyElement.addEventListener('touchmove', (event) => this.handleTouchMove(event, keyData), { passive: false });
+
+                // Add keyboard accessibility support
+                keyElement.addEventListener('keydown', (event) => this.handleKeyboardInput(event, keyData));
+                keyElement.addEventListener('focus', (event) => this.handleKeyFocus(event, keyData, true));
+                keyElement.addEventListener('blur', (event) => this.handleKeyFocus(event, keyData, false));
+
+                // Prevent context menu on right click
+                keyElement.addEventListener('contextmenu', (event) => event.preventDefault());
+
+                // Prevent text selection
+                keyElement.addEventListener('selectstart', (event) => event.preventDefault());
+
+                // Store key element reference
+                this.keys.set(keyData.note, keyElement);
+
+                container.appendChild(keyElement);
+            }
+
+            /**
+             * Handle key hover events for visual feedback
+             * @param {Event} event - The hover event
+             * @param {Object} keyData - Key configuration object
+             * @param {boolean} isEntering - True if entering, false if leaving
+             */
+            handleKeyHover(event, keyData, isEntering) {
+                const keyElement = this.keys.get(keyData.note);
+                if (!keyElement) return;
+            }
+
+            /**
+             * Handle touch move events to prevent accidental key presses
+             * @param {TouchEvent} event - The touch move event
+             * @param {Object} keyData - Key configuration object
+             */
+            handleTouchMove(event, keyData) {
+                event.preventDefault();
+
+                // If touch moves significantly, consider it a scroll/drag gesture
+                const touch = event.touches[0];
+                if (touch) {
+                    const keyElement = this.keys.get(keyData.note);
+                    const rect = keyElement.getBoundingClientRect();
+
+                    // Check if touch is still within key bounds
+                    const isWithinKey = (
+                        touch.clientX >= rect.left &&
+                        touch.clientX <= rect.right &&
+                        touch.clientY >= rect.top &&
+                        touch.clientY <= rect.bottom
+                    );
+
+                    // If touch moved outside key, release it
+                    if (!isWithinKey && this.pressedKeys.has(keyData.note)) {
+                        this.handleKeyRelease(event, keyData);
+                    }
+                }
+            }
+
+            /**
+             * Handle keyboard input for accessibility
+             * @param {KeyboardEvent} event - The keyboard event
+             * @param {Object} keyData - Key configuration object
+             */
+            handleKeyboardInput(event, keyData) {
+                // Handle Enter and Space as key press
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    this.handleKeyPress(event, keyData);
+                }
+
+                // Handle arrow keys for navigation
+                if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                    event.preventDefault();
+                    this.navigateKeys(keyData.note, event.key === 'ArrowRight');
+                }
+            }
+
+            /**
+             * Handle key focus for accessibility
+             * @param {Event} event - The focus event
+             * @param {Object} keyData - Key configuration object
+             * @param {boolean} isFocusing - True if focusing, false if blurring
+             */
+            handleKeyFocus(event, keyData, isFocusing) {
+                const keyElement = this.keys.get(keyData.note);
+                if (!keyElement) return;
+
+                if (isFocusing) {
+                    keyElement.style.outline = '2px solid #007bff';
+                    keyElement.style.outlineOffset = '2px';
+                } else {
+                    keyElement.style.outline = '';
+                    keyElement.style.outlineOffset = '';
+                }
+            }
+
+            /**
+             * Navigate between keys using keyboard
+             * @param {string} currentNote - Currently focused note
+             * @param {boolean} forward - True for forward navigation, false for backward
+             */
+            navigateKeys(currentNote, forward) {
+                const whiteKeys = this.keyLayout.filter(key => key.type === 'white').map(key => key.note);
+                const currentIndex = whiteKeys.indexOf(currentNote);
+
+                if (currentIndex === -1) return;
+
+                let nextIndex;
+                if (forward) {
+                    nextIndex = (currentIndex + 1) % whiteKeys.length;
+                } else {
+                    nextIndex = (currentIndex - 1 + whiteKeys.length) % whiteKeys.length;
+                }
+
+                const nextKey = this.keys.get(whiteKeys[nextIndex]);
+                if (nextKey) {
+                    nextKey.focus();
+                }
+            }
+
+            /**
+             * Handle key press events (mouse click or touch)
+             * @param {Event} event - The interaction event
+             * @param {Object} keyData - Key configuration object
+             */
+            async handleKeyPress(event, keyData) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                // Initialize audio on first user interaction (required by browsers)
+                if (!this.audioInitialized) {
+                    await this.initializeAudio();
+                }
+
+                // Prevent multiple simultaneous presses of the same key
+                if (this.pressedKeys.has(keyData.note)) {
+                    return;
+                }
+
+                // Play audio for the pressed key
+                await this.playNoteAudio(keyData.note);
+
+                // Add visual feedback for key press
+                const keyElement = this.keys.get(keyData.note);
+                if (keyElement) {
+                    // Add pressed state with immediate visual feedback
+                    keyElement.classList.add('pressed');
+                    this.pressedKeys.add(keyData.note);
+
+                    // Add event listeners for key release (mouse up / touch end)
+                    const handleKeyRelease = (releaseEvent) => {
+                        this.handleKeyRelease(releaseEvent, keyData);
+                        // Remove event listeners after release
+                        document.removeEventListener('mouseup', handleKeyRelease);
+                        document.removeEventListener('touchend', handleKeyRelease);
+                    };
+
+                    // Listen for key release on document to handle cases where user moves off key
+                    document.addEventListener('mouseup', handleKeyRelease);
+                    document.addEventListener('touchend', handleKeyRelease);
+
+                    // Fallback timeout to ensure key is released even if events are missed
+                    setTimeout(() => {
+                        if (this.pressedKeys.has(keyData.note)) {
+                            this.handleKeyRelease(null, keyData);
+                        }
+                    }, 300);
+                }
+
+                console.log(`Piano key pressed: ${keyData.note} (${keyData.frequency}Hz)`);
+
+                // Auto-start playback if not currently playing (Requirement 7.7)
+                // Use callback to parent app since handlePlay is not a method of VirtualPianoKeyboard
+                if (this.onAutoStartPlayback) {
+                    this.onAutoStartPlayback(keyData);
+                }
+
+                // Trigger key press handler - let the app handle all feedback logic
+                this.onKeyPressed(keyData);
+            }
+
+            /**
+             * Play audio for a specific note
+             * @param {string} noteName - Name of the note to play (e.g., 'C4', 'D4')
+             * @returns {Promise<void>}
+             */
+            async playNoteAudio(noteName) {
+                console.log(`🎵 [DEBUG] Starting audio playback for note: ${noteName}`);
+                console.log(`🎵 [DEBUG] Audio initialized: ${this.audioInitialized}`);
+                console.log(`🎵 [DEBUG] Audio engine enabled: ${this.audioEngine.isAudioEnabled}`);
+
+                try {
+                    // Check audio engine status
+                    const audioStatus = this.audioEngine.getStatus();
+                    console.log(`🎵 [DEBUG] Audio engine status:`, audioStatus);
+
+                    await this.audioEngine.playNoteByName(noteName, 0.8); // 0.8 second duration
+                    console.log(`🎵 [DEBUG] Audio playback completed for note: ${noteName}`);
+                } catch (error) {
+                    console.error(`🎵 [ERROR] Failed to play audio for ${noteName}:`, error);
+                }
+            }
+
+            /**
+             * Handle key release events
+             * @param {Event} event - The release event (can be null for timeout)
+             * @param {Object} keyData - Key configuration object
+             */
+            handleKeyRelease(event, keyData) {
+                const keyElement = this.keys.get(keyData.note);
+                if (keyElement && this.pressedKeys.has(keyData.note)) {
+                    // Remove pressed state
+                    keyElement.classList.remove('pressed');
+                    this.pressedKeys.delete(keyData.note);
+
+                    console.log(`Piano key released: ${keyData.note}`);
+
+                    // Trigger any additional key release handlers
+                    this.onKeyReleased(keyData);
+                }
+            }
+
+            /**
+             * Handle multiple simultaneous key interactions
+             * @param {Array} keyNotes - Array of note names to press simultaneously
+             */
+            handleMultipleKeyPress(keyNotes) {
+                keyNotes.forEach(note => {
+                    const keyData = this.keyLayout.find(key => key.note === note);
+                    if (keyData && !this.pressedKeys.has(note)) {
+                        // Simulate key press for each key
+                        const mockEvent = { preventDefault: () => { }, stopPropagation: () => { } };
+                        this.handleKeyPress(mockEvent, keyData);
+                    }
+                });
+
+                console.log(`Multiple keys pressed simultaneously: ${keyNotes.join(', ')}`);
+            }
+
+            /**
+             * Release all currently pressed keys
+             */
+            releaseAllKeys() {
+                const pressedKeysCopy = new Set(this.pressedKeys);
+                pressedKeysCopy.forEach(note => {
+                    const keyData = this.keyLayout.find(key => key.note === note);
+                    if (keyData) {
+                        this.handleKeyRelease(null, keyData);
+                    }
+                });
+
+                console.log('All keys released');
+            }
+
+            /**
+             * Get current key state for a specific key
+             * @param {string} keyNote - Note name to check
+             * @returns {string} Key state: 'normal', 'pressed', 'active', or 'correct'
+             */
+            getKeyState(keyNote) {
+                const mappedNote = this.mapNoteToKeyboard(keyNote);
+                const keyElement = this.keys.get(mappedNote);
+
+                if (!keyElement) return 'normal';
+
+                if (keyElement.classList.contains('correct')) return 'correct';
+                if (keyElement.classList.contains('pressed')) return 'pressed';
+                if (keyElement.classList.contains('active')) return 'active';
+
+                return 'normal';
+            }
+
+            /**
+             * Set key state programmatically
+             * @param {string} keyNote - Note name to set state for
+             * @param {string} state - State to set: 'normal', 'pressed', 'active', or 'correct'
+             * @param {number} duration - Duration to maintain state (optional)
+             */
+            setKeyState(keyNote, state, duration = null) {
+                const mappedNote = this.mapNoteToKeyboard(keyNote);
+                const keyElement = this.keys.get(mappedNote);
+
+                if (!keyElement) return;
+
+                // Clear all state classes first
+                keyElement.classList.remove('pressed', 'active', 'correct');
+
+                // Add the new state class
+                if (state !== 'normal') {
+                    keyElement.classList.add(state);
+
+                    // Update internal state tracking
+                    if (state === 'pressed') {
+                        this.pressedKeys.add(mappedNote);
+                    } else if (state === 'active') {
+                        this.activeKeys.add(mappedNote);
+                    }
+                }
+
+                // Remove state after duration if specified
+                if (duration && state !== 'normal') {
+                    setTimeout(() => {
+                        keyElement.classList.remove(state);
+                        if (state === 'pressed') {
+                            this.pressedKeys.delete(mappedNote);
+                        } else if (state === 'active') {
+                            this.activeKeys.delete(mappedNote);
+                        }
+                    }, duration);
+                }
+
+                // console.log(`Key state set: ${mappedNote} -> ${state}${duration ? ` (${duration}ms)` : ''}`);
+            }
+
+            /**
+             * Callback for when a key is pressed (can be overridden)
+             * @param {Object} keyData - Key configuration object
+             */
+            onKeyPressed(keyData) {
+                // This method can be overridden by external code to handle key presses
+                // For example, to play audio or provide learning feedback
+            }
+
+            /**
+             * Callback for when a key is released (can be overridden)
+             * @param {Object} keyData - Key configuration object
+             */
+            onKeyReleased(keyData) {
+                // This method can be overridden by external code to handle key releases
+            }
+
+            /**
+             * Highlight a specific key (used for staff synchronization)
+             * @param {string} keyNote - Note name to highlight (e.g., 'C4', 'D4')
+             * @param {number} duration - Duration to keep the key highlighted (optional)
+             */
+            highlightKey(keyNote, duration = null) {
+                // Convert note names to match keyboard layout
+                const mappedNote = this.mapNoteToKeyboard(keyNote);
+                const keyElement = this.keys.get(mappedNote);
+
+                if (keyElement) {
+                    keyElement.classList.add('active');
+                    this.activeKeys.add(mappedNote);
+
+                    // Remove highlight after duration if specified
+                    if (duration) {
+                        setTimeout(() => {
+                            keyElement.classList.remove('active');
+                            this.activeKeys.delete(mappedNote);
+                        }, duration);
+                    }
+
+                    console.log(`Key highlighted: ${mappedNote}`);
+                }
+            }
+
+            /**
+             * Remove highlighting from a specific key
+             * @param {string} keyNote - Note name to unhighlight
+             */
+            unhighlightKey(keyNote) {
+                const mappedNote = this.mapNoteToKeyboard(keyNote);
+                const keyElement = this.keys.get(mappedNote);
+
+                if (keyElement) {
+                    keyElement.classList.remove('active');
+                    this.activeKeys.delete(mappedNote);
+                }
+            }
+
+            /**
+             * Clear all key highlighting
+             */
+            clearAllHighlights() {
+                this.activeKeys.forEach(noteKey => {
+                    const keyElement = this.keys.get(noteKey);
+                    if (keyElement) {
+                        keyElement.classList.remove('active');
+                    }
+                });
+                this.activeKeys.clear();
+            }
+
+            /**
+             * Map note names from the song data to keyboard note names
+             * @param {string} songNote - Note name from song data (e.g., 'C', 'D', 'C5')
+             * @returns {string} Keyboard note name (e.g., 'C4', 'D4', 'C5')
+             */
+            mapNoteToKeyboard(songNote) {
+                // Handle the mapping between song notation and keyboard notation
+                const noteMapping = {
+                    'C': 'C4',
+                    'D': 'D4',
+                    'E': 'E4',
+                    'F': 'F4',
+                    'G': 'G4',
+                    'A': 'A4',
+                    'B': 'B4',
+                    'C5': 'C5'
+                };
+
+                return noteMapping[songNote] || songNote;
+            }
+
+            /**
+             * Get all available keys for external access
+             * @returns {Map} Map of note names to key elements
+             */
+            getKeys() {
+                return this.keys;
+            }
+
+            /**
+             * Get currently active (highlighted) keys
+             * @returns {Set} Set of currently active key note names
+             */
+            getActiveKeys() {
+                return this.activeKeys;
+            }
+
+            /**
+             * Get currently pressed keys
+             * @returns {Set} Set of currently pressed key note names
+             */
+            getPressedKeys() {
+                return this.pressedKeys;
+            }
+
+            /**
+             * Check if a specific key is currently pressed
+             * @param {string} keyNote - Note name to check
+             * @returns {boolean} True if key is pressed
+             */
+            isKeyPressed(keyNote) {
+                const mappedNote = this.mapNoteToKeyboard(keyNote);
+                return this.pressedKeys.has(mappedNote);
+            }
+
+            /**
+             * Check if a specific key is currently active (highlighted)
+             * @param {string} keyNote - Note name to check
+             * @returns {boolean} True if key is active
+             */
+            isKeyActive(keyNote) {
+                const mappedNote = this.mapNoteToKeyboard(keyNote);
+                return this.activeKeys.has(mappedNote);
+            }
+
+            /**
+             * Get count of currently pressed keys
+             * @returns {number} Number of pressed keys
+             */
+            getPressedKeyCount() {
+                return this.pressedKeys.size;
+            }
+
+            /**
+             * Get count of currently active keys
+             * @returns {number} Number of active keys
+             */
+            getActiveKeyCount() {
+                return this.activeKeys.size;
+            }
+
+            /**
+             * Reset all key states to normal
+             */
+            resetAllKeyStates() {
+                // Clear all pressed keys
+                this.releaseAllKeys();
+
+                // Clear all active keys
+                this.clearAllHighlights();
+
+                // Remove any remaining state classes
+                this.keys.forEach((keyElement, note) => {
+                    keyElement.classList.remove('pressed', 'active', 'correct');
+                    keyElement.style.opacity = '';
+                    keyElement.style.outline = '';
+                    keyElement.style.outlineOffset = '';
+                });
+
+                console.log('All key states reset to normal');
+            }
+
+            /**
+             * Enable or disable all keyboard interactions
+             * @param {boolean} enabled - True to enable, false to disable
+             */
+            setInteractionEnabled(enabled) {
+                this.keys.forEach((keyElement, note) => {
+                    if (enabled) {
+                        keyElement.style.pointerEvents = '';
+                        keyElement.removeAttribute('disabled');
+                        keyElement.setAttribute('tabindex', '0');
+                    } else {
+                        keyElement.style.pointerEvents = 'none';
+                        keyElement.setAttribute('disabled', 'true');
+                        keyElement.setAttribute('tabindex', '-1');
+                    }
+                });
+
+                console.log(`Keyboard interactions ${enabled ? 'enabled' : 'disabled'}`);
+            }
+
+            /**
+             * Get keyboard interaction statistics
+             * @returns {Object} Statistics about keyboard usage
+             */
+            getInteractionStats() {
+                return {
+                    totalKeys: this.keys.size,
+                    pressedKeys: this.pressedKeys.size,
+                    activeKeys: this.activeKeys.size,
+                    whiteKeys: this.keyLayout.filter(key => key.type === 'white').length,
+                    blackKeys: this.keyLayout.filter(key => key.type === 'black').length,
+                    keyStates: Array.from(this.keys.keys()).map(note => ({
+                        note: note,
+                        state: this.getKeyState(note)
+                    }))
+                };
+            }
+
+            /**
+             * Map keyboard note names back to staff note names
+             * @param {string} keyboardNote - Keyboard note name (e.g., 'C4', 'D4')
+             * @returns {string} Staff note name (e.g., 'C', 'D', 'C5')
+             */
+            mapKeyboardToStaff(keyboardNote) {
+                const reverseMapping = {
+                    'C4': 'C',
+                    'D4': 'D',
+                    'E4': 'E',
+                    'F4': 'F',
+                    'G4': 'G',
+                    'A4': 'A',
+                    'B4': 'B',
+                    'C5': 'C5'
+                };
+
+                return reverseMapping[keyboardNote] || keyboardNote;
+            }
+
+
+
+            /**
+             * Get audio engine status and capabilities
+             * @returns {Object} Audio engine status information
+             */
+            getAudioStatus() {
+                return this.audioEngine.getStatus();
+            }
+
+            /**
+             * Enable or disable audio playback
+             * @param {boolean} enabled - True to enable, false to disable
+             */
+            setAudioEnabled(enabled) {
+                this.audioEngine.setAudioEnabled(enabled);
+                console.log(`Keyboard audio ${enabled ? 'enabled' : 'disabled'}`);
+            }
+
+            /**
+             * Set audio volume
+             * @param {number} volume - Volume level (0.0 to 1.0)
+             */
+            setAudioVolume(volume) {
+                this.audioEngine.setMasterVolume(volume);
+                console.log(`Keyboard audio volume set to: ${volume}`);
+            }
+
+            /**
+             * Test audio functionality
+             * @returns {Promise<boolean>} True if audio test successful
+             */
+            async testAudio() {
+                if (!this.audioInitialized) {
+                    await this.initializeAudio();
+                }
+                return await this.audioEngine.testAudio();
+            }
+
+            /**
+             * Clean up audio resources
+             */
+            dispose() {
+                if (this.audioEngine) {
+                    this.audioEngine.dispose();
+                    this.audioInitialized = false;
+                    console.log('Virtual keyboard audio resources disposed');
+                }
+            }
+        }
+
         // Piano Tutor App main class
         class PianoTutorApp {
             constructor() {
@@ -773,13 +2235,35 @@
                 this.startTime = null;
                 this.pausedTime = 0;
                 this.currentPosition = 0;
-                
+
+                // Note highlighting and keyboard synchronization state
+                this.currentHighlightedNoteIndex = null;
+                this.currentHighlightedNote = null;
+
+                // Learning feedback trigger state - improved algorithm
+                this.nextNoteToPlayIndex = 0; // Index of the next note that should be played
+                this.lastTriggeredNoteIndex = null; // Keep for compatibility
+                this.playbackLineElement = null; // Will be set after DOM is ready
+
+                // Learning feedback system properties (moved from VirtualPianoKeyboard)
+                this.expectedNote = null;
+                this.isPlaybackActive = false;
+                this.learningStats = {
+                    correctMatches: 0,
+                    incorrectAttempts: 0,
+                    totalAttempts: 0,
+                    currentStreak: 0,
+                    bestStreak: 0,
+                    accuracyRate: 0,
+                    lastPlayedKey: null,
+                    isLearningMode: false
+                };
+
                 // Tempo control system
                 this.currentTempo = DEFAULT_TEMPO;
                 this.playbackSpeed = this.calculatePlaybackSpeed(this.currentTempo);
-                
-                console.log(`Piano Tutor App initialized with tempo: ${this.currentTempo}`);
 
+                console.log(`Piano Tutor App initialized with tempo: ${this.currentTempo}`);
 
                 // Manual interaction state
                 this.isDragging = false;
@@ -789,10 +2273,49 @@
                 this.dragVelocity = 0;
                 this.lastMoveTime = 0;
 
+                // Initialize virtual piano keyboard
+                this.virtualKeyboard = new VirtualPianoKeyboard();
 
                 this.initializeControls();
                 this.initializeNotePositioning();
                 this.initializeStaffInteraction();
+                this.initializeVirtualKeyboard();
+                this.initializeProgressBar();
+            }
+
+            /**
+             * Find the first non-rest note in the song data
+             * @returns {string|null} The pitch of the first non-rest note, or null if none found
+             */
+            findFirstNonRestNote() {
+                for (const measure of SONG_DATA.measures) {
+                    for (const note of measure.notes) {
+                        if (note.pitch !== "rest") {
+                            return note.pitch;
+                        }
+                    }
+                }
+                return null;
+            }
+
+            /**
+             * Find the first non-rest note and its index in the positioned notes array
+             * @returns {Object|null} Object with {note, index} or null if no non-rest note found
+             */
+            findFirstNonRestNoteWithIndex() {
+                let noteIndex = 0;
+                for (const measure of SONG_DATA.measures) {
+                    for (const note of measure.notes) {
+                        if (note.pitch !== "rest") {
+                            return {
+                                note: note.pitch,
+                                index: noteIndex
+                            };
+                        }
+                        noteIndex++;
+                    }
+                }
+                return null;
             }
 
             /**
@@ -808,9 +2331,9 @@
 
                 const tempo = TEMPO_MARKINGS[tempoName];
                 const calculatedSpeed = BASE_PLAYBACK_SPEED * tempo.speedMultiplier;
-                
+
                 console.log(`Tempo: ${tempo.name} (${tempo.bpm} BPM) - Speed multiplier: ${tempo.speedMultiplier} - Playback speed: ${calculatedSpeed.toFixed(4)} px/ms`);
-                
+
                 return calculatedSpeed;
             }
 
@@ -842,40 +2365,40 @@
 
                 const oldTempo = this.currentTempo;
                 const wasPlaying = this.isPlaying;
-                
+
                 // Store current position for smooth transition
                 const currentPositionBeforeChange = this.currentPosition;
-                
+
                 // Update tempo and recalculate playback speed
                 this.currentTempo = tempoName;
                 const newPlaybackSpeed = this.calculatePlaybackSpeed(tempoName);
-                
+
                 console.log(`Tempo changed from ${oldTempo} to ${tempoName}`);
                 console.log(`Playback speed changed from ${this.playbackSpeed.toFixed(4)} to ${newPlaybackSpeed.toFixed(4)} px/ms`);
-                
+
                 // Ensure smooth transitions when changing tempo during playback
                 if (wasPlaying) {
                     // Pause current playback to recalculate timing
                     this.handlePause();
-                    
+
                     // Update playback speed
                     this.playbackSpeed = newPlaybackSpeed;
-                    
+
                     // Maintain current position during tempo changes
                     this.currentPosition = currentPositionBeforeChange;
-                    
+
                     // Recalculate start time based on new tempo and current position
                     const currentTimePosition = this.currentPosition / this.playbackSpeed;
                     this.pausedTime = currentTimePosition;
-                    
+
                     // Resume playback with new tempo
-                    this.handlePlay();
-                    
+                    // Note: Auto-playback removed - user controls tempo only
+
                     console.log(`Smooth tempo transition: maintained position ${currentPositionBeforeChange.toFixed(1)}px, new time equivalent: ${currentTimePosition.toFixed(1)}ms`);
                 } else {
                     // Not playing, just update the speed for future playback
                     this.playbackSpeed = newPlaybackSpeed;
-                    
+
                     // If paused, update the timing calculations for the new tempo
                     if (this.isPaused && this.currentPosition > 0) {
                         const currentTimePosition = this.currentPosition / this.playbackSpeed;
@@ -883,10 +2406,6 @@
                         console.log(`Tempo changed while paused: updated time equivalent to ${currentTimePosition.toFixed(1)}ms`);
                     }
                 }
-                
-                // Update tempo display and debug info
-                this.updateTempoDisplay();
-                this.displayDebugInfo();
             }
 
             /**
@@ -896,81 +2415,59 @@
             handleTempoChange(event) {
                 const selectedTempo = event.target.value;
                 const previousTempo = this.currentTempo;
-                
+
                 console.log(`User selected tempo: ${selectedTempo} (previous: ${previousTempo})`);
-                
+
                 // Preserve manual navigation functionality with tempo changes
                 // Store current interaction state
                 const wasDragging = this.isDragging;
-                
+
                 // Apply tempo change
                 this.setTempo(selectedTempo);
-                
+
                 // Ensure manual navigation state is preserved
                 if (wasDragging) {
                     console.log('Tempo changed during manual navigation - preserving interaction state');
                 }
-                
+
                 // Log successful integration
                 console.log(`Tempo control integrated: ${previousTempo} → ${selectedTempo}, playback system updated`);
             }
 
-            /**
-             * Update the tempo display with current tempo information
-             */
-            updateTempoDisplay() {
-                if (!this.tempoDisplay) {
-                    console.warn('Tempo display element not found');
-                    return;
-                }
 
-                const tempoInfo = this.getCurrentTempoInfo();
-                if (tempoInfo) {
-                    this.tempoDisplay.textContent = `${tempoInfo.bpm} BPM`;
-                } else {
-                    this.tempoDisplay.textContent = 'Unknown tempo';
-                }
-            }
 
             initializeControls() {
-                this.playBtn = document.getElementById('playBtn');
-                this.pauseBtn = document.getElementById('pauseBtn');
-                this.resetBtn = document.getElementById('resetBtn');
                 this.tempoSelector = document.getElementById('tempoSelector');
-                this.tempoDisplay = document.getElementById('tempoDisplay');
 
-                this.playBtn.addEventListener('click', () => this.handlePlay());
-                this.pauseBtn.addEventListener('click', () => this.handlePause());
-                this.resetBtn.addEventListener('click', () => this.handleReset());
+                // Initialize playback line element reference for improved intersection detection
+                this.playbackLineElement = document.querySelector('.playback-line');
+
                 this.tempoSelector.addEventListener('change', (event) => this.handleTempoChange(event));
-
-                // Add keyboard shortcuts
-                document.addEventListener('keydown', (event) => this.handleKeydown(event));
-
-                // Initialize button states and tempo display
-                this.updateButtonStates();
-                this.updateTempoDisplay();
             }
 
             initializeNotePositioning() {
                 // Calculate positions for all notes in the song
                 this.positionedNotes = this.notePositioning.calculateAllNotePositions(SONG_DATA.measures);
 
+                // Initialize highlighting variables to the first non-rest note
+                const firstNonRestInfo = this.findFirstNonRestNoteWithIndex();
+                if (firstNonRestInfo) {
+                    this.currentHighlightedNoteIndex = firstNonRestInfo.index;
+                    console.log(`Initialized highlighting to first non-rest note: ${firstNonRestInfo.note} at index ${firstNonRestInfo.index}`);
+                }
+
                 // Render the note rectangles
                 this.renderNoteRectangles();
 
                 // Render the measure bars
                 this.renderMeasureBars();
-
-                // Display debug information on the page
-                this.displayDebugInfo();
             }
 
             /**
              * Initialize touch and mouse event handlers for staff interaction
              */
             initializeStaffInteraction() {
-                const staffContainer = document.querySelector('.staff-container');
+                const staffContainer = document.querySelector('.staff');
                 if (!staffContainer) {
                     console.error('Staff container not found for interaction setup');
                     return;
@@ -992,6 +2489,281 @@
                 });
 
                 console.log('Staff interaction handlers initialized');
+            }
+
+            /**
+             * Initialize the virtual piano keyboard
+             */
+            initializeVirtualKeyboard() {
+                const keyboardContainer = document.getElementById('virtualKeyboard');
+                if (!keyboardContainer) {
+                    console.error('Virtual keyboard container not found');
+                    return;
+                }
+
+                // Create the keyboard layout and visual structure
+                this.virtualKeyboard.createKeyboard(keyboardContainer);
+
+                // Set up keyboard interaction callbacks
+                this.virtualKeyboard.onKeyPressed = (keyData) => {
+                    this.handleVirtualKeyPressed(keyData);
+                };
+
+                this.virtualKeyboard.onKeyReleased = (keyData) => {
+                    this.handleVirtualKeyReleased(keyData);
+                };
+
+                // Auto-start playback callback removed since play controls have been removed
+                this.virtualKeyboard.onAutoStartPlayback = (keyData) => {
+                    this.startPlaybackAnimation();
+                };
+
+                // Initialize learning progress display
+                this.updateLearningProgressDisplay();
+
+                // Set initial expected note to the first non-rest note in the song
+                const firstNote = this.findFirstNonRestNote();
+                if (firstNote) {
+                    this.setExpectedNote(firstNote);
+                    console.log(`Initial expected note set to: ${firstNote}`);
+                }
+            }
+
+            /**
+             * Handle virtual keyboard key press events
+             * @param {Object} keyData - Key configuration object
+             */
+            handleVirtualKeyPressed(keyData) {
+                console.log(`Virtual key pressed: ${keyData.note} - ${keyData.frequency}Hz`);
+
+                // Process learning feedback if in learning mode
+                this.processLearningFeedback(keyData);
+            }
+
+            /**
+             * Handle virtual keyboard key release events
+             * @param {Object} keyData - Key configuration object
+             */
+            handleVirtualKeyReleased(keyData) {
+                console.log(`Virtual key released: ${keyData.note}`);
+            }
+
+            /**
+             * Show positive feedback on the staff note when user clicks correct key
+             * @param {string} keyNote - Note name that was correctly pressed
+             */
+            showCorrectNoteHighlight(keyNote) {
+                // Find the current note that should be played
+                if (this.currentHighlightedNoteIndex !== null) {
+                    const noteElement = document.getElementById(`note-${this.currentHighlightedNoteIndex}`);
+                    if (noteElement) {
+                        // Add positive feedback class to the note
+                        noteElement.classList.add('correct-note');
+
+                        // Remove the feedback after a short duration
+                        setTimeout(() => {
+                            noteElement.classList.remove('correct-note');
+                        }, 500);
+
+                        console.log(`✅ Correct note feedback: note-${this.currentHighlightedNoteIndex}`);
+                    }
+                }
+            }
+
+            /**
+             * Process positive feedback for correct key matches
+             * Enhanced with improved statistics tracking and visual feedback
+             * @param {Object} keyData - Key configuration object
+             * @returns {boolean} True if the key press was correct
+             */
+            processLearningFeedback(keyData) {
+                // Only process feedback during playback and when expected note is set
+                if (!this.isPlaybackActive || !this.expectedNote) {
+                    return false;
+                }
+
+                const pressedNote = this.virtualKeyboard.mapKeyboardToStaff(keyData.note);
+                const isCorrect = pressedNote === this.expectedNote;
+
+                // Update learning statistics
+                this.updateLearningStats(keyData.note, isCorrect);
+
+                if (isCorrect) {
+                    console.log(`✅ Correct match! Played ${pressedNote}, expected ${this.expectedNote}`);
+                    // Show correct note highlight on staff
+                    this.showCorrectNoteHighlight(keyData.note);
+                } else {
+                    console.log(`❌ Incorrect match! Played ${pressedNote}, expected ${this.expectedNote}`);
+                    // Show negative visual feedback for incorrect match
+                    this.showIncorrectFeedback(keyData.note);
+                }
+
+                // Update the learning progress display
+                this.updateLearningProgressDisplay();
+
+                return isCorrect;
+            }
+
+            /**
+             * Show negative visual feedback for incorrect key press
+             * @param {string} keyNote - Note name that was incorrectly pressed
+             */
+            showIncorrectFeedback(keyNote) {
+                const mappedNote = this.virtualKeyboard.mapNoteToKeyboard(keyNote);
+                const keyElement = this.virtualKeyboard.keys.get(mappedNote);
+
+                if (keyElement) {
+                    keyElement.classList.add('incorrect');
+
+                    // Remove incorrect feedback after a short duration
+                    setTimeout(() => {
+                        keyElement.classList.remove('incorrect');
+                    }, 300);
+
+                    console.log(`❌ Incorrect key feedback: ${mappedNote}`);
+                }
+            }
+
+            /**
+             * Update learning statistics based on user interaction
+             * @param {string} keyNote - The key that was pressed
+             * @param {boolean} isCorrect - Whether the key press was correct
+             */
+            updateLearningStats(keyNote, isCorrect) {
+                // Initialize learning stats if not present
+                if (!this.learningStats) {
+                    this.learningStats = {
+                        correctMatches: 0,
+                        incorrectAttempts: 0,
+                        totalAttempts: 0,
+                        currentStreak: 0,
+                        bestStreak: 0,
+                        accuracyRate: 0,
+                        lastPlayedKey: null,
+                        isLearningMode: false
+                    };
+                }
+
+                // Update attempt counters
+                this.learningStats.totalAttempts++;
+                this.learningStats.lastPlayedKey = keyNote;
+
+                if (isCorrect) {
+                    this.learningStats.correctMatches++;
+                    this.learningStats.currentStreak++;
+
+                    // Update best streak if current streak is better
+                    if (this.learningStats.currentStreak > this.learningStats.bestStreak) {
+                        this.learningStats.bestStreak = this.learningStats.currentStreak;
+                    }
+                } else {
+                    this.learningStats.incorrectAttempts++;
+                    this.learningStats.currentStreak = 0; // Reset streak on incorrect attempt
+                }
+
+                // Calculate accuracy rate
+                this.learningStats.accuracyRate = this.learningStats.totalAttempts > 0
+                    ? (this.learningStats.correctMatches / this.learningStats.totalAttempts) * 100
+                    : 0;
+
+                console.log(`Learning stats updated: ${this.learningStats.correctMatches}/${this.learningStats.totalAttempts} (${this.learningStats.accuracyRate.toFixed(1)}% accuracy)`);
+            }
+
+            /**
+             * Get current learning statistics
+             * @returns {Object} Current learning statistics
+             */
+            getLearningStats() {
+                if (!this.learningStats) {
+                    return {
+                        correctMatches: 0,
+                        incorrectAttempts: 0,
+                        totalAttempts: 0,
+                        currentStreak: 0,
+                        bestStreak: 0,
+                        accuracyRate: 0,
+                        lastPlayedKey: null,
+                        isLearningMode: false
+                    };
+                }
+                return { ...this.learningStats };
+            }
+
+            /**
+             * Reset learning statistics
+             */
+            resetLearningStats() {
+                this.learningStats = {
+                    correctMatches: 0,
+                    incorrectAttempts: 0,
+                    totalAttempts: 0,
+                    currentStreak: 0,
+                    bestStreak: 0,
+                    accuracyRate: 0,
+                    lastPlayedKey: null,
+                    isLearningMode: true
+                };
+                this.updateLearningProgressDisplay();
+
+                console.log('Learning statistics reset');
+            }
+
+            /**
+             * Update the learning progress display with current statistics
+             */
+            updateLearningProgressDisplay() {
+                // Get current statistics
+                const stats = this.getLearningStats();
+
+                // Update DOM elements if they exist
+                const correctCountElement = document.getElementById('correctCount');
+                const incorrectCountElement = document.getElementById('incorrectCount');
+                const totalAttemptsElement = document.getElementById('totalAttempts');
+                const accuracyElement = document.getElementById('accuracy');
+                const currentStreakElement = document.getElementById('currentStreak');
+
+                if (correctCountElement) correctCountElement.textContent = stats.correctMatches;
+                if (incorrectCountElement) incorrectCountElement.textContent = stats.incorrectAttempts;
+                if (totalAttemptsElement) totalAttemptsElement.textContent = stats.totalAttempts;
+                if (accuracyElement) accuracyElement.textContent = `${stats.accuracyRate.toFixed(1)}%`;
+                if (currentStreakElement) currentStreakElement.textContent = stats.currentStreak;
+
+                console.log(`Learning progress display updated: ${stats.correctMatches}/${stats.totalAttempts} (${stats.accuracyRate.toFixed(1)}% accuracy)`);
+            }
+
+            /**
+             * Set the expected note for learning feedback
+             * @param {string} noteNote - The note that should be played (e.g., 'C', 'D', 'F')
+             */
+            setExpectedNote(noteNote) {
+                this.expectedNote = noteNote;
+                console.log(`Expected note set to: ${noteNote}`);
+            }
+
+            /**
+             * Clear the expected note
+             */
+            clearExpectedNote() {
+                this.expectedNote = null;
+            }
+
+            /**
+             * Set playback active state for learning feedback
+             * @param {boolean} active - True if playback is active
+             */
+            setPlaybackActive(active) {
+                this.isPlaybackActive = active;
+
+                // Update learning mode state
+                if (this.learningStats) {
+                    this.learningStats.isLearningMode = active;
+                }
+
+                if (!active) {
+                    this.clearExpectedNote();
+                } else {
+                    console.log('🎓 Learning feedback system activated - positive feedback enabled');
+                }
             }
 
             /**
@@ -1029,7 +2801,7 @@
                 this.lastTouchX = clientX;
 
                 // Add visual feedback for interaction
-                const staffContainer = document.querySelector('.staff-container');
+                const staffContainer = document.querySelector('.staff');
                 if (staffContainer) {
                     staffContainer.style.cursor = 'grabbing';
                 }
@@ -1115,7 +2887,7 @@
                 this.isDragging = false;
 
                 // Remove visual feedback
-                const staffContainer = document.querySelector('.staff-container');
+                const staffContainer = document.querySelector('.staff');
                 if (staffContainer) {
                     staffContainer.style.cursor = 'grab';
                 }
@@ -1251,13 +3023,82 @@
                     this.isPaused = true;
                 }
 
-                // Update button states to reflect the current state
-                this.updateButtonStates();
+                // Update currentHighlightedNoteIndex based on current position during manual navigation
+                this.updateCurrentHighlightedNoteIndexForManualNavigation();
+
+                // Update learning feedback detection during manual navigation
+                this.detectPlaybackLineNoteIntersection();
+
+                // Update progress bar during manual navigation
+                this.updateProgressBar();
 
                 // Only log significant position updates to avoid spam
                 if (this.currentPosition % 50 < 5 || this.currentPosition < 5) {
                     const currentTempoInfo = this.getCurrentTempoInfo();
                     console.log(`Position tracking: ${this.currentPosition.toFixed(1)}px → ${timePosition.toFixed(1)}ms (tempo: ${currentTempoInfo.name}, paused: ${this.isPaused})`);
+                }
+            }
+
+            /**
+             * Update currentHighlightedNoteIndex based on current staff position during manual navigation
+             * This ensures the correct note is highlighted when user manually moves the staff
+             */
+            updateCurrentHighlightedNoteIndexForManualNavigation() {
+                if (!this.playbackLineElement) return;
+
+                const playbackLineRect = this.playbackLineElement.getBoundingClientRect();
+                const playbackLineCenter = playbackLineRect.left + (playbackLineRect.width / 2);
+
+                // Find the note that should be highlighted based on current position
+                let closestNoteIndex = null;
+                let closestDistance = Infinity;
+
+                // Check all notes to find the one closest to the playback line
+                for (let i = 0; i < this.positionedNotes.length; i++) {
+                    const note = this.positionedNotes[i];
+
+                    // Skip rest notes
+                    if (note.pitch === 'rest') continue;
+
+                    const noteElement = document.getElementById(`note-${i}`);
+                    if (!noteElement) continue;
+
+                    const noteRect = noteElement.getBoundingClientRect();
+                    const noteLeftEdge = noteRect.left;
+
+                    // Calculate distance from note's left edge to playback line center
+                    const distance = Math.abs(noteLeftEdge - playbackLineCenter);
+
+                    // Check if this note is the closest one that hasn't passed the playback line yet
+                    if (noteLeftEdge >= playbackLineCenter - 50 && distance < closestDistance) {
+                        closestDistance = distance;
+                        closestNoteIndex = i;
+                    }
+                }
+
+                // Update the current highlighted note index and related state
+                if (closestNoteIndex !== null && closestNoteIndex !== this.currentHighlightedNoteIndex) {
+                    const previousIndex = this.currentHighlightedNoteIndex;
+
+                    this.currentHighlightedNoteIndex = closestNoteIndex;
+                    this.currentHighlightedNote = this.positionedNotes[closestNoteIndex];
+
+                    // Update the next note to play index to be consistent
+                    this.nextNoteToPlayIndex = closestNoteIndex;
+
+                    // Set expected note for learning feedback
+                    this.setExpectedNote(this.currentHighlightedNote.pitch);
+
+                    console.log(`📍 Manual navigation: currentHighlightedNoteIndex updated from ${previousIndex} to ${closestNoteIndex}`);
+                    console.log(`   Expected note: ${this.currentHighlightedNote.pitch}, Position: ${this.currentPosition.toFixed(1)}px`);
+                } else if (closestNoteIndex === null) {
+                    // No suitable note found, clear the highlighted note
+                    if (this.currentHighlightedNoteIndex !== null) {
+                        console.log(`📍 Manual navigation: No suitable note found, clearing currentHighlightedNoteIndex`);
+                        this.currentHighlightedNoteIndex = null;
+                        this.currentHighlightedNote = null;
+                        this.clearExpectedNote();
+                    }
                 }
             }
 
@@ -1347,60 +3188,6 @@
                 console.log(`Rendered ${measurePositions.length} measure bars`);
             }
 
-            displayDebugInfo() {
-                const debugElement = document.getElementById('debug-info');
-                if (!debugElement) return;
-
-                const uniquePitches = [...new Set(this.positionedNotes.map(note => note.pitch))];
-
-                let debugHTML = '<strong>Piano Tutor App Ready!</strong><br><br>';
-                debugHTML += `Total notes: ${this.positionedNotes.length}<br><br>`;
-
-                debugHTML += '<strong>Note Colors by Pitch:</strong><br>';
-                debugHTML += '• C notes: <span style="color: #e74c3c;">Red</span><br>';
-                debugHTML += '• D notes: <span style="color: #f39c12;">Orange</span><br>';
-                debugHTML += '• F notes: <span style="color: #27ae60;">Green</span><br>';
-                debugHTML += '• G notes: <span style="color: #3498db;">Blue</span><br>';
-                debugHTML += '• A notes: <span style="color: #9b59b6;">Purple</span><br>';
-                debugHTML += '• C5 notes: <span style="color: #e67e22;">Dark Orange</span><br><br>';
-
-                debugHTML += '<strong>Fingering Guide:</strong><br>';
-                debugHTML += '• White numbers inside each note show recommended finger positions<br>';
-                debugHTML += '• Finger numbers: 1=Thumb, 2=Index, 3=Middle, 4=Ring, 5=Pinky<br><br>';
-
-                debugHTML += '<strong>Animation Controls:</strong><br>';
-                debugHTML += '• Click Play to start staff movement<br>';
-                debugHTML += '• Click Pause to pause animation<br>';
-                debugHTML += '• Click Reset to return to beginning<br>';
-                debugHTML += '• Press Spacebar to toggle play/pause<br>';
-                debugHTML += '• Press R to reset<br><br>';
-
-                debugHTML += '<strong>Manual Navigation:</strong><br>';
-                debugHTML += '• Click and drag on the staff to navigate manually<br>';
-                debugHTML += '• Touch and swipe on mobile devices<br>';
-                debugHTML += '• Drag left to move forward in the song<br>';
-                debugHTML += '• Drag right to move backward in the song<br>';
-                debugHTML += '• Manual interaction pauses automatic playback<br>';
-                debugHTML += '• Playback resumes from manually set position<br>';
-                debugHTML += '• Position is maintained after manual interaction ends<br><br>';
-
-                // Add tempo information
-                const currentTempoInfo = this.getCurrentTempoInfo();
-                debugHTML += '<strong>Current Tempo:</strong><br>';
-                debugHTML += `• ${currentTempoInfo.name}<br>`;
-                debugHTML += `• Playback speed: ${this.playbackSpeed.toFixed(4)} px/ms<br>`;
-                debugHTML += `• Speed multiplier: ${currentTempoInfo.speedMultiplier}x<br>`;
-                debugHTML += `• Integration status: ${this.isPlaying ? 'Active in playback' : 'Ready for playback'}<br><br>`;
-
-                debugHTML += '<strong>Available Tempos:</strong><br>';
-                Object.values(TEMPO_MARKINGS).forEach(tempo => {
-                    const isActive = tempo.bpm.toString() === this.currentTempo ? ' <strong>(Active)</strong>' : '';
-                    debugHTML += `• ${tempo.name} (${tempo.speedMultiplier}x speed)${isActive}<br>`;
-                });
-
-                debugElement.innerHTML = debugHTML;
-            }
-
             /**
              * Update debug info with current playback state
              */
@@ -1413,8 +3200,8 @@
 
                 // Add or update playback state info
                 const stateInfo = `<br><strong>Playback State:</strong> ${this.isPlaying ? '<span style="color: #27ae60;">Playing</span>' :
-                        this.isPaused ? '<span style="color: #f39c12;">Paused</span>' :
-                            '<span style="color: #e74c3c;">Stopped</span>'
+                    this.isPaused ? '<span style="color: #f39c12;">Paused</span>' :
+                        '<span style="color: #e74c3c;">Stopped</span>'
                     }<br>`;
 
                 // Remove existing state info if present
@@ -1425,122 +3212,106 @@
             }
 
             /**
-             * Handle keyboard shortcuts for playback control
-             * @param {KeyboardEvent} event - The keyboard event
+             * Start the animation loop using requestAnimationFrame
+             * Modified to use current tempo setting for playback speed
              */
-            handleKeydown(event) {
-                // Prevent shortcuts when user is typing in input fields
-                if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+            startPlaybackAnimation() {
+                // Set playing state and initialize timing
+                this.isPlaying = true;
+                this.isPaused = false;
+                this.startTime = performance.now() - this.currentPosition / this.playbackSpeed;
+
+                // Enable learning feedback
+                this.setPlaybackActive(true);
+
+                const animate = (timestamp) => {
+                    if (!this.isPlaying) return;
+
+                    // Calculate elapsed time since start
+                    const elapsedTime = timestamp - this.startTime;
+
+                    // Calculate new position based on current tempo's playback speed
+                    // This ensures the animation loop uses the current tempo setting
+                    this.currentPosition = elapsedTime * this.playbackSpeed;
+
+                    // Update staff position with smooth movement
+                    this.updateStaffPosition(-this.currentPosition);
+
+                    // Update learning feedback detection
+                    this.detectPlaybackLineNoteIntersection();
+
+                    // Update progress bar
+                    this.updateProgressBar();
+
+                    // Check if we've reached the end of the song
+                    const totalSongWidth = this.getTotalSongWidth();
+                    if (this.currentPosition >= totalSongWidth) {
+                        console.log('Playback complete - auto resetting');
+                        return;
+                    }
+
+                    // Continue animation
+                    this.animationId = requestAnimationFrame(animate);
+                };
+
+                this.animationId = requestAnimationFrame(animate);
+                console.log('Staff animation started from piano key press');
+            }
+
+            /**
+             * Pause the current playback animation
+             */
+            handlePause() {
+                if (!this.isPlaying) {
+                    console.log('Playback is not currently active, nothing to pause');
                     return;
                 }
 
-                switch (event.code) {
-                    case 'Space':
-                        event.preventDefault();
-                        if (this.isPlaying) {
-                            this.handlePause();
-                        } else {
-                            this.handlePlay();
-                        }
-                        break;
-                    case 'KeyR':
-                        event.preventDefault();
-                        this.handleReset();
-                        break;
-                }
-            }
-
-            /**
-             * Update button states based on current playback state
-             */
-            updateButtonStates() {
-                if (!this.playBtn || !this.pauseBtn || !this.resetBtn) return;
-
-                if (this.isPlaying) {
-                    // Playing state: disable play, enable pause and reset
-                    this.playBtn.disabled = true;
-                    this.playBtn.classList.remove('active');
-                    this.pauseBtn.disabled = false;
-                    this.pauseBtn.classList.add('active');
-                    this.resetBtn.disabled = false;
-                } else if (this.isPaused) {
-                    // Paused state: enable play and reset, disable pause
-                    this.playBtn.disabled = false;
-                    this.playBtn.classList.remove('active');
-                    this.pauseBtn.disabled = true;
-                    this.pauseBtn.classList.remove('active');
-                    this.resetBtn.disabled = false;
-                } else {
-                    // Stopped/Reset state: enable play, disable pause and reset
-                    this.playBtn.disabled = false;
-                    this.playBtn.classList.remove('active');
-                    this.pauseBtn.disabled = true;
-                    this.pauseBtn.classList.remove('active');
-                    this.resetBtn.disabled = this.currentPosition === 0; // Only disable reset if at beginning
-                }
-            }
-
-            /**
-             * Start or resume playback animation
-             * Updated to work correctly with tempo changes and manual navigation
-             */
-            handlePlay() {
-                if (this.isPlaying) return; // Already playing
-
-                const currentTempoInfo = this.getCurrentTempoInfo();
-                console.log(`Starting playback animation from position: ${this.currentPosition} (tempo: ${currentTempoInfo.name})`);
-                
-                this.isPlaying = true;
-                this.isPaused = false;
-
-                // If resuming from pause or manual position, adjust start time
-                // This allows resuming playback from manually set position with current tempo
-                if (this.pausedTime > 0 || this.currentPosition > 0) {
-                    // Calculate the time equivalent of current position using current tempo's playback speed
-                    const currentTimePosition = this.currentPosition / this.playbackSpeed;
-                    this.startTime = performance.now() - currentTimePosition;
-                    console.log(`Resuming from position: ${this.currentPosition}px, time equivalent: ${currentTimePosition.toFixed(1)}ms (tempo: ${currentTempoInfo.name})`);
-                } else {
-                    this.startTime = performance.now();
-                    console.log(`Starting from beginning with tempo: ${currentTempoInfo.name}`);
-                }
-
-                // Update button states
-                this.updateButtonStates();
-                this.updateDebugPlaybackState();
-
-                this.startAnimation();
-            }
-
-            /**
-             * Pause playback animation
-             */
-            handlePause() {
-                if (!this.isPlaying) return; // Not playing
-
                 console.log('Pausing playback animation at position:', this.currentPosition);
+
+                // Stop the animation
                 this.isPlaying = false;
                 this.isPaused = true;
 
-                // Store the current playback time for resuming
-                // This maintains staff position after manual interaction ends
-                this.pausedTime = performance.now() - this.startTime;
-
+                // Cancel the animation frame
                 if (this.animationId) {
                     cancelAnimationFrame(this.animationId);
                     this.animationId = null;
                 }
 
-                // Update button states
-                this.updateButtonStates();
-                this.updateDebugPlaybackState();
+                // Store the current playback time for resuming
+                this.pausedTime = performance.now() - this.startTime;
+
+                // Disable learning feedback when pausing
+                this.setPlaybackActive(false);
+
+                console.log(`Playback paused at position: ${this.currentPosition}px, time: ${this.pausedTime}ms`);
             }
 
             /**
-             * Reset playback to beginning
+             * Resume playback from the paused position
              */
-            handleReset() {
-                console.log('Resetting playback');
+            handleResume() {
+                if (this.isPlaying) {
+                    console.log('Playback is already active');
+                    return;
+                }
+
+                if (!this.isPaused) {
+                    console.log('No paused playback to resume, starting from current position');
+                }
+
+                console.log('Resuming playback from position:', this.currentPosition);
+
+                // Resume the animation
+                this.startPlaybackAnimation();
+            }
+
+            /**
+             * Stop and reset playback to the beginning
+             */
+            handleStop() {
+                console.log('Stopping and resetting playback');
 
                 // Stop any current animation
                 this.isPlaying = false;
@@ -1556,47 +3327,20 @@
                 this.pausedTime = 0;
                 this.currentPosition = 0;
 
+                // Reset learning feedback state
+                this.nextNoteToPlayIndex = 0;
+                this.lastTriggeredNoteIndex = null;
+                this.currentHighlightedNoteIndex = null;
+                this.currentHighlightedNote = null;
+                this.setPlaybackActive(false);
+
                 // Reset staff position to beginning
                 this.updateStaffPosition(0);
 
-                // Update button states
-                this.updateButtonStates();
-                this.updateDebugPlaybackState();
-            }
+                // Reset progress bar
+                this.initializeProgressBar();
 
-            /**
-             * Start the animation loop using requestAnimationFrame
-             * Modified to use current tempo setting for playback speed
-             */
-            startAnimation() {
-                if (!this.isPlaying) return;
-
-                const animate = (timestamp) => {
-                    if (!this.isPlaying) return;
-
-                    // Calculate elapsed time since start
-                    const elapsedTime = timestamp - this.startTime;
-
-                    // Calculate new position based on current tempo's playback speed
-                    // This ensures the animation loop uses the current tempo setting
-                    this.currentPosition = elapsedTime * this.playbackSpeed;
-
-                    // Update staff position with smooth movement
-                    this.updateStaffPosition(-this.currentPosition);
-
-                    // Check if we've reached the end of the song
-                    const totalSongWidth = this.getTotalSongWidth();
-                    if (this.currentPosition >= totalSongWidth) {
-                        console.log('Playback complete - auto resetting');
-                        this.handleReset();
-                        return;
-                    }
-
-                    // Continue animation
-                    this.animationId = requestAnimationFrame(animate);
-                };
-
-                this.animationId = requestAnimationFrame(animate);
+                console.log('Playback stopped and reset to beginning');
             }
 
             /**
@@ -1609,6 +3353,187 @@
                     // Use translate3d for hardware acceleration and consistency
                     notesContainerElement.style.transform = `translate3d(${xOffset}px, 0, 0)`;
                 }
+            }
+
+            /**
+             * Update the simple progress bar based on current playback position
+             */
+            updateProgressBar() {
+                const totalSongWidth = this.getTotalSongWidth();
+                const progressPercentage = totalSongWidth > 0 ? (this.currentPosition / totalSongWidth) * 100 : 0;
+
+                // Clamp percentage between 0 and 100
+                const clampedPercentage = Math.max(0, Math.min(100, progressPercentage));
+
+                // Update progress fill
+                const progressFill = document.getElementById('progressFill');
+                if (progressFill) {
+                    progressFill.style.width = `${clampedPercentage}%`;
+                }
+            }
+
+            /**
+             * Initialize the simple progress bar with default values
+             */
+            initializeProgressBar() {
+                // Set initial value
+                const progressFill = document.getElementById('progressFill');
+                if (progressFill) {
+                    progressFill.style.width = '0%';
+                }
+
+                console.log('Simple progress bar initialized');
+            }
+
+            /**
+             * Update learning feedback trigger using improved intersection detection
+             * Uses getBoundingClientRect() for accurate DOM element intersection detection
+             * Optimized for O(1) performance by tracking next-to-be-played note
+             */
+            detectPlaybackLineNoteIntersection() {
+                if (!this.virtualKeyboard || !this.playbackLineElement) return;
+
+                // Find the next note to be played (skip rest notes) - O(1) amortized performance
+                let nextNoteIndex = this.nextNoteToPlayIndex;
+                while (nextNoteIndex < this.positionedNotes.length &&
+                    this.positionedNotes[nextNoteIndex].pitch === 'rest') {
+                    nextNoteIndex++;
+                }
+
+                // If we've reached the end of the song, check if we should maintain the last note
+                if (nextNoteIndex >= this.positionedNotes.length) {
+                    // If we haven't set any note yet, or if the current highlighted note is null,
+                    // try to set the last non-rest note as the expected note
+                    if (this.currentHighlightedNoteIndex === null) {
+                        // Find the last non-rest note
+                        for (let i = this.positionedNotes.length - 1; i >= 0; i--) {
+                            if (this.positionedNotes[i].pitch !== 'rest') {
+                                this.currentHighlightedNoteIndex = i;
+                                this.currentHighlightedNote = this.positionedNotes[i];
+                                this.setExpectedNote(this.positionedNotes[i].pitch);
+                                console.log(`🎯 End of song: Set last note as expected - ${this.positionedNotes[i].pitch} (index ${i})`);
+                                break;
+                            }
+                        }
+                    }
+                    // Don't clear the expected note if we're at the end - let the user play the last note
+                    return;
+                }
+
+                const nextNote = this.positionedNotes[nextNoteIndex];
+                const noteElement = document.getElementById(`note-${nextNoteIndex}`);
+
+                if (!noteElement) {
+                    console.warn(`Note element not found for index ${nextNoteIndex}`);
+                    return;
+                }
+
+                // Get actual DOM positions using getBoundingClientRect() for accurate intersection detection
+                const noteRect = noteElement.getBoundingClientRect();
+                const playbackLineRect = this.playbackLineElement.getBoundingClientRect();
+
+                // Improved intersection algorithm: check if the left edge of note rectangle 
+                // intersects with the playback line
+                // Check for intersection: note's left edge in the playback line
+                const intersection = noteRect.left >= playbackLineRect.left && noteRect.left <= playbackLineRect.right;
+
+                if (intersection) {
+                    // Only trigger if this is a new note (prevent multiple triggers for same note)
+                    if (this.lastTriggeredNoteIndex !== nextNoteIndex) {
+                        this.lastTriggeredNoteIndex = nextNoteIndex;
+
+                        // Set the current highlighted note index to the note that should be played
+                        this.currentHighlightedNoteIndex = nextNoteIndex;
+                        this.currentHighlightedNote = nextNote;
+
+                        // Set expected note for learning feedback - this enables positive feedback detection
+                        this.setExpectedNote(nextNote.pitch);
+
+                        console.log(`🎯 Learning feedback triggered: note ${nextNote.pitch} (index ${nextNoteIndex}) intersects playback line`);
+                        console.log(`   Current highlighted note index set to: ${nextNoteIndex}`);
+
+                        // Move to the next note for future checks (O(1) performance optimization)
+                        this.nextNoteToPlayIndex = nextNoteIndex + 1;
+                    }
+                } else {
+                    // Check if we've moved past this note (note is now completely to the left of playback line)
+                    if (noteRect.right < playbackLineRect.left) {
+                        // Check if this is the last note in the song
+                        const isLastNote = nextNoteIndex === this.positionedNotes.length - 1 ||
+                            (nextNoteIndex < this.positionedNotes.length - 1 &&
+                                this.positionedNotes.slice(nextNoteIndex + 1).every(note => note.pitch === 'rest'));
+
+                        if (!isLastNote) {
+                            // This note has passed and it's not the last note, move to the next one
+                            this.clearExpectedNote();
+                            this.lastTriggeredNoteIndex = null;
+
+                            // Clear current highlighted note since this note has passed
+                            this.currentHighlightedNoteIndex = null;
+                            this.currentHighlightedNote = null;
+
+                            console.log(`📍 Note ${nextNote.pitch} (index ${nextNoteIndex}) has passed playback line`);
+                            console.log(`   Current highlighted note index cleared`);
+                        } else {
+                            // This is the last note, keep it active so user can still play it
+                            console.log(`📍 Last note ${nextNote.pitch} (index ${nextNoteIndex}) has passed playback line but keeping it active`);
+                        }
+                    }
+                }
+
+                // Performance optimization: Only check one note per frame instead of all notes
+                // This maintains O(1) performance regardless of song length
+            }
+
+            /**
+             * Map staff note names to keyboard note names
+             * @param {string} staffNote - Note name from staff (e.g., "C", "D", "F", "G", "A", "C5")
+             * @returns {string|null} Keyboard note name (e.g., "C4", "D4", "F4", "G4", "A4", "C5")
+             */
+            mapStaffNoteToKeyboard(staffNote) {
+                const noteMapping = {
+                    'C': 'C4',
+                    'D': 'D4',
+                    'F': 'F4',
+                    'G': 'G4',
+                    'A': 'A4',
+                    'C5': 'C5'
+                };
+
+                return noteMapping[staffNote] || null;
+            }
+
+            /**
+             * Clear all keyboard key highlighting and staff note highlighting
+             */
+            clearAllKeyboardHighlighting() {
+                if (!this.virtualKeyboard) return;
+
+                // Clear active state from all keys
+                const allNotes = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'];
+                allNotes.forEach(note => {
+                    this.virtualKeyboard.setKeyState(note, 'normal');
+                });
+
+                // Also clear any staff note highlighting
+                this.clearAllStaffNoteHighlighting();
+            }
+
+            /**
+             * Clear all staff note highlighting
+             */
+            clearAllStaffNoteHighlighting() {
+                // Remove current highlighting from all notes
+                const allNoteElements = document.querySelectorAll('.note-rectangle.current');
+                allNoteElements.forEach(noteElement => {
+                    noteElement.classList.remove('current');
+                });
+
+                // Remove any correct feedback highlighting
+                const correctNoteElements = document.querySelectorAll('.note-rectangle.correct-note');
+                correctNoteElements.forEach(noteElement => {
+                    noteElement.classList.remove('correct-note');
+                });
             }
 
             /**
@@ -1682,13 +3607,36 @@
             }
         }
 
-        // Initialize the app when the page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            const app = new PianoTutorApp();
+        // Global test function for audio debugging
+        window.testAudio = function (noteName = 'C4') {
+            console.log(`🎯 [TEST] Manual audio test triggered for note: ${noteName}`);
+
+            if (window.pianoApp && window.pianoApp.virtualKeyboard) {
+                console.log(`🎯 [TEST] Piano app and virtual keyboard available`);
+                console.log(`🎯 [TEST] Audio initialized: ${window.pianoApp.virtualKeyboard.audioInitialized}`);
+
+                // Trigger audio initialization if not already done
+                if (!window.pianoApp.virtualKeyboard.audioInitialized) {
+                    console.log(`🎯 [TEST] Initializing audio...`);
+                    window.pianoApp.virtualKeyboard.initializeAudio();
+                }
+
+                // Test audio playback directly
+                console.log(`🎯 [TEST] Calling playNoteAudio directly...`);
+                window.pianoApp.virtualKeyboard.playNoteAudio(noteName);
+            } else {
+                console.error(`🎯 [ERROR] Piano app or virtual keyboard not available`);
+            }
+        };
+
+        // Initialize the Piano Tutor App when the page loads
+        window.addEventListener('DOMContentLoaded', function () {
             console.log('Piano Tutor App initialized successfully');
+            window.pianoApp = new PianoTutorApp();
 
             // Validate tempo control integration
-            const validation = app.validateTempoIntegration();
+            const validation = window.pianoApp.validateTempoIntegration();
+            console.log('Tempo integration validation:', validation);
             if (validation.isValid) {
                 console.log('✅ Tempo control integration validated successfully');
                 console.log('Integration details:', validation.details);
@@ -1696,8 +3644,32 @@
                 console.warn('⚠️ Tempo control integration issues found:', validation.issues);
             }
 
-            // Make app available globally for debugging
-            window.pianoApp = app;
+            // Add global click handler to initialize audio on first user interaction
+            let audioInitialized = false;
+            document.addEventListener('click', async function initAudioOnClick() {
+                if (!audioInitialized && window.pianoApp && window.pianoApp.virtualKeyboard) {
+                    console.log('🎵 [GLOBAL] First user click detected, initializing audio...');
+                    try {
+                        const success = await window.pianoApp.virtualKeyboard.initializeAudio();
+                        if (success) {
+                            console.log('🎵 [GLOBAL] Audio initialized successfully on user click');
+                            audioInitialized = true;
+
+                            // Remove this event listener after successful initialization
+                            document.removeEventListener('click', initAudioOnClick);
+                        } else {
+                            console.warn('🎵 [GLOBAL] Audio initialization failed on user click');
+                        }
+                    } catch (error) {
+                        console.error('🎵 [GLOBAL] Error initializing audio on user click:', error);
+                    }
+                }
+            });
+
+            // Add test button for manual audio testing
+            console.log('🎯 [TEST] Audio test function available as window.testAudio()');
+            console.log('🎯 [TEST] Try calling: testAudio("C4") in the console');
+            console.log('🎯 [TEST] Audio will be initialized on first click anywhere on the page');
         });
     </script>
 </body>
