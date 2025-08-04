@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Piano Tutor App</title>
+    <!-- Tone.js library for professional audio synthesis -->
+    <script src="https://unpkg.com/tone@14.7.77/build/Tone.js"></script>
     <style>
         * {
             margin: 0;
@@ -433,7 +435,6 @@
             background-color: #dc3545 !important;
             color: white;
             box-shadow: 0 0 10px rgba(220, 53, 69, 0.6);
-            animation: incorrectFeedback 0.3s ease-out;
         }
 
         /* Feedback animations */
@@ -1042,111 +1043,137 @@
             }
         }
 
-        // Audio Engine class for synthetic piano sound generation
-        class AudioEngine {
+        // ToneJS Audio Engine class for professional piano sound synthesis
+        class ToneJSAudioEngine {
             constructor() {
-                this.audioContext = null;
-                this.masterGain = null;
+                this.synth = null;
+                this.reverb = null;
+                this.compressor = null;
+                this.masterVolume = null;
+                this.sustainedNotes = new Map(); // Track held notes for polyphonic support
+                this.naturalDecayTimers = new Map(); // Track natural decay timers for realistic piano behavior
                 this.isInitialized = false;
                 this.isAudioEnabled = true;
 
-                // Audio configuration
+                // Enhanced audio configuration for realistic piano sound with natural decay
                 this.config = {
-                    masterVolume: 0.3,        // 0.0 to 1.0
+                    masterVolumeDb: -6,       // Master volume in dB
                     noteLength: 1.0,          // Default note duration in seconds
+                    polyphony: 32,            // Maximum simultaneous notes
                     envelope: {
-                        attack: 0.01,         // Attack time in seconds
-                        decay: 0.3,           // Decay time in seconds
-                        sustain: 0.1,         // Sustain level (0.0 to 1.0)
-                        release: 0.8          // Release time in seconds
+                        attack: 0.02,         // Realistic piano attack time
+                        decay: 0.8,           // Extended decay for natural piano sound
+                        sustain: 0.2,         // Lower sustain level for realistic decay
+                        release: 2.0          // Longer release for natural piano tail
                     },
-                    waveform: 'triangle'      // Oscillator type for piano-like sound
+                    oscillator: {
+                        type: "triangle",     // Base oscillator type
+                        harmonicity: 2,       // Harmonic ratio for realistic piano timbre
+                        modulationType: "sine", // Modulation type for complex waveforms
+                        modulationIndex: 0.5  // Modulation depth
+                    },
+                    effects: {
+                        reverb: {
+                            decay: 3.0,       // Extended reverb decay for piano realism
+                            wet: 0.25         // Balanced reverb mix
+                        },
+                        compressor: {
+                            threshold: -24,   // Compression threshold in dB
+                            ratio: 6,         // Gentler compression for piano dynamics
+                            attack: 0.005,    // Fast compressor attack
+                            release: 0.15     // Compressor release time
+                        }
+                    },
+                    // Realistic piano decay characteristics based on acoustic research
+                    pianoDecay: {
+                        // Natural decay durations by frequency range (in seconds)
+                        bassNotes: {          // C2-C3 (low frequencies)
+                            sustainTime: 8.0, // Bass notes sustain longest
+                            decayRate: 0.15   // Slower decay rate
+                        },
+                        midNotes: {           // C3-C5 (middle frequencies)
+                            sustainTime: 5.0, // Medium sustain time
+                            decayRate: 0.25   // Medium decay rate
+                        },
+                        trebleNotes: {        // C5-C7 (high frequencies)
+                            sustainTime: 2.5, // Treble notes decay fastest
+                            decayRate: 0.4    // Faster decay rate
+                        },
+                        // Volume decay curve parameters
+                        decayCurve: {
+                            initialVolume: 1.0,     // Starting volume
+                            sustainThreshold: 0.1,  // Volume level considered "silent"
+                            decayFunction: 'exponential' // Type of decay curve
+                        }
+                    }
                 };
 
-                // Note frequency mapping (C4=261.63Hz, D4=293.66Hz, etc.)
-                this.noteFrequencies = {
-                    'C4': 261.63,
-                    'C#4': 277.18,
-                    'D4': 293.66,
-                    'D#4': 311.13,
-                    'E4': 329.63,
-                    'F4': 349.23,
-                    'F#4': 369.99,
-                    'G4': 392.00,
-                    'G#4': 415.30,
-                    'A4': 440.00,
-                    'A#4': 466.16,
-                    'B4': 493.88,
-                    'C5': 523.25,
-                    'C#5': 554.37,
-                    'D5': 587.33,
-                    'D#5': 622.25,
-                    'E5': 659.25,
-                    'F5': 698.46,
-                    'F#5': 739.99,
-                    'G5': 783.99,
-                    'G#5': 830.61,
-                    'A5': 880.00,
-                    'A#5': 932.33,
-                    'B5': 987.77
-                };
-
-                console.log('AudioEngine initialized');
+                console.log('ToneJSAudioEngine initialized');
             }
 
             /**
-             * Initialize the Web Audio API context
+             * Initialize Tone.js audio context and synthesizers
              * @returns {Promise<boolean>} True if initialization successful
              */
-            async initializeAudioContext() {
+            async initializeAudio() {
                 try {
-                    // Clean up existing context if it exists and is in error state
-                    if (this.audioContext && (this.audioContext.state === 'closed' || this.audioContext.state === 'interrupted')) {
-                        this.audioContext = null;
-                        this.masterGain = null;
-                        this.isInitialized = false;
+                    // Check if Tone.js is available
+                    if (typeof Tone === 'undefined') {
+                        throw new Error('Tone.js library not loaded');
                     }
 
-                    // Don't create new context if one already exists and is working
-                    if (this.audioContext && this.audioContext.state !== 'closed') {
-                        console.log('AudioContext already exists with state:', this.audioContext.state);
-                        return await this.resumeAudioContext();
-                    }
+                    // Start Tone.js audio context (required for user interaction)
+                    await Tone.start();
+                    console.log('Tone.js audio context started');
 
-                    // Create audio context with fallback for older browsers
-                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-                    // Create master gain node for volume control
-                    this.masterGain = this.audioContext.createGain();
-                    this.masterGain.gain.setValueAtTime(this.config.masterVolume, this.audioContext.currentTime);
-                    this.masterGain.connect(this.audioContext.destination);
-
-                    // Handle audio context state changes with recovery
-                    this.audioContext.addEventListener('statechange', () => {
-                        console.log('Audio context state changed to:', this.audioContext.state);
-                        if (this.audioContext.state === 'interrupted' || this.audioContext.state === 'closed') {
-                            console.warn('AudioContext interrupted or closed, will reinitialize on next use');
-                            this.isInitialized = false;
+                    // Create polyphonic piano synthesizer
+                    this.synth = new Tone.PolySynth(Tone.Synth, {
+                        oscillator: {
+                            type: this.config.oscillator.type,
+                            harmonicity: this.config.oscillator.harmonicity,
+                            modulationType: this.config.oscillator.modulationType,
+                            modulationIndex: this.config.oscillator.modulationIndex
+                        },
+                        envelope: {
+                            attack: this.config.envelope.attack,
+                            decay: this.config.envelope.decay,
+                            sustain: this.config.envelope.sustain,
+                            release: this.config.envelope.release
                         }
+                    }).set({
+                        volume: -12 // Set synth volume to allow headroom for effects
                     });
 
-                    // Try to resume immediately if suspended
-                    if (this.audioContext.state === 'suspended') {
-                        try {
-                            await this.audioContext.resume();
-                        } catch (resumeError) {
-                            console.warn('Could not resume AudioContext immediately:', resumeError);
-                        }
-                    }
+                    // Create realistic piano effects
+                    this.reverb = new Tone.Reverb({
+                        decay: this.config.effects.reverb.decay,
+                        wet: this.config.effects.reverb.wet
+                    });
+
+                    this.compressor = new Tone.Compressor({
+                        threshold: this.config.effects.compressor.threshold,
+                        ratio: this.config.effects.compressor.ratio,
+                        attack: this.config.effects.compressor.attack,
+                        release: this.config.effects.compressor.release
+                    });
+
+                    this.masterVolume = new Tone.Volume(this.config.masterVolumeDb);
+
+                    // Connect audio chain: synth → compressor → reverb → masterVolume → destination
+                    this.synth.chain(this.compressor, this.reverb, this.masterVolume, Tone.Destination);
+
+                    // Wait for reverb to be ready (it needs time to generate impulse response)
+                    await this.reverb.ready;
 
                     this.isInitialized = true;
-                    console.log('Web Audio API initialized successfully');
-                    console.log('Audio context state:', this.audioContext.state);
-                    console.log('Sample rate:', this.audioContext.sampleRate);
+                    console.log('ToneJS audio engine initialized successfully');
+                    console.log('Audio context state:', Tone.context.state);
+                    console.log('Sample rate:', Tone.context.sampleRate);
+                    console.log('Polyphony:', this.config.polyphony);
 
                     return true;
                 } catch (error) {
-                    console.error('Failed to initialize Web Audio API:', error);
+                    console.error('Failed to initialize ToneJS audio engine:', error);
                     this.handleAudioInitializationError(error);
                     return false;
                 }
@@ -1157,14 +1184,16 @@
              * @param {Error} error - The initialization error
              */
             handleAudioInitializationError(error) {
-                console.warn('Web Audio API not available, implementing fallback strategy');
+                console.warn('ToneJS audio engine not available, implementing fallback strategy');
 
-                // Check if HTML5 audio is available as fallback
-                if (typeof Audio !== 'undefined') {
-                    console.log('HTML5 Audio available as fallback');
-                    this.isAudioEnabled = true; // Keep audio enabled but use fallback
+                if (error.message.includes('Tone.js library not loaded')) {
+                    console.error('Tone.js library is required but not loaded');
+                    this.isAudioEnabled = false;
+                } else if (error.name === 'NotAllowedError') {
+                    console.warn('Audio blocked by browser - user interaction required');
+                    this.isAudioEnabled = true; // Keep enabled, will retry on user interaction
                 } else {
-                    console.warn('No audio support available - running in silent mode');
+                    console.warn('Unknown audio error - running in silent mode');
                     this.isAudioEnabled = false;
                 }
 
@@ -1177,34 +1206,22 @@
              */
             async resumeAudioContext() {
                 try {
-                    // Initialize if not already done or if context is closed
-                    if (!this.audioContext || this.audioContext.state === 'closed') {
-                        const initialized = await this.initializeAudioContext();
+                    // Initialize if not already done
+                    if (!this.isInitialized) {
+                        const initialized = await this.initializeAudio();
                         if (!initialized) {
                             return false;
                         }
                     }
 
-                    // Resume if suspended
-                    if (this.audioContext && this.audioContext.state === 'suspended') {
-                        try {
-                            await this.audioContext.resume();
-                            console.log('Audio context resumed successfully');
-                        } catch (resumeError) {
-                            console.error('Failed to resume audio context:', resumeError);
-                            // Try to reinitialize if resume fails
-                            this.audioContext = null;
-                            this.isInitialized = false;
-                            return await this.initializeAudioContext();
-                        }
+                    // Resume Tone.js context if suspended
+                    if (Tone.context.state === 'suspended') {
+                        await Tone.start();
+                        console.log('Tone.js audio context resumed successfully');
                     }
 
                     // Check if context is now running
-                    const isReady = this.audioContext && this.audioContext.state === 'running';
-                    if (isReady) {
-                        this.isInitialized = true;
-                    }
-
+                    const isReady = Tone.context.state === 'running' && this.isInitialized;
                     return isReady;
                 } catch (error) {
                     console.error('Error in resumeAudioContext:', error);
@@ -1214,151 +1231,197 @@
             }
 
             /**
-             * Play a note with the specified frequency and duration
-             * @param {number} frequency - Note frequency in Hz
-             * @param {number} duration - Note duration in seconds (optional)
-             * @returns {Promise<void>}
+             * Calculate realistic piano decay characteristics based on note frequency
+             * @param {string} note - Note name (e.g., 'C4', 'D4')
+             * @returns {Object} Decay parameters for the note
              */
-            async playNote(frequency, duration = null) {
-                if (!this.isAudioEnabled) {
-                    console.log(`Audio disabled - would play ${frequency}Hz`);
-                    return;
+            calculatePianoDecayParams(note) {
+                // Extract octave number from note name (e.g., 'C4' -> 4)
+                const octaveMatch = note.match(/(\d+)$/);
+                const octave = octaveMatch ? parseInt(octaveMatch[1]) : 4;
+                
+                // Calculate frequency range category
+                let decayParams;
+                if (octave <= 3) {
+                    // Bass notes (low frequencies) - sustain longest
+                    decayParams = this.config.pianoDecay.bassNotes;
+                } else if (octave <= 5) {
+                    // Mid notes (middle frequencies) - medium sustain
+                    decayParams = this.config.pianoDecay.midNotes;
+                } else {
+                    // Treble notes (high frequencies) - decay fastest
+                    decayParams = this.config.pianoDecay.trebleNotes;
+                }
+                
+                return {
+                    sustainTime: decayParams.sustainTime,
+                    decayRate: decayParams.decayRate,
+                    octave: octave,
+                    category: octave <= 3 ? 'bass' : (octave <= 5 ? 'mid' : 'treble')
+                };
+            }
+
+            /**
+             * Start natural piano decay for a sustained note
+             * @param {string} note - Note name
+             * @param {number} velocity - Initial velocity
+             * @param {Object} decayParams - Decay parameters for the note
+             */
+            startNaturalDecay(note, velocity, decayParams) {
+                // Clear any existing decay timer for this note
+                if (this.naturalDecayTimers.has(note)) {
+                    clearInterval(this.naturalDecayTimers.get(note));
                 }
 
-                try {
-                    console.log(`🎹 [DEBUG] playNote called: ${frequency}Hz, duration: ${duration || this.config.noteLength}s`);
-                    console.log(`🎹 [DEBUG] Audio enabled: ${this.isAudioEnabled}, Initialized: ${this.isInitialized}`);
+                const startTime = Date.now();
+                const initialVolume = velocity;
+                const { sustainTime, decayRate } = decayParams;
+                
+                console.log(`🎹 [PIANO-DECAY] Starting natural decay for ${note} (${decayParams.category}): ${sustainTime}s sustain, ${decayRate} decay rate`);
 
-                    // Ensure audio context is ready with better error handling
-                    console.log(`🎹 [DEBUG] Calling resumeAudioContext...`);
-                    const audioReady = await this.resumeAudioContext();
-                    console.log(`🎹 [DEBUG] resumeAudioContext result: ${audioReady}`);
-
-                    if (!audioReady) {
-                        console.warn('🎹 [WARN] Audio context not ready, attempting to reinitialize...');
-
-                        // Try to reinitialize the audio context
-                        const reinitSuccess = await this.initializeAudioContext();
-                        if (reinitSuccess) {
-                            const retryReady = await this.resumeAudioContext();
-                            if (!retryReady) {
-                                console.error('🎹 [ERROR] Failed to initialize audio after retry');
-                                await this.tryFallbackAudio();
-                                return;
-                            }
-                        } else {
-                            console.error('🎹 [ERROR] Failed to reinitialize audio context');
-                            await this.tryFallbackAudio();
-                            return;
-                        }
-                    }
-
-                    // Double-check audio context state
-                    console.log(`🎹 [DEBUG] AudioContext state: ${this.audioContext?.state}`);
-                    console.log(`🎹 [DEBUG] AudioContext exists: ${!!this.audioContext}`);
-
-                    if (!this.audioContext || this.audioContext.state !== 'running') {
-                        console.warn('🎹 [WARN] Audio context not in running state:', this.audioContext?.state);
+                // Create decay timer that gradually reduces volume
+                const decayInterval = setInterval(() => {
+                    const elapsedTime = (Date.now() - startTime) / 1000; // Convert to seconds
+                    
+                    // Calculate current volume using exponential decay
+                    const decayFactor = Math.exp(-decayRate * elapsedTime);
+                    const currentVolume = initialVolume * decayFactor;
+                    
+                    // Check if note should be considered "silent"
+                    if (elapsedTime >= sustainTime || currentVolume < this.config.pianoDecay.decayCurve.sustainThreshold) {
+                        // Natural decay complete - release the note
+                        console.log(`🎹 [PIANO-DECAY] Natural decay complete for ${note} after ${elapsedTime.toFixed(2)}s`);
+                        this.releaseNoteNaturally(note);
                         return;
                     }
+                    
+                    // Update note volume to simulate decay (placeholder for future enhancement)
+                    // ToneJS doesn't allow easy real-time volume changes on individual notes
+                    // In a more advanced implementation, we could use individual Tone.js Volume nodes per note
+                }, 100); // Update every 100ms for smooth decay
 
-                    const noteDuration = duration || this.config.noteLength;
-                    const currentTime = this.audioContext.currentTime;
+                this.naturalDecayTimers.set(note, decayInterval);
+            }
 
-                    console.log(`🎹 [DEBUG] Creating audio nodes - Duration: ${noteDuration}s, CurrentTime: ${currentTime}`);
-                    console.log(`🎹 [DEBUG] Master volume: ${this.config.masterVolume}`);
+            /**
+             * Release a note naturally due to piano decay
+             * @param {string} note - Note name to release
+             */
+            async releaseNoteNaturally(note) {
+                try {
+                    // Clear the decay timer
+                    if (this.naturalDecayTimers.has(note)) {
+                        clearInterval(this.naturalDecayTimers.get(note));
+                        this.naturalDecayTimers.delete(note);
+                    }
 
-                    // Create oscillator for the main tone
-                    const oscillator = this.audioContext.createOscillator();
-                    const gainNode = this.audioContext.createGain();
-
-                    console.log(`🎹 [DEBUG] Audio nodes created successfully`);
-
-                    // Configure oscillator for piano-like tone
-                    oscillator.type = this.config.waveform;
-                    oscillator.frequency.setValueAtTime(frequency, currentTime);
-
-                    console.log(`🎹 [DEBUG] Oscillator configured - Type: ${this.config.waveform}, Frequency: ${frequency}Hz`);
-                    console.log(`🎹 [DEBUG] Master gain node exists: ${!!this.masterGain}`);
-                    console.log(`🎹 [DEBUG] Master gain value: ${this.masterGain?.gain?.value}`);
-
-                    // Create ADSR envelope for realistic piano attack and decay
-                    const envelope = this.config.envelope;
-
-                    // Attack phase
-                    gainNode.gain.setValueAtTime(0, currentTime);
-                    gainNode.gain.linearRampToValueAtTime(0.8, currentTime + envelope.attack);
-
-                    // Decay phase
-                    gainNode.gain.exponentialRampToValueAtTime(
-                        envelope.sustain,
-                        currentTime + envelope.attack + envelope.decay
-                    );
-
-                    // Sustain phase (maintained until release)
-                    const releaseStartTime = currentTime + noteDuration - envelope.release;
-
-                    // Release phase
-                    gainNode.gain.exponentialRampToValueAtTime(
-                        0.001, // Very small value instead of 0 for exponential ramp
-                        currentTime + noteDuration
-                    );
-
-                    // Connect audio nodes
-                    console.log(`🎹 [DEBUG] Connecting audio nodes...`);
-                    oscillator.connect(gainNode);
-                    gainNode.connect(this.masterGain);
-                    console.log(`🎹 [DEBUG] Audio nodes connected: oscillator → gainNode → masterGain → destination`);
-
-                    // Start and stop the oscillator with error handling
-                    console.log(`🎹 [DEBUG] Starting oscillator at time: ${currentTime}`);
-                    console.log(`🎹 [DEBUG] Stopping oscillator at time: ${currentTime + noteDuration}`);
-
-                    oscillator.start(currentTime);
-                    oscillator.stop(currentTime + noteDuration);
-
-                    console.log(`🎹 [DEBUG] Oscillator start/stop scheduled successfully`);
-
-                    // Handle oscillator errors
-                    oscillator.addEventListener('ended', () => {
-                        console.log(`🎹 [DEBUG] Oscillator ended for ${frequency}Hz`);
-                    });
-
-                    oscillator.addEventListener('error', (error) => {
-                        console.error(`🎹 [ERROR] Oscillator error:`, error);
-                    });
-
-                    console.log(`🎹 [SUCCESS] Playing note: ${frequency}Hz for ${noteDuration}s`);
-
+                    // Release the note with a gentle fade
+                    if (this.sustainedNotes.has(note)) {
+                        this.synth.triggerRelease(note);
+                        this.sustainedNotes.delete(note);
+                        console.log(`🎹 [PIANO-DECAY] Released note naturally: ${note}`);
+                    }
                 } catch (error) {
-                    console.error('Error playing note:', error);
-                    this.handlePlaybackError(error);
-
-                    // Try fallback audio on error
-                    await this.tryFallbackAudio();
+                    console.error(`🎹 [PIANO-DECAY] Error releasing note naturally: ${note}`, error);
                 }
             }
 
             /**
-             * Play a note by name (e.g., 'C4', 'D4', 'F4')
+             * Enhanced play note method with realistic piano decay
+             * @param {string} note - Note name in Tone.js format (e.g., 'C4', 'D4')
+             * @param {number} velocity - Note velocity (0.0 to 1.0)
+             * @param {string|number} duration - Note duration (Tone.js time format or seconds)
+             * @returns {Promise<void>}
+             */
+            async playNote(note, velocity = 0.8, duration = null) {
+                if (!this.isAudioEnabled) {
+                    console.log(`Audio disabled - would play ${note}`);
+                    return;
+                }
+
+                try {
+                    console.log(`🎹 [TONEJS] playNote called: ${note}, velocity: ${velocity}, duration: ${duration}`);
+
+                    // Ensure audio context is ready
+                    const audioReady = await this.resumeAudioContext();
+                    if (!audioReady) {
+                        console.warn('🎹 [TONEJS] Audio context not ready');
+                        return;
+                    }
+
+                    if (duration) {
+                        // Trigger note for specific duration
+                        this.synth.triggerAttackRelease(note, duration, undefined, velocity);
+                        console.log(`🎹 [TONEJS] Playing note: ${note} for ${duration} with velocity ${velocity}`);
+                    } else {
+                        // Start sustained note with realistic piano decay
+                        this.synth.triggerAttack(note, undefined, velocity);
+                        this.sustainedNotes.set(note, Date.now());
+                        
+                        // Calculate and start natural piano decay
+                        const decayParams = this.calculatePianoDecayParams(note);
+                        this.startNaturalDecay(note, velocity, decayParams);
+                        
+                        console.log(`🎹 [TONEJS] Starting sustained note with realistic decay: ${note} (${decayParams.category} range, ${decayParams.sustainTime}s sustain)`);
+                    }
+                } catch (error) {
+                    console.error('Error playing note with ToneJS:', error);
+                    this.handlePlaybackError(error);
+                }
+            }
+
+            /**
+             * Release a sustained note (manual release before natural decay)
+             * @param {string} note - Note name to release
+             * @returns {Promise<void>}
+             */
+            async releaseNote(note) {
+                if (!this.isAudioEnabled || !this.isInitialized) {
+                    return;
+                }
+
+                try {
+                    // Clear any natural decay timer for this note
+                    if (this.naturalDecayTimers.has(note)) {
+                        clearInterval(this.naturalDecayTimers.get(note));
+                        this.naturalDecayTimers.delete(note);
+                        console.log(`🎹 [PIANO-DECAY] Cleared natural decay timer for manual release: ${note}`);
+                    }
+
+                    if (this.sustainedNotes.has(note)) {
+                        this.synth.triggerRelease(note);
+                        this.sustainedNotes.delete(note);
+                        console.log(`🎹 [TONEJS] Released sustained note manually: ${note}`);
+                    }
+                } catch (error) {
+                    console.error('Error releasing note with ToneJS:', error);
+                }
+            }
+
+            /**
+             * Play a note by name (compatibility with existing interface)
              * @param {string} noteName - Name of the note to play
              * @param {number} duration - Note duration in seconds (optional)
              * @returns {Promise<void>}
              */
             async playNoteByName(noteName, duration = null) {
-                console.log(`🎼 [DEBUG] AudioEngine.playNoteByName called: ${noteName}, duration: ${duration}`);
+                console.log(`🎼 [TONEJS] playNoteByName called: ${noteName}, duration: ${duration}`);
 
-                const frequency = this.noteFrequencies[noteName];
-                console.log(`🎼 [DEBUG] Note frequency lookup: ${noteName} → ${frequency}Hz`);
+                // Convert duration to Tone.js time format if provided
+                const toneJSDuration = duration ? `${duration}s` : null;
 
-                if (!frequency) {
-                    console.warn(`🎼 [ERROR] Unknown note name: ${noteName}`);
-                    return;
-                }
+                await this.playNote(noteName, 0.8, toneJSDuration);
+                console.log(`🎼 [TONEJS] playNoteByName completed for ${noteName}`);
+            }
 
-                console.log(`🎼 [DEBUG] Calling playNote with frequency: ${frequency}Hz`);
-                await this.playNote(frequency, duration);
-                console.log(`🎼 [DEBUG] playNote completed for ${noteName}`);
+            /**
+             * Start sustained note (for key press and hold)
+             * @param {string} note - Note name to sustain
+             * @param {number} velocity - Note velocity (0.0 to 1.0)
+             * @returns {Promise<void>}
+             */
+            async sustainNote(note, velocity = 0.8) {
+                await this.playNote(note, velocity, null);
             }
 
             /**
@@ -1366,7 +1429,7 @@
              * @param {Error} error - The playback error
              */
             handlePlaybackError(error) {
-                console.error('Audio playback error:', error);
+                console.error('ToneJS audio playback error:', error);
 
                 // Implement fallback strategies
                 if (error.name === 'NotAllowedError') {
@@ -1375,19 +1438,17 @@
                     console.warn('Audio format not supported - trying fallback');
                     this.tryFallbackAudio();
                 } else {
-                    console.warn('Unknown audio error - continuing with visual-only feedback');
+                    console.warn('Unknown ToneJS audio error - continuing with visual-only feedback');
                 }
             }
 
             /**
-             * Implement fallback audio using HTML5 Audio elements
+             * Implement fallback audio using basic Web Audio API
              */
             tryFallbackAudio() {
-                console.log('Attempting HTML5 Audio fallback');
-
-                // For now, just log that we would use fallback
-                // In a full implementation, we could generate or load audio files
-                console.log('Fallback: Would use HTML5 audio elements or pre-recorded samples');
+                console.log('Attempting Web Audio API fallback from ToneJS');
+                // Could implement basic Web Audio API fallback here
+                console.log('Fallback: Would use basic Web Audio API or pre-recorded samples');
             }
 
             /**
@@ -1395,16 +1456,15 @@
              * @param {number} volume - Volume level (0.0 to 1.0)
              */
             setMasterVolume(volume) {
-                this.config.masterVolume = Math.max(0, Math.min(1, volume));
+                // Convert linear volume to dB scale
+                const volumeDb = volume > 0 ? 20 * Math.log10(volume) : -60;
+                this.config.masterVolumeDb = Math.max(-60, Math.min(0, volumeDb));
 
-                if (this.masterGain) {
-                    this.masterGain.gain.setValueAtTime(
-                        this.config.masterVolume,
-                        this.audioContext.currentTime
-                    );
+                if (this.masterVolume) {
+                    this.masterVolume.volume.value = this.config.masterVolumeDb;
                 }
 
-                console.log(`Master volume set to: ${this.config.masterVolume}`);
+                console.log(`Master volume set to: ${volume} (${this.config.masterVolumeDb.toFixed(1)} dB)`);
             }
 
             /**
@@ -1413,7 +1473,7 @@
              */
             setAudioEnabled(enabled) {
                 this.isAudioEnabled = enabled;
-                console.log(`Audio playback ${enabled ? 'enabled' : 'disabled'}`);
+                console.log(`ToneJS audio playback ${enabled ? 'enabled' : 'disabled'}`);
             }
 
             /**
@@ -1424,11 +1484,13 @@
                 return {
                     isInitialized: this.isInitialized,
                     isAudioEnabled: this.isAudioEnabled,
-                    audioContextState: this.audioContext ? this.audioContext.state : 'not created',
-                    masterVolume: this.config.masterVolume,
-                    supportedNotes: Object.keys(this.noteFrequencies).length,
-                    webAudioSupported: !!(window.AudioContext || window.webkitAudioContext),
-                    htmlAudioSupported: typeof Audio !== 'undefined'
+                    audioContextState: typeof Tone !== 'undefined' ? Tone.context.state : 'Tone.js not loaded',
+                    masterVolume: this.config.masterVolumeDb,
+                    sustainedNotes: this.sustainedNotes.size,
+                    polyphony: this.config.polyphony,
+                    toneJSLoaded: typeof Tone !== 'undefined',
+                    synthReady: !!this.synth,
+                    effectsReady: !!(this.reverb && this.compressor && this.masterVolume)
                 };
             }
 
@@ -1437,14 +1499,14 @@
              * @returns {Promise<boolean>} True if test successful
              */
             async testAudio() {
-                console.log('Testing audio functionality...');
+                console.log('Testing ToneJS audio functionality...');
 
                 try {
                     await this.playNoteByName('C4', 0.5);
-                    console.log('Audio test successful');
+                    console.log('ToneJS audio test successful');
                     return true;
                 } catch (error) {
-                    console.error('Audio test failed:', error);
+                    console.error('ToneJS audio test failed:', error);
                     return false;
                 }
             }
@@ -1453,12 +1515,42 @@
              * Clean up audio resources
              */
             dispose() {
-                if (this.audioContext) {
-                    this.audioContext.close();
-                    this.audioContext = null;
-                    this.masterGain = null;
+                try {
+                    // Clear all natural decay timers
+                    this.naturalDecayTimers.forEach((timer, note) => {
+                        clearInterval(timer);
+                        console.log(`🎹 [PIANO-DECAY] Cleared decay timer for ${note} during disposal`);
+                    });
+                    this.naturalDecayTimers.clear();
+
+                    // Release all sustained notes
+                    this.sustainedNotes.forEach((timestamp, note) => {
+                        this.releaseNote(note);
+                    });
+                    this.sustainedNotes.clear();
+
+                    // Dispose of Tone.js objects
+                    if (this.synth) {
+                        this.synth.dispose();
+                        this.synth = null;
+                    }
+                    if (this.reverb) {
+                        this.reverb.dispose();
+                        this.reverb = null;
+                    }
+                    if (this.compressor) {
+                        this.compressor.dispose();
+                        this.compressor = null;
+                    }
+                    if (this.masterVolume) {
+                        this.masterVolume.dispose();
+                        this.masterVolume = null;
+                    }
+
                     this.isInitialized = false;
-                    console.log('Audio engine disposed');
+                    console.log('🎹 [PIANO-DECAY] ToneJS audio engine disposed with decay cleanup');
+                } catch (error) {
+                    console.error('Error disposing ToneJS audio engine:', error);
                 }
             }
         }
@@ -1471,9 +1563,13 @@
                 this.activeKeys = new Set(); // Currently highlighted keys
                 this.pressedKeys = new Set(); // Currently pressed keys
 
-                // Initialize audio engine for note playback
-                this.audioEngine = new AudioEngine();
+                // Initialize ToneJS audio engine for note playback
+                this.audioEngine = new ToneJSAudioEngine();
                 this.audioInitialized = false;
+
+                // Track pending operations to handle async event ordering
+                this.pendingOperations = new Map(); // note -> Promise
+                this.keyStates = new Map(); // note -> { isPressed: boolean, pendingRelease: boolean }
 
                 // Define the keyboard layout with note names and frequencies
                 this.keyLayout = [
@@ -1505,65 +1601,52 @@
              */
             async initializeAudio() {
                 if (this.audioInitialized) {
-                    // Verify audio context is still working
+                    // Verify ToneJS audio context is still working
                     const audioReady = await this.audioEngine.resumeAudioContext();
                     return audioReady;
                 }
 
                 try {
-                    console.log('🎵 [INIT] Initializing keyboard audio on user interaction...');
+                    console.log('🎵 [TONEJS-INIT] Initializing ToneJS keyboard audio on user interaction...');
 
-                    // Initialize and resume audio context
-                    const success = await this.audioEngine.initializeAudioContext();
-                    console.log(`🎵 [INIT] AudioContext initialization result: ${success}`);
+                    // Initialize ToneJS audio engine
+                    const success = await this.audioEngine.initializeAudio();
+                    console.log(`🎵 [TONEJS-INIT] ToneJS initialization result: ${success}`);
 
                     if (success) {
-                        // Ensure context is resumed (required for user interaction)
-                        console.log('🎵 [INIT] Resuming audio context...');
+                        // Ensure ToneJS context is resumed (required for user interaction)
+                        console.log('🎵 [TONEJS-INIT] Resuming ToneJS audio context...');
                         const audioReady = await this.audioEngine.resumeAudioContext();
-                        console.log(`🎵 [INIT] Audio context ready: ${audioReady}`);
+                        console.log(`🎵 [TONEJS-INIT] ToneJS audio context ready: ${audioReady}`);
 
                         if (audioReady) {
                             this.audioInitialized = true;
-                            console.log('🎵 [INIT] Keyboard audio engine initialized and ready');
+                            console.log('🎵 [TONEJS-INIT] ToneJS keyboard audio engine initialized and ready');
 
-                            // Test audio functionality with a simple beep
+                            // Test ToneJS audio functionality with a simple note
                             try {
-                                console.log('🎵 [INIT] Testing audio with simple beep...');
+                                console.log('🎵 [TONEJS-INIT] Testing ToneJS audio with test note...');
 
-                                // Create a simple test tone to verify audio is working
-                                const ctx = this.audioEngine.audioContext;
-                                const osc = ctx.createOscillator();
-                                const gain = ctx.createGain();
+                                // Play a brief test note using ToneJS
+                                await this.audioEngine.playNote('A4', 0.3, '0.1s');
 
-                                osc.frequency.setValueAtTime(440, ctx.currentTime);
-                                osc.type = 'sine';
-                                gain.gain.setValueAtTime(0.1, ctx.currentTime);
-                                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-
-                                osc.connect(gain);
-                                gain.connect(this.audioEngine.masterGain);
-
-                                osc.start(ctx.currentTime);
-                                osc.stop(ctx.currentTime + 0.1);
-
-                                console.log('🎵 [INIT] Audio test beep played successfully');
+                                console.log('🎵 [TONEJS-INIT] ToneJS audio test note played successfully');
                                 return true;
 
                             } catch (testError) {
-                                console.warn('🎵 [INIT] Audio test failed but continuing:', testError);
+                                console.warn('🎵 [TONEJS-INIT] ToneJS audio test failed but continuing:', testError);
                                 return true; // Still consider it initialized
                             }
                         } else {
-                            console.warn('🎵 [INIT] Audio context not ready after initialization');
+                            console.warn('🎵 [TONEJS-INIT] ToneJS audio context not ready after initialization');
                             return false;
                         }
                     } else {
-                        console.warn('🎵 [INIT] Audio engine initialization failed - keyboard will work without sound');
+                        console.warn('🎵 [TONEJS-INIT] ToneJS audio engine initialization failed - keyboard will work without sound');
                         return false;
                     }
                 } catch (error) {
-                    console.error('Error initializing keyboard audio:', error);
+                    console.error('Error initializing ToneJS keyboard audio:', error);
                     // Try to enable fallback audio
                     try {
                         await this.audioEngine.tryFallbackAudio();
@@ -1621,17 +1704,20 @@
                 keyElement.setAttribute('tabindex', '0'); // Make keyboard accessible
                 keyElement.textContent = keyData.label;
 
-                // Add mouse event handlers
-                keyElement.addEventListener('mousedown', (event) => this.handleKeyPress(event, keyData));
+                // Add mouse event handlers for press/hold/release
+                keyElement.addEventListener('mousedown', (event) => this.handleKeyDown(event, keyData));
+                keyElement.addEventListener('mouseup', (event) => this.handleKeyUp(event, keyData));
                 keyElement.addEventListener('mouseenter', (event) => this.handleKeyHover(event, keyData, true));
-                keyElement.addEventListener('mouseleave', (event) => this.handleKeyHover(event, keyData, false));
+                keyElement.addEventListener('mouseleave', (event) => this.handleKeyLeave(event, keyData));
 
-                // Add touch event handlers with better touch support
-                keyElement.addEventListener('touchstart', (event) => this.handleKeyPress(event, keyData), { passive: false });
+                // Add touch event handlers with better touch support for sustained notes
+                keyElement.addEventListener('touchstart', (event) => this.handleKeyDown(event, keyData), { passive: false });
+                keyElement.addEventListener('touchend', (event) => this.handleKeyUp(event, keyData), { passive: false });
                 keyElement.addEventListener('touchmove', (event) => this.handleTouchMove(event, keyData), { passive: false });
 
-                // Add keyboard accessibility support
+                // Add keyboard accessibility support for sustained notes
                 keyElement.addEventListener('keydown', (event) => this.handleKeyboardInput(event, keyData));
+                keyElement.addEventListener('keyup', (event) => this.handleKeyboardInput(event, keyData));
                 keyElement.addEventListener('focus', (event) => this.handleKeyFocus(event, keyData, true));
                 keyElement.addEventListener('blur', (event) => this.handleKeyFocus(event, keyData, false));
 
@@ -1659,7 +1745,7 @@
             }
 
             /**
-             * Handle touch move events to prevent accidental key presses
+             * Handle touch move events to prevent accidental key presses and stuck notes
              * @param {TouchEvent} event - The touch move event
              * @param {Object} keyData - Key configuration object
              */
@@ -1670,19 +1756,23 @@
                 const touch = event.touches[0];
                 if (touch) {
                     const keyElement = this.keys.get(keyData.note);
+                    if (!keyElement) return;
+
                     const rect = keyElement.getBoundingClientRect();
 
-                    // Check if touch is still within key bounds
+                    // Check if touch is still within key bounds with tolerance
+                    const tolerance = 10; // pixels
                     const isWithinKey = (
-                        touch.clientX >= rect.left &&
-                        touch.clientX <= rect.right &&
-                        touch.clientY >= rect.top &&
-                        touch.clientY <= rect.bottom
+                        touch.clientX >= (rect.left - tolerance) &&
+                        touch.clientX <= (rect.right + tolerance) &&
+                        touch.clientY >= (rect.top - tolerance) &&
+                        touch.clientY <= (rect.bottom + tolerance)
                     );
 
-                    // If touch moved outside key, release it
-                    if (!isWithinKey && this.pressedKeys.has(keyData.note)) {
-                        this.handleKeyRelease(event, keyData);
+                    // If touch moved outside key bounds, release it to prevent stuck notes
+                    if (!isWithinKey && (this.pressedKeys.has(keyData.note) || this.pendingOperations.has(keyData.note))) {
+                        console.log(`🎹 [ASYNC-SERIALIZE] Touch moved outside key bounds, releasing: ${keyData.note}`);
+                        this.handleKeyRelease(event, keyData, 'touch-leave');
                     }
                 }
             }
@@ -1692,11 +1782,18 @@
              * @param {KeyboardEvent} event - The keyboard event
              * @param {Object} keyData - Key configuration object
              */
-            handleKeyboardInput(event, keyData) {
-                // Handle Enter and Space as key press
+            async handleKeyboardInput(event, keyData) {
+                // Handle Enter and Space for sustained notes (keydown starts, keyup releases)
                 if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault();
-                    this.handleKeyPress(event, keyData);
+
+                    if (event.type === 'keydown' && !event.repeat) {
+                        // Start sustained note on keydown (if not already pressed)
+                        await this.handleKeyDown(event, keyData);
+                    } else if (event.type === 'keyup') {
+                        // Release sustained note on keyup
+                        await this.handleKeyUp(event, keyData);
+                    }
                 }
 
                 // Handle arrow keys for navigation
@@ -1754,108 +1851,556 @@
              * @param {Event} event - The interaction event
              * @param {Object} keyData - Key configuration object
              */
-            async handleKeyPress(event, keyData) {
+            /**
+             * Enhanced key down handler with proper async event serialization
+             * @param {Event} event - The key down event (mousedown/touchstart)
+             * @param {Object} keyData - Key configuration object
+             */
+            async handleKeyDown(event, keyData) {
                 event.preventDefault();
                 event.stopPropagation();
 
+                const startTime = performance.now();
+                const note = keyData.note;
+
+                // Check if there's already a pending operation for this key
+                if (this.pendingOperations.has(note)) {
+                    console.log(`🎹 [ASYNC-SERIALIZE] Key ${note} has pending operation, waiting...`);
+                    await this.pendingOperations.get(note);
+                }
+
+                // Check if key is already pressed after waiting for pending operations
+                if (this.pressedKeys.has(note)) {
+                    console.log(`🎹 [ENHANCED] Key already pressed, ignoring: ${note}`);
+                    return;
+                }
+
+                // Initialize key state tracking
+                this.keyStates.set(note, { isPressed: false, pendingRelease: false });
+
+                // Create a serialized operation promise
+                const keyDownOperation = this.performKeyDownOperation(event, keyData, startTime);
+                this.pendingOperations.set(note, keyDownOperation);
+
+                try {
+                    await keyDownOperation;
+                } finally {
+                    // Clean up the pending operation
+                    this.pendingOperations.delete(note);
+                }
+            }
+
+            /**
+             * Perform the actual key down operation with proper serialization
+             * @param {Event} event - The key down event
+             * @param {Object} keyData - Key configuration object
+             * @param {number} startTime - Performance start time
+             */
+            async performKeyDownOperation(event, keyData, startTime) {
+                const note = keyData.note;
+                const eventType = event.type;
+
+                console.log(`🎹 [ASYNC-SERIALIZE] Starting key down operation for: ${note}`);
+
                 // Initialize audio on first user interaction (required by browsers)
+                if (!this.audioInitialized) {
+                    console.log(`🎹 [ASYNC-SERIALIZE] Initializing audio for: ${note}`);
+                    await this.initializeAudio();
+                }
+
+                // Check if a release was requested while we were initializing
+                const keyState = this.keyStates.get(note);
+                if (keyState && keyState.pendingRelease) {
+                    console.log(`🎹 [ASYNC-SERIALIZE] Release was requested during initialization for: ${note}, aborting press`);
+                    this.keyStates.delete(note);
+                    return;
+                }
+
+                // Start sustained audio for the pressed key
+                console.log(`🎹 [ASYNC-SERIALIZE] Starting sustained note for: ${note}`);
+                const audioSuccess = await this.startSustainedNote(note);
+
+                // Check again if a release was requested while starting audio
+                const keyStateAfterAudio = this.keyStates.get(note);
+                if (keyStateAfterAudio && keyStateAfterAudio.pendingRelease) {
+                    console.log(`🎹 [ASYNC-SERIALIZE] Release was requested during audio start for: ${note}, releasing immediately`);
+                    if (audioSuccess) {
+                        await this.stopSustainedNote(note);
+                    }
+                    this.keyStates.delete(note);
+                    return;
+                }
+
+                if (audioSuccess) {
+                    // Mark key as successfully pressed
+                    if (keyStateAfterAudio) {
+                        keyStateAfterAudio.isPressed = true;
+                    }
+
+                    // Add visual feedback for key press with enhanced styling
+                    const keyElement = this.keys.get(note);
+                    if (keyElement) {
+                        // Add pressed state with immediate visual feedback
+                        keyElement.classList.add('pressed');
+                        this.pressedKeys.add(note);
+
+                        // Add subtle animation for better feedback
+                        keyElement.style.transform = 'translateY(2px)';
+                        keyElement.style.filter = 'brightness(0.9)';
+                    }
+
+                    // Track performance metrics
+                    const responseTime = performance.now() - startTime;
+                    console.log(`🎹 [ASYNC-SERIALIZE] Key pressed successfully (${eventType}): ${note} (${keyData.frequency}Hz) - Response time: ${responseTime.toFixed(2)}ms`);
+
+                    // Auto-start playback if not currently playing (Requirement 7.9)
+                    if (this.onAutoStartPlayback) {
+                        this.onAutoStartPlayback(keyData);
+                    }
+
+                    // Trigger key press handler - let the app handle all feedback logic
+                    if (this.onKeyPressed) {
+                        this.onKeyPressed(keyData);
+                    }
+                } else {
+                    console.warn(`🎹 [ASYNC-SERIALIZE] Failed to start sustained note for: ${note}`);
+                    this.keyStates.delete(note);
+                }
+            }
+
+            /**
+             * Enhanced key up handler with proper async event serialization
+             * @param {Event} event - The key up event (mouseup/touchend)
+             * @param {Object} keyData - Key configuration object
+             */
+            async handleKeyUp(event, keyData) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                const eventType = event.type;
+                const note = keyData.note;
+                
+                console.log(`🎹 [ASYNC-SERIALIZE] Key up event (${eventType}): ${note}`);
+
+                // Check if there's a pending key down operation
+                if (this.pendingOperations.has(note)) {
+                    console.log(`🎹 [ASYNC-SERIALIZE] Key ${note} has pending down operation, marking for release...`);
+                    
+                    // Mark that a release is pending
+                    const keyState = this.keyStates.get(note);
+                    if (keyState) {
+                        keyState.pendingRelease = true;
+                    } else {
+                        this.keyStates.set(note, { isPressed: false, pendingRelease: true });
+                    }
+
+                    // Wait for the pending operation to complete
+                    await this.pendingOperations.get(note);
+                    
+                    // The key down operation should have handled the release if it was marked as pending
+                    console.log(`🎹 [ASYNC-SERIALIZE] Pending operation completed for: ${note}`);
+                    return;
+                }
+
+                // No pending operation, proceed with normal release
+                await this.handleKeyRelease(event, keyData, 'key-up');
+            }
+
+            /**
+             * Enhanced mouse leave handler to prevent stuck notes with async serialization
+             * @param {Event} event - The mouse leave event
+             * @param {Object} keyData - Key configuration object
+             */
+            async handleKeyLeave(event, keyData) {
+                const note = keyData.note;
+                
+                // Only release if the key is currently pressed or has pending operations (prevents stuck notes)
+                if (this.pressedKeys.has(note) || this.pendingOperations.has(note)) {
+                    console.log(`🎹 [ASYNC-SERIALIZE] Mouse left key while pressed/pending, releasing to prevent stuck note: ${note}`);
+                    await this.handleKeyRelease(event, keyData, 'mouse-leave');
+                }
+
+                // Handle normal hover leave
+                this.handleKeyHover(event, keyData, false);
+            }
+
+            /**
+             * Legacy method for compatibility with existing click handlers
+             * @param {Event} event - The click event
+             * @param {Object} keyData - Key configuration object
+             */
+            async handleKeyPress(event, keyData) {
+                // For quick clicks without hold, play a short note
+                event.preventDefault();
+                event.stopPropagation();
+
+                // Initialize audio on first user interaction
                 if (!this.audioInitialized) {
                     await this.initializeAudio();
                 }
 
-                // Prevent multiple simultaneous presses of the same key
-                if (this.pressedKeys.has(keyData.note)) {
-                    return;
-                }
-
-                // Play audio for the pressed key
+                // Play short note for quick clicks
                 await this.playNoteAudio(keyData.note);
 
-                // Add visual feedback for key press
+                // Add brief visual feedback
                 const keyElement = this.keys.get(keyData.note);
                 if (keyElement) {
-                    // Add pressed state with immediate visual feedback
                     keyElement.classList.add('pressed');
-                    this.pressedKeys.add(keyData.note);
-
-                    // Add event listeners for key release (mouse up / touch end)
-                    const handleKeyRelease = (releaseEvent) => {
-                        this.handleKeyRelease(releaseEvent, keyData);
-                        // Remove event listeners after release
-                        document.removeEventListener('mouseup', handleKeyRelease);
-                        document.removeEventListener('touchend', handleKeyRelease);
-                    };
-
-                    // Listen for key release on document to handle cases where user moves off key
-                    document.addEventListener('mouseup', handleKeyRelease);
-                    document.addEventListener('touchend', handleKeyRelease);
-
-                    // Fallback timeout to ensure key is released even if events are missed
                     setTimeout(() => {
-                        if (this.pressedKeys.has(keyData.note)) {
-                            this.handleKeyRelease(null, keyData);
-                        }
-                    }, 300);
+                        keyElement.classList.remove('pressed');
+                    }, 150);
                 }
 
-                console.log(`Piano key pressed: ${keyData.note} (${keyData.frequency}Hz)`);
+                console.log(`Piano key clicked: ${keyData.note} (${keyData.frequency}Hz)`);
 
-                // Auto-start playback if not currently playing (Requirement 7.7)
-                // Use callback to parent app since handlePlay is not a method of VirtualPianoKeyboard
+                // Auto-start playback if not currently playing
                 if (this.onAutoStartPlayback) {
                     this.onAutoStartPlayback(keyData);
                 }
 
-                // Trigger key press handler - let the app handle all feedback logic
+                // Trigger key press handler
                 this.onKeyPressed(keyData);
             }
 
             /**
-             * Play audio for a specific note
+             * Start sustained audio for a specific note (for key press and hold)
+             * @param {string} noteName - Name of the note to sustain (e.g., 'C4', 'D4')
+             * @returns {Promise<boolean>} True if note was started successfully, false otherwise
+             */
+            async startSustainedNote(noteName) {
+                console.log(`🎵 [TONEJS] Starting sustained note: ${noteName}`);
+                console.log(`🎵 [TONEJS] Audio initialized: ${this.audioInitialized}`);
+                console.log(`🎵 [TONEJS] Audio engine enabled: ${this.audioEngine.isAudioEnabled}`);
+
+                try {
+                    // Check ToneJS audio engine status
+                    const audioStatus = this.audioEngine.getStatus();
+                    console.log(`🎵 [TONEJS] Audio engine status:`, audioStatus);
+
+                    // Start sustained note using ToneJS (no duration = sustained until release)
+                    await this.audioEngine.sustainNote(noteName, 0.8); // 0.8 velocity
+                    console.log(`🎵 [TONEJS] Sustained note started for: ${noteName}`);
+                    return true;
+                } catch (error) {
+                    console.error(`🎵 [TONEJS-ERROR] Failed to start sustained note for ${noteName}:`, error);
+                    return false;
+                }
+            }
+
+            /**
+             * Stop sustained audio for a specific note (for key release)
+             * @param {string} noteName - Name of the note to release (e.g., 'C4', 'D4')
+             * @returns {Promise<boolean>} True if note was released successfully, false otherwise
+             */
+            async stopSustainedNote(noteName) {
+                console.log(`🎵 [TONEJS] Stopping sustained note: ${noteName}`);
+
+                try {
+                    // Release sustained note using ToneJS
+                    await this.audioEngine.releaseNote(noteName);
+                    console.log(`🎵 [TONEJS] Sustained note released for: ${noteName}`);
+                    return true;
+                } catch (error) {
+                    console.error(`🎵 [TONEJS-ERROR] Failed to release sustained note for ${noteName}:`, error);
+                    return false;
+                }
+            }
+
+            /**
+             * Play audio for a specific note (compatibility method for quick clicks)
              * @param {string} noteName - Name of the note to play (e.g., 'C4', 'D4')
              * @returns {Promise<void>}
              */
             async playNoteAudio(noteName) {
-                console.log(`🎵 [DEBUG] Starting audio playback for note: ${noteName}`);
-                console.log(`🎵 [DEBUG] Audio initialized: ${this.audioInitialized}`);
-                console.log(`🎵 [DEBUG] Audio engine enabled: ${this.audioEngine.isAudioEnabled}`);
+                console.log(`🎵 [TONEJS] Playing note audio: ${noteName}`);
 
                 try {
-                    // Check audio engine status
-                    const audioStatus = this.audioEngine.getStatus();
-                    console.log(`🎵 [DEBUG] Audio engine status:`, audioStatus);
-
-                    await this.audioEngine.playNoteByName(noteName, 0.8); // 0.8 second duration
-                    console.log(`🎵 [DEBUG] Audio playback completed for note: ${noteName}`);
+                    // For quick clicks, play note with short duration
+                    await this.audioEngine.playNoteByName(noteName, 0.3); // 0.3 second duration
+                    console.log(`🎵 [TONEJS] Note audio completed for: ${noteName}`);
                 } catch (error) {
-                    console.error(`🎵 [ERROR] Failed to play audio for ${noteName}:`, error);
+                    console.error(`🎵 [TONEJS-ERROR] Failed to play note audio for ${noteName}:`, error);
                 }
             }
 
             /**
-             * Handle key release events
+             * Enhanced key release handler with proper async serialization
              * @param {Event} event - The release event (can be null for timeout)
              * @param {Object} keyData - Key configuration object
+             * @param {string} source - Source of the release event for debugging
              */
-            handleKeyRelease(event, keyData) {
-                const keyElement = this.keys.get(keyData.note);
-                if (keyElement && this.pressedKeys.has(keyData.note)) {
-                    // Remove pressed state
-                    keyElement.classList.remove('pressed');
-                    this.pressedKeys.delete(keyData.note);
+            async handleKeyRelease(event, keyData, source = 'unknown') {
+                const note = keyData.note;
+                const keyElement = this.keys.get(note);
+                
+                console.log(`🎹 [ASYNC-SERIALIZE] Key release requested (${source}): ${note}`);
 
-                    console.log(`Piano key released: ${keyData.note}`);
+                // Check if there's a pending operation for this key
+                if (this.pendingOperations.has(note)) {
+                    console.log(`🎹 [ASYNC-SERIALIZE] Key ${note} has pending operation during release, waiting...`);
+                    await this.pendingOperations.get(note);
+                }
 
-                    // Trigger any additional key release handlers
-                    this.onKeyReleased(keyData);
+                // Only proceed if the key is actually pressed
+                if (!keyElement || !this.pressedKeys.has(note)) {
+                    console.log(`🎹 [ASYNC-SERIALIZE] Key ${note} not in pressed state, skipping release`);
+                    // Clean up any remaining state tracking
+                    this.keyStates.delete(note);
+                    return;
+                }
+
+                // Create a serialized release operation
+                const keyReleaseOperation = this.performKeyReleaseOperation(keyData, source);
+                this.pendingOperations.set(note, keyReleaseOperation);
+
+                try {
+                    await keyReleaseOperation;
+                } finally {
+                    // Clean up the pending operation and state tracking
+                    this.pendingOperations.delete(note);
+                    this.keyStates.delete(note);
                 }
             }
 
             /**
-             * Handle multiple simultaneous key interactions
+             * Perform the actual key release operation with proper serialization
+             * @param {Object} keyData - Key configuration object
+             * @param {string} source - Source of the release event for debugging
+             */
+            async performKeyReleaseOperation(keyData, source) {
+                const note = keyData.note;
+                const keyElement = this.keys.get(note);
+
+                console.log(`🎹 [ASYNC-SERIALIZE] Performing key release operation for: ${note}`);
+
+                try {
+                    // Stop sustained audio for the released key
+                    const audioSuccess = await this.stopSustainedNote(note);
+
+                    if (audioSuccess || true) { // Always clean up visual state even if audio fails
+                        // Remove pressed state with enhanced visual feedback
+                        if (keyElement) {
+                            keyElement.classList.remove('pressed');
+                            keyElement.style.transform = '';
+                            keyElement.style.filter = '';
+                        }
+                        
+                        this.pressedKeys.delete(note);
+
+                        console.log(`🎹 [ASYNC-SERIALIZE] Key released successfully (${source}): ${note} (${this.pressedKeys.size} keys remaining)`);
+
+                        // Trigger any additional key release handlers
+                        if (this.onKeyReleased) {
+                            this.onKeyReleased(keyData);
+                        }
+                    } else {
+                        console.warn(`🎹 [ASYNC-SERIALIZE] Failed to stop sustained note for: ${note}`);
+                    }
+                } catch (error) {
+                    console.error(`🎹 [ASYNC-SERIALIZE-ERROR] Error releasing key ${note}:`, error);
+                    
+                    // Force cleanup even if audio fails
+                    if (keyElement) {
+                        keyElement.classList.remove('pressed');
+                        keyElement.style.transform = '';
+                        keyElement.style.filter = '';
+                    }
+                    this.pressedKeys.delete(note);
+                }
+            }
+
+            /**
+             * Enhanced polyphonic key press handler with improved performance
+             * @param {Array} keyNotes - Array of note names to press simultaneously
+             * @returns {Promise<boolean>} True if all keys were pressed successfully
+             */
+            async handleMultipleKeyPress(keyNotes) {
+                console.log(`🎵 [ENHANCED-POLY] Starting multiple keys: ${keyNotes.join(', ')}`);
+
+                // Initialize audio if needed
+                if (!this.audioInitialized) {
+                    await this.initializeAudio();
+                }
+
+                const startTime = performance.now();
+                let successCount = 0;
+
+                // Start sustained notes for all keys simultaneously with error handling
+                const promises = keyNotes.map(async (note) => {
+                    try {
+                        if (!this.pressedKeys.has(note)) {
+                            const audioSuccess = await this.startSustainedNote(note);
+
+                            if (audioSuccess) {
+                                // Add visual feedback with enhanced styling
+                                const keyElement = this.keys.get(note);
+                                if (keyElement) {
+                                    keyElement.classList.add('pressed');
+                                    keyElement.style.transform = 'translateY(2px)';
+                                    keyElement.style.filter = 'brightness(0.9)';
+                                    this.pressedKeys.add(note);
+                                }
+                                successCount++;
+                                return true;
+                            }
+                        }
+                        return false;
+                    } catch (error) {
+                        console.error(`🎵 [ENHANCED-POLY-ERROR] Failed to press key ${note}:`, error);
+                        return false;
+                    }
+                });
+
+                const results = await Promise.all(promises);
+                const responseTime = performance.now() - startTime;
+
+                console.log(`🎵 [ENHANCED-POLY] Multiple keys processed: ${successCount}/${keyNotes.length} successful (${responseTime.toFixed(2)}ms)`);
+
+                return successCount === keyNotes.length;
+            }
+
+            /**
+             * Enhanced polyphonic key release handler with improved cleanup
+             * @param {Array} keyNotes - Array of note names to release simultaneously
+             * @returns {Promise<boolean>} True if all keys were released successfully
+             */
+            async handleMultipleKeyRelease(keyNotes) {
+                console.log(`🎵 [ENHANCED-POLY] Releasing multiple keys: ${keyNotes.join(', ')}`);
+
+                const startTime = performance.now();
+                let successCount = 0;
+
+                // Release sustained notes for all keys simultaneously with error handling
+                const promises = keyNotes.map(async (note) => {
+                    try {
+                        if (this.pressedKeys.has(note)) {
+                            const audioSuccess = await this.stopSustainedNote(note);
+
+                            if (audioSuccess) {
+                                // Remove visual feedback with enhanced cleanup
+                                const keyElement = this.keys.get(note);
+                                if (keyElement) {
+                                    keyElement.classList.remove('pressed');
+                                    keyElement.style.transform = '';
+                                    keyElement.style.filter = '';
+                                    this.pressedKeys.delete(note);
+                                }
+                                successCount++;
+                                return true;
+                            }
+                        }
+                        return false;
+                    } catch (error) {
+                        console.error(`🎵 [ENHANCED-POLY-ERROR] Failed to release key ${note}:`, error);
+
+                        // Force cleanup even if audio fails
+                        const keyElement = this.keys.get(note);
+                        if (keyElement) {
+                            keyElement.classList.remove('pressed');
+                            keyElement.style.transform = '';
+                            keyElement.style.filter = '';
+                            this.pressedKeys.delete(note);
+                        }
+                        return false;
+                    }
+                });
+
+                const results = await Promise.all(promises);
+                const responseTime = performance.now() - startTime;
+
+                console.log(`🎵 [ENHANCED-POLY] Multiple keys released: ${successCount}/${keyNotes.length} successful (${responseTime.toFixed(2)}ms)`);
+
+                return successCount === keyNotes.length;
+            }
+
+            /**
+             * Enhanced emergency cleanup for all pressed keys with memory management
+             * @returns {Promise<boolean>} True if all keys were released successfully
+             */
+            async releaseAllKeys() {
+                if (this.pressedKeys.size === 0) {
+                    console.log(`🎵 [ENHANCED-CLEANUP] No keys to release`);
+                    return true;
+                }
+
+                console.log(`🎵 [ENHANCED-CLEANUP] Emergency release of all ${this.pressedKeys.size} pressed keys: ${Array.from(this.pressedKeys).join(', ')}`);
+
+                const keysToRelease = Array.from(this.pressedKeys);
+                const startTime = performance.now();
+
+                // Use enhanced multiple key release
+                const success = await this.handleMultipleKeyRelease(keysToRelease);
+
+                // Force cleanup any remaining keys (safety measure)
+                if (this.pressedKeys.size > 0) {
+                    console.warn(`🎵 [ENHANCED-CLEANUP] Force cleaning remaining keys: ${Array.from(this.pressedKeys).join(', ')}`);
+
+                    this.pressedKeys.forEach(note => {
+                        const keyElement = this.keys.get(note);
+                        if (keyElement) {
+                            keyElement.classList.remove('pressed');
+                            keyElement.style.transform = '';
+                            keyElement.style.filter = '';
+                        }
+                    });
+
+                    this.pressedKeys.clear();
+                }
+
+                const responseTime = performance.now() - startTime;
+                console.log(`🎵 [ENHANCED-CLEANUP] All keys cleanup completed in ${responseTime.toFixed(2)}ms`);
+
+                return success;
+            }
+
+            /**
+             * Enhanced chord playing with improved polyphonic support and performance tracking
+             * @param {Array} chordNotes - Array of note names forming a chord
+             * @param {number} duration - Duration to hold the chord (optional)
+             * @returns {Promise<boolean>} True if chord was played successfully
+             */
+            async playChord(chordNotes, duration = null) {
+                console.log(`🎵 [ENHANCED-CHORD] Playing chord: ${chordNotes.join(', ')} ${duration ? `(${duration}s duration)` : '(sustained)'}`);
+
+                // Initialize audio if needed
+                if (!this.audioInitialized) {
+                    await this.initializeAudio();
+                }
+
+                const startTime = performance.now();
+                let success = false;
+
+                try {
+                    if (duration) {
+                        // Play chord for specific duration using ToneJS polyphonic capabilities
+                        const promises = chordNotes.map(note =>
+                            this.audioEngine.playNote(note, 0.8, `${duration}s`)
+                        );
+                        const results = await Promise.all(promises);
+                        success = results.every(result => result !== false);
+
+                        console.log(`🎵 [ENHANCED-CHORD] Timed chord completed: ${chordNotes.join(', ')}`);
+                    } else {
+                        // Start sustained chord using enhanced multiple key press
+                        success = await this.handleMultipleKeyPress(chordNotes);
+                        console.log(`🎵 [ENHANCED-CHORD] Sustained chord started: ${chordNotes.join(', ')}`);
+                    }
+
+                    const responseTime = performance.now() - startTime;
+                    console.log(`🎵 [ENHANCED-CHORD] Chord processing time: ${responseTime.toFixed(2)}ms`);
+
+                    return success;
+                } catch (error) {
+                    console.error(`🎵 [ENHANCED-CHORD-ERROR] Failed to play chord:`, error);
+                    return false;
+                }
+            }
+
+            /**
+             * Legacy method for handling multiple key interactions
              * @param {Array} keyNotes - Array of note names to press simultaneously
              */
-            handleMultipleKeyPress(keyNotes) {
+            handleMultipleKeyPress_Legacy(keyNotes) {
                 keyNotes.forEach(note => {
                     const keyData = this.keyLayout.find(key => key.note === note);
                     if (keyData && !this.pressedKeys.has(note)) {
@@ -1899,6 +2444,102 @@
                 if (keyElement.classList.contains('active')) return 'active';
 
                 return 'normal';
+            }
+
+            /**
+             * Enhanced performance monitoring and memory management
+             * @returns {Object} Performance metrics and memory usage statistics
+             */
+            getPerformanceMetrics() {
+                const audioStatus = this.audioEngine ? this.audioEngine.getStatus() : {};
+
+                return {
+                    pressedKeys: this.pressedKeys.size,
+                    totalKeys: this.keys.size,
+                    audioInitialized: this.audioInitialized,
+                    sustainedNotes: audioStatus.sustainedNotes || 0,
+                    memoryEstimate: {
+                        pressedKeys: this.pressedKeys.size * 0.1, // MB estimate per pressed key
+                        audioEngine: audioStatus.sustainedNotes ? audioStatus.sustainedNotes * 0.2 : 0, // MB estimate per sustained note
+                        total: (this.pressedKeys.size * 0.1) + (audioStatus.sustainedNotes ? audioStatus.sustainedNotes * 0.2 : 0)
+                    },
+                    eventListeners: this.keys.size * 8, // Approximate number of event listeners
+                    audioContextState: typeof Tone !== 'undefined' ? Tone.context.state : 'unavailable'
+                };
+            }
+
+            /**
+             * Enhanced cleanup method for memory management and stuck note prevention
+             * @returns {Promise<boolean>} True if cleanup was successful
+             */
+            async performCleanup() {
+                console.log(`🎹 [ENHANCED-CLEANUP] Starting comprehensive cleanup...`);
+
+                const startTime = performance.now();
+                let success = true;
+
+                try {
+                    // Release all pressed keys
+                    if (this.pressedKeys.size > 0) {
+                        const releaseSuccess = await this.releaseAllKeys();
+                        success = success && releaseSuccess;
+                    }
+
+                    // Clean up any stuck visual states
+                    this.keys.forEach((keyElement, note) => {
+                        keyElement.classList.remove('pressed', 'active', 'correct', 'incorrect');
+                        keyElement.style.transform = '';
+                        keyElement.style.filter = '';
+                    });
+
+                    // Clear tracking sets
+                    this.pressedKeys.clear();
+                    this.activeKeys.clear();
+
+                    const responseTime = performance.now() - startTime;
+                    console.log(`🎹 [ENHANCED-CLEANUP] Comprehensive cleanup completed in ${responseTime.toFixed(2)}ms`);
+
+                    return success;
+                } catch (error) {
+                    console.error(`🎹 [ENHANCED-CLEANUP-ERROR] Cleanup failed:`, error);
+                    return false;
+                }
+            }
+
+            /**
+             * Enhanced diagnostic method for troubleshooting
+             * @returns {Object} Comprehensive diagnostic information
+             */
+            getDiagnostics() {
+                const audioStatus = this.audioEngine ? this.audioEngine.getStatus() : {};
+                const performanceMetrics = this.getPerformanceMetrics();
+
+                return {
+                    keyboard: {
+                        initialized: !!this.keyboardContainer,
+                        totalKeys: this.keys.size,
+                        pressedKeys: Array.from(this.pressedKeys),
+                        activeKeys: Array.from(this.activeKeys)
+                    },
+                    audio: {
+                        initialized: this.audioInitialized,
+                        engineStatus: audioStatus,
+                        toneJSAvailable: typeof Tone !== 'undefined',
+                        contextState: typeof Tone !== 'undefined' ? Tone.context.state : 'unavailable'
+                    },
+                    performance: performanceMetrics,
+                    eventHandlers: {
+                        mouseEvents: ['mousedown', 'mouseup', 'mouseleave'],
+                        touchEvents: ['touchstart', 'touchend', 'touchmove'],
+                        keyboardEvents: ['keydown', 'keyup'],
+                        totalListeners: this.keys.size * 8
+                    },
+                    callbacks: {
+                        onKeyPressed: typeof this.onKeyPressed === 'function',
+                        onKeyReleased: typeof this.onKeyReleased === 'function',
+                        onAutoStartPlayback: typeof this.onAutoStartPlayback === 'function'
+                    }
+                };
             }
 
             /**
