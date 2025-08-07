@@ -382,7 +382,6 @@
         .piano-key.white:active,
         .piano-key.white.pressed {
             background-color: #e0e0e0;
-            transform: translateY(2px);
         }
 
         /* Black piano keys */
@@ -406,7 +405,6 @@
         .piano-key.black:active,
         .piano-key.black.pressed {
             background-color: #666666;
-            transform: translateY(2px);
         }
 
         /* Key highlighting states */
@@ -414,7 +412,6 @@
             background-color: #007bff !important;
             color: white;
             box-shadow: 0 0 10px rgba(0, 123, 255);
-            transform: translateY(1px);
         }
 
         .piano-key.correct {
@@ -506,17 +503,9 @@
             box-shadow: 0 0 12px rgba(48, 168, 154, 0.8);
         }
 
-        /* Incorrect key feedback with gray color and shake animation */
         .piano-key.incorrect-gray {
             background-color: #808080 !important; /* gray */
             color: white;
-            animation: shakeKey 0.3s ease-in-out;
-        }
-
-        @keyframes shakeKey {
-            0%, 100% { transform: translateX(0) translateY(2px); }
-            25% { transform: translateX(var(--shake-intensity, -3px)) translateY(2px); }
-            75% { transform: translateX(calc(-1 * var(--shake-intensity, -3px))) translateY(2px); }
         }
 
         /* Intersection line styles */
@@ -524,14 +513,16 @@
             position: absolute;
             border-radius: 2px;
             opacity: 0.9;
+            background-color: white;
+            width: 4px;
+            /* the note height */
+            height: 16px;
+            /* same Y scale as the note */
+            transform: scaleY(1.2);
             pointer-events: none;
             z-index: 15;
             transition: opacity 0.3s ease-out;
         }
-
-
-
-
 
         @keyframes fadeIn {
             from {
@@ -5577,20 +5568,6 @@
                 this.staffContainer = staffContainer;
                 this.activeLines = new Map(); // note -> lineElement
                 this.keyPressStates = new Map(); // note -> { isPressed: boolean, lineElement: Element }
-                
-                // Define unique colors for each piano key (Requirements 9.2, 9.3)
-                this.keyColors = {
-                    'C': '#B66FD1',  // light purple
-                    'D': '#E38C25',  // orange
-                    'E': '#3FB241',  // green
-                    'F': '#B23D74',  // magenta
-                    'G': '#4B6ECC',  // blue
-                    'A': '#D78CAB',  // pink
-                    'B': '#30A89A',  // teal
-                    'C5': '#B66FD1', // light purple (same as C)
-                };
-                
-                console.log('IntersectionLineRenderer initialized');
             }
 
             /**
@@ -5605,9 +5582,6 @@
                     console.warn('IntersectionLineRenderer: Invalid parameters for showIntersectionLine');
                     return null;
                 }
-
-                // Get the unique color for this key
-                const keyColor = this.getKeyColor(noteName);
                 
                 // Calculate position based on note rectangle and playback line
                 const linePosition = this.calculateLinePosition(noteElement);
@@ -5617,7 +5591,7 @@
                 }
 
                 // Create intersection line element
-                const lineElement = this.createIntersectionLine(noteName, keyColor, linePosition, noteDuration);
+                const lineElement = this.createIntersectionLine(noteName, linePosition, noteDuration);
                 
                 // Track the line for this note
                 this.activeLines.set(noteName, lineElement);
@@ -5628,7 +5602,6 @@
                     lineElement: lineElement
                 });
 
-                console.log(`🎨 Intersection line created for ${noteName} with color ${keyColor}`);
                 return lineElement;
             }
 
@@ -5683,7 +5656,7 @@
              * @param {number} maxDuration - Maximum duration in milliseconds
              * @returns {HTMLElement} The created line element
              */
-            createIntersectionLine(noteName, color, position, maxDuration) {
+            createIntersectionLine(noteName, position, maxDuration) {
                 const lineElement = document.createElement('div');
                 lineElement.className = 'intersection-line';
                 lineElement.setAttribute('data-note', noteName);
@@ -5692,14 +5665,9 @@
                 lineElement.style.position = 'absolute';
                 lineElement.style.left = `${position.x}px`;
                 lineElement.style.top = `${position.y}px`;
-                lineElement.style.width = `${position.width}px`;
-                lineElement.style.height = `${position.height}px`;
-                lineElement.style.backgroundColor = color;
                 lineElement.style.zIndex = '15';
                 lineElement.style.borderRadius = '2px';
-                lineElement.style.opacity = '0.9';
                 lineElement.style.pointerEvents = 'none';
-                lineElement.style.transition = 'opacity 0.3s ease-out';
                 
                 // Add to staff container
                 this.staffContainer.appendChild(lineElement);
@@ -5735,32 +5703,14 @@
                 
                 const playbackRect = playbackLine.getBoundingClientRect();
                 
-                // Calculate intersection line position
-                // Position it vertically to align with center of note rectangle
-                const lineHeight = 4; // Short line height
-                const lineWidth = 20; // Short line width
-                
                 // Position relative to staff container
-                const x = playbackRect.left - staffRect.left - (lineWidth / 2);
-                const y = (noteRect.top + noteRect.height / 2) - staffRect.top - (lineHeight / 2);
+                const x = playbackRect.left - staffRect.left;
+                const y = noteRect.top - staffRect.top;
                 
                 return {
                     x: x,
-                    y: y,
-                    width: lineWidth,
-                    height: lineHeight
+                    y: y
                 };
-            }
-
-            /**
-             * Get unique color for a piano key
-             * @param {string} noteName - The note name (C, D, F, G, A, C5)
-             * @returns {string} The color hex code
-             */
-            getKeyColor(noteName) {
-                // Handle note mapping (remove octave numbers for lookup)
-                const baseNote = noteName.replace(/[0-9]/g, '');
-                return this.keyColors[noteName] || this.keyColors[baseNote] || '#808080';
             }
 
             /**
@@ -6206,7 +6156,6 @@
                         this.pressedKeys.add(note);
 
                         // Add subtle animation for better feedback
-                        keyElement.style.transform = 'translateY(2px)';
                         keyElement.style.filter = 'brightness(0.9)';
                     }
 
@@ -6502,7 +6451,6 @@
                                 const keyElement = this.keys.get(note);
                                 if (keyElement) {
                                     keyElement.classList.add('pressed');
-                                    keyElement.style.transform = 'translateY(2px)';
                                     keyElement.style.filter = 'brightness(0.9)';
                                     this.pressedKeys.add(note);
                                 }
@@ -7147,7 +7095,6 @@
                         if (keyElement) {
                             // Add MIDI-specific visual styling with velocity-based intensity
                             keyElement.classList.add('pressed', 'midi-pressed');
-                            keyElement.style.transform = 'translateY(2px)';
                             keyElement.style.filter = 'brightness(0.85)';
 
                             // Velocity-based visual feedback intensity (Requirements 9.11)
@@ -7244,7 +7191,6 @@
                     
                     // Apply enhanced visual feedback with MIDI-specific styling
                     keyElement.style.boxShadow = `0 0 ${glowSize}px rgba(111, 66, 193, ${glowIntensity}), 0 0 ${glowSize * 1.5}px ${noteColor}80`;
-                    keyElement.style.transform = `scale(${scaleIntensity}) translateY(2px)`;
                     keyElement.style.borderColor = noteColor;
 
                     // Enhanced animation duration based on velocity
@@ -7253,7 +7199,6 @@
                     setTimeout(() => {
                         keyElement.classList.remove(correctClass);
                         keyElement.style.boxShadow = '';
-                        keyElement.style.transform = 'translateY(2px)'; // Keep pressed state
                         keyElement.style.borderColor = '';
                     }, animationDuration);
 
@@ -8262,7 +8207,6 @@
                     const scaleIntensity = 1.05 + (velocity * 0.15); // 1.05-1.2 scale based on velocity
 
                     keyElement.style.boxShadow = `0 0 ${glowSize}px rgba(111, 66, 193, ${glowIntensity})`;
-                    keyElement.style.transform = `scale(${scaleIntensity}) translateY(1px)`;
 
                     // Enhanced animation duration based on velocity
                     const animationDuration = 400 + (velocity * 200); // 400-600ms based on velocity
