@@ -463,6 +463,72 @@
             /* Darker purple for black keys */
         }
 
+        /* Enhanced color-based feedback for correct key matches */
+        .piano-key.correct-C {
+            background-color: #B66FD1 !important; /* light purple */
+            color: white;
+            box-shadow: 0 0 12px rgba(182, 111, 209, 0.8);
+        }
+
+        .piano-key.correct-D {
+            background-color: #E38C25 !important; /* orange */
+            color: white;
+            box-shadow: 0 0 12px rgba(227, 140, 37, 0.8);
+        }
+
+        .piano-key.correct-E {
+            background-color: #3FB241 !important; /* green */
+            color: white;
+            box-shadow: 0 0 12px rgba(63, 178, 65, 0.8);
+        }
+
+        .piano-key.correct-F {
+            background-color: #B23D74 !important; /* magenta */
+            color: white;
+            box-shadow: 0 0 12px rgba(178, 61, 116, 0.8);
+        }
+
+        .piano-key.correct-G {
+            background-color: #4B6ECC !important; /* blue */
+            color: white;
+            box-shadow: 0 0 12px rgba(75, 110, 204, 0.8);
+        }
+
+        .piano-key.correct-A {
+            background-color: #D78CAB !important; /* pink */
+            color: white;
+            box-shadow: 0 0 12px rgba(215, 140, 171, 0.8);
+        }
+
+        .piano-key.correct-B {
+            background-color: #30A89A !important; /* teal */
+            color: white;
+            box-shadow: 0 0 12px rgba(48, 168, 154, 0.8);
+        }
+
+        /* Incorrect key feedback with gray color and shake animation */
+        .piano-key.incorrect-gray {
+            background-color: #808080 !important; /* gray */
+            color: white;
+            animation: shakeKey 0.3s ease-in-out;
+        }
+
+        @keyframes shakeKey {
+            0%, 100% { transform: translateX(0) translateY(2px); }
+            25% { transform: translateX(var(--shake-intensity, -3px)) translateY(2px); }
+            75% { transform: translateX(calc(-1 * var(--shake-intensity, -3px))) translateY(2px); }
+        }
+
+        /* Intersection line styles */
+        .intersection-line {
+            position: absolute;
+            border-radius: 2px;
+            opacity: 0.9;
+            pointer-events: none;
+            z-index: 15;
+            transition: opacity 0.3s ease-out;
+        }
+
 
 
 
@@ -5505,6 +5571,251 @@
             }
         }
 
+        // IntersectionLineRenderer class for managing visual intersection feedback
+        class IntersectionLineRenderer {
+            constructor(staffContainer) {
+                this.staffContainer = staffContainer;
+                this.activeLines = new Map(); // note -> lineElement
+                this.keyPressStates = new Map(); // note -> { isPressed: boolean, lineElement: Element }
+                
+                // Define unique colors for each piano key (Requirements 9.2, 9.3)
+                this.keyColors = {
+                    'C': '#B66FD1',  // light purple
+                    'D': '#E38C25',  // orange
+                    'E': '#3FB241',  // green
+                    'F': '#B23D74',  // magenta
+                    'G': '#4B6ECC',  // blue
+                    'A': '#D78CAB',  // pink
+                    'B': '#30A89A',  // teal
+                    'C5': '#B66FD1', // light purple (same as C)
+                };
+                
+                console.log('IntersectionLineRenderer initialized');
+            }
+
+            /**
+             * Show intersection line when correct key is played
+             * @param {HTMLElement} noteElement - The staff note element
+             * @param {string} noteName - The note name (C, D, F, G, A, C5)
+             * @param {number} noteDuration - Duration of the note in milliseconds
+             * @returns {HTMLElement} The created intersection line element
+             */
+            showIntersectionLine(noteElement, noteName, noteDuration) {
+                if (!noteElement || !noteName) {
+                    console.warn('IntersectionLineRenderer: Invalid parameters for showIntersectionLine');
+                    return null;
+                }
+
+                // Get the unique color for this key
+                const keyColor = this.getKeyColor(noteName);
+                
+                // Calculate position based on note rectangle and playback line
+                const linePosition = this.calculateLinePosition(noteElement);
+                if (!linePosition) {
+                    console.warn('IntersectionLineRenderer: Could not calculate line position');
+                    return null;
+                }
+
+                // Create intersection line element
+                const lineElement = this.createIntersectionLine(noteName, keyColor, linePosition, noteDuration);
+                
+                // Track the line for this note
+                this.activeLines.set(noteName, lineElement);
+                
+                // Track key press state
+                this.keyPressStates.set(noteName, {
+                    isPressed: true,
+                    lineElement: lineElement
+                });
+
+                console.log(`🎨 Intersection line created for ${noteName} with color ${keyColor}`);
+                return lineElement;
+            }
+
+            /**
+             * Hide intersection line immediately when key is released
+             * @param {string} noteName - The note name
+             */
+            hideIntersectionLine(noteName) {
+                const keyState = this.keyPressStates.get(noteName);
+                if (keyState && keyState.lineElement) {
+                    console.log(`🎨 Hiding intersection line for ${noteName} (key released)`);
+                    this.removeIntersectionLine(keyState.lineElement);
+                    this.keyPressStates.delete(noteName);
+                    this.activeLines.delete(noteName);
+                }
+            }
+
+            /**
+             * Handle key press event to track state
+             * @param {string} noteName - The note name
+             */
+            trackKeyPress(noteName) {
+                const existingState = this.keyPressStates.get(noteName);
+                if (existingState) {
+                    existingState.isPressed = true;
+                } else {
+                    this.keyPressStates.set(noteName, { isPressed: true, lineElement: null });
+                }
+            }
+
+            /**
+             * Handle key release event
+             * @param {string} noteName - The note name
+             */
+            handleKeyRelease(noteName) {
+                const keyState = this.keyPressStates.get(noteName);
+                if (keyState) {
+                    keyState.isPressed = false;
+                    
+                    // If there's an active line, hide it immediately
+                    if (keyState.lineElement) {
+                        this.hideIntersectionLine(noteName);
+                    }
+                }
+            }
+
+            /**
+             * Create intersection line element
+             * @param {string} noteName - The note name
+             * @param {string} color - The color for the line
+             * @param {Object} position - Position data {x, y, width, height}
+             * @param {number} maxDuration - Maximum duration in milliseconds
+             * @returns {HTMLElement} The created line element
+             */
+            createIntersectionLine(noteName, color, position, maxDuration) {
+                const lineElement = document.createElement('div');
+                lineElement.className = 'intersection-line';
+                lineElement.setAttribute('data-note', noteName);
+                
+                // Style the intersection line
+                lineElement.style.position = 'absolute';
+                lineElement.style.left = `${position.x}px`;
+                lineElement.style.top = `${position.y}px`;
+                lineElement.style.width = `${position.width}px`;
+                lineElement.style.height = `${position.height}px`;
+                lineElement.style.backgroundColor = color;
+                lineElement.style.zIndex = '15';
+                lineElement.style.borderRadius = '2px';
+                lineElement.style.opacity = '0.9';
+                lineElement.style.pointerEvents = 'none';
+                lineElement.style.transition = 'opacity 0.3s ease-out';
+                
+                // Add to staff container
+                this.staffContainer.appendChild(lineElement);
+                
+                // Set up automatic fade-out when note duration completes
+                setTimeout(() => {
+                    const keyState = this.keyPressStates.get(noteName);
+                    if (keyState && keyState.isPressed && keyState.lineElement === lineElement) {
+                        console.log(`🎨 Auto-fading intersection line for ${noteName} (duration complete)`);
+                        this.fadeOutIntersectionLine(lineElement);
+                        this.keyPressStates.delete(noteName);
+                        this.activeLines.delete(noteName);
+                    }
+                }, maxDuration);
+                
+                return lineElement;
+            }
+
+            /**
+             * Calculate intersection line position based on note element and playback line
+             * @param {HTMLElement} noteElement - The staff note element
+             * @returns {Object|null} Position data {x, y, width, height}
+             */
+            calculateLinePosition(noteElement) {
+                if (!noteElement) return null;
+
+                const noteRect = noteElement.getBoundingClientRect();
+                const staffRect = this.staffContainer.getBoundingClientRect();
+                
+                // Get playback line position
+                const playbackLine = document.querySelector('.playback-line');
+                if (!playbackLine) return null;
+                
+                const playbackRect = playbackLine.getBoundingClientRect();
+                
+                // Calculate intersection line position
+                // Position it vertically to align with center of note rectangle
+                const lineHeight = 4; // Short line height
+                const lineWidth = 20; // Short line width
+                
+                // Position relative to staff container
+                const x = playbackRect.left - staffRect.left - (lineWidth / 2);
+                const y = (noteRect.top + noteRect.height / 2) - staffRect.top - (lineHeight / 2);
+                
+                return {
+                    x: x,
+                    y: y,
+                    width: lineWidth,
+                    height: lineHeight
+                };
+            }
+
+            /**
+             * Get unique color for a piano key
+             * @param {string} noteName - The note name (C, D, F, G, A, C5)
+             * @returns {string} The color hex code
+             */
+            getKeyColor(noteName) {
+                // Handle note mapping (remove octave numbers for lookup)
+                const baseNote = noteName.replace(/[0-9]/g, '');
+                return this.keyColors[noteName] || this.keyColors[baseNote] || '#808080';
+            }
+
+            /**
+             * Fade out intersection line with smooth animation
+             * @param {HTMLElement} lineElement - The line element to fade out
+             */
+            fadeOutIntersectionLine(lineElement) {
+                if (!lineElement || !lineElement.parentNode) return;
+                
+                lineElement.style.opacity = '0';
+                
+                setTimeout(() => {
+                    this.removeIntersectionLine(lineElement);
+                }, 300); // Match transition duration
+            }
+
+            /**
+             * Remove intersection line from DOM
+             * @param {HTMLElement} lineElement - The line element to remove
+             */
+            removeIntersectionLine(lineElement) {
+                if (lineElement && lineElement.parentNode) {
+                    lineElement.parentNode.removeChild(lineElement);
+                }
+            }
+
+            /**
+             * Clean up expired lines (maintenance method)
+             */
+            cleanupExpiredLines() {
+                this.activeLines.forEach((lineElement, noteName) => {
+                    if (!lineElement.parentNode) {
+                        this.activeLines.delete(noteName);
+                        this.keyPressStates.delete(noteName);
+                    }
+                });
+            }
+
+            /**
+             * Dispose of all resources
+             */
+            dispose() {
+                // Remove all active lines
+                this.activeLines.forEach(lineElement => {
+                    this.removeIntersectionLine(lineElement);
+                });
+                
+                // Clear all tracking data
+                this.activeLines.clear();
+                this.keyPressStates.clear();
+                
+                console.log('IntersectionLineRenderer disposed');
+            }
+        }
+
         // Virtual Piano Keyboard class
         class VirtualPianoKeyboard {
             constructor() {
@@ -6136,6 +6447,11 @@
                         }
 
                         this.pressedKeys.delete(note);
+
+                        // Notify intersection line renderer about key release
+                        if (this.onKeyReleased) {
+                            this.onKeyReleased(keyData);
+                        }
 
                         console.log(`🎹 [ASYNC-SERIALIZE] Key released successfully (${source}): ${note} (${this.pressedKeys.size} keys remaining)`);
 
@@ -6857,9 +7173,9 @@
                             });
                         }
 
-                        // Process MIDI learning feedback with enhanced velocity handling (Requirements 9.7, 9.11)
+                        // Process MIDI learning feedback with enhanced velocity handling (Requirements 10.7, 9.10, 9.11)
                         if (this.onMIDILearningFeedback) {
-                            this.onMIDILearningFeedback({
+                            const midiLearningResult = this.onMIDILearningFeedback({
                                 ...keyData,
                                 source: 'midi',
                                 velocity: velocity,
@@ -6868,6 +7184,11 @@
                                 timestamp: timestamp,
                                 deviceName: deviceName
                             });
+
+                            // Apply enhanced MIDI-specific visual feedback based on learning result
+                            if (midiLearningResult !== undefined) {
+                                this.applyMIDILearningVisualFeedback(keyboardNote, midiLearningResult, velocity, keyElement);
+                            }
                         }
 
                         // Trigger key press handler with comprehensive MIDI source information
@@ -6887,6 +7208,72 @@
                     }
                 } catch (error) {
                     console.error(`🎹 [MIDI-INTEGRATION] Error handling MIDI note pressed:`, error);
+                }
+            }
+
+            /**
+             * Apply enhanced MIDI-specific visual feedback based on learning result
+             * @param {string} keyboardNote - The keyboard note that was pressed
+             * @param {boolean} isCorrect - Whether the key press was correct
+             * @param {number} velocity - MIDI velocity (0-1 range)
+             * @param {HTMLElement} keyElement - The key element for visual feedback
+             */
+            applyMIDILearningVisualFeedback(keyboardNote, isCorrect, velocity, keyElement) {
+                if (!keyElement) return;
+
+                // Remove any existing learning feedback classes
+                keyElement.classList.remove('correct-C', 'correct-D', 'correct-E', 'correct-F', 'correct-G', 'correct-A', 'correct-B', 'incorrect-gray');
+
+                if (isCorrect) {
+                    // Apply unique color feedback for correct MIDI key presses (Requirements 10.7)
+                    const baseNote = this.mapKeyboardToStaff(keyboardNote);
+                    const correctClass = `correct-${baseNote}`;
+                    keyElement.classList.add(correctClass);
+
+                    // Enhanced velocity-based visual intensity for MIDI input (Requirements 9.11)
+                    const glowIntensity = Math.max(0.6, velocity);
+                    const glowSize = 12 + (velocity * 8); // 12-20px glow based on velocity
+                    const scaleIntensity = 1.05 + (velocity * 0.15); // 1.05-1.2 scale based on velocity
+
+                    // Get the unique color for this note
+                    const noteColors = {
+                        'C': '#B66FD1', 'D': '#E38C25', 'E': '#3FB241', 'F': '#B23D74',
+                        'G': '#4B6ECC', 'A': '#D78CAB', 'B': '#30A89A'
+                    };
+                    const noteColor = noteColors[baseNote] || '#B66FD1';
+                    
+                    // Apply enhanced visual feedback with MIDI-specific styling
+                    keyElement.style.boxShadow = `0 0 ${glowSize}px rgba(111, 66, 193, ${glowIntensity}), 0 0 ${glowSize * 1.5}px ${noteColor}80`;
+                    keyElement.style.transform = `scale(${scaleIntensity}) translateY(2px)`;
+                    keyElement.style.borderColor = noteColor;
+
+                    // Enhanced animation duration based on velocity
+                    const animationDuration = 500 + (velocity * 300); // 500-800ms based on velocity
+
+                    setTimeout(() => {
+                        keyElement.classList.remove(correctClass);
+                        keyElement.style.boxShadow = '';
+                        keyElement.style.transform = 'translateY(2px)'; // Keep pressed state
+                        keyElement.style.borderColor = '';
+                    }, animationDuration);
+
+                    console.log(`✅ [MIDI-LEARNING] Applied correct MIDI feedback: ${baseNote} with color ${noteColor} (velocity: ${velocity.toFixed(3)})`);
+                } else {
+                    // Apply gray color feedback for incorrect MIDI key presses (Requirements 10.7)
+                    keyElement.classList.add('incorrect-gray');
+                    
+                    // Enhanced shake animation with velocity-based intensity
+                    const shakeIntensity = 2 + (velocity * 3); // 2-5px shake based on velocity
+                    keyElement.style.animation = `shakeKey 0.3s ease-in-out`;
+                    keyElement.style.setProperty('--shake-intensity', `${shakeIntensity}px`);
+
+                    setTimeout(() => {
+                        keyElement.classList.remove('incorrect-gray');
+                        keyElement.style.animation = '';
+                        keyElement.style.removeProperty('--shake-intensity');
+                    }, 300);
+
+                    console.log(`❌ [MIDI-LEARNING] Applied incorrect MIDI feedback: ${keyboardNote} (velocity: ${velocity.toFixed(3)})`);
                 }
             }
 
@@ -6931,6 +7318,19 @@
                             keyElement.style.transform = '';
                             keyElement.style.filter = '';
                             keyElement.style.boxShadow = '';
+
+                            // Handle intersection line management for MIDI key release (Requirements 10.7)
+                            if (this.onMIDIKeyReleased) {
+                                this.onMIDIKeyReleased({
+                                    ...keyData,
+                                    source: 'midi',
+                                    velocity: velocity,
+                                    rawVelocity: rawVelocity,
+                                    channel: channel,
+                                    timestamp: timestamp,
+                                    deviceName: deviceName
+                                });
+                            }
 
                             this.pressedKeys.delete(keyboardNote);
                         }
@@ -7323,6 +7723,9 @@
                 // Initialize virtual piano keyboard
                 this.virtualKeyboard = new VirtualPianoKeyboard();
 
+                // Initialize intersection line renderer (will be set after DOM is ready)
+                this.intersectionLineRenderer = null;
+
                 this.initializeControls();
                 this.initializeNotePositioning();
                 this.initializeStaffInteraction();
@@ -7520,6 +7923,15 @@
                     return;
                 }
 
+                // Initialize intersection line renderer with the staff container
+                const staffMainContainer = document.querySelector('.staff-container');
+                if (staffMainContainer) {
+                    this.intersectionLineRenderer = new IntersectionLineRenderer(staffMainContainer);
+                    console.log('IntersectionLineRenderer initialized');
+                } else {
+                    console.error('Staff main container not found for IntersectionLineRenderer');
+                }
+
                 // Mouse event handlers
                 staffContainer.addEventListener('mousedown', (event) => this.handlePointerStart(event));
                 document.addEventListener('mousemove', (event) => this.handlePointerMove(event));
@@ -7570,6 +7982,16 @@
                     return this.processMIDILearningFeedback(keyData);
                 };
 
+                // MIDI key release callback for intersection line management (Requirements 10.7)
+                this.virtualKeyboard.onMIDIKeyReleased = (keyData) => {
+                    // Handle intersection line management for MIDI key release
+                    if (this.intersectionLineRenderer) {
+                        const baseNote = this.virtualKeyboard.mapKeyboardToStaff(keyData.note);
+                        this.intersectionLineRenderer.handleKeyRelease(baseNote);
+                        console.log(`🎨 [MIDI-INTEGRATION] Intersection line handled for MIDI key release: ${baseNote}`);
+                    }
+                };
+
                 // Initialize learning progress display
                 this.updateLearningProgressDisplay();
 
@@ -7598,11 +8020,18 @@
              */
             handleVirtualKeyReleased(keyData) {
                 console.log(`Virtual key released: ${keyData.note}`);
+                
+                // Handle intersection line management for key release
+                if (this.intersectionLineRenderer) {
+                    const baseNote = this.virtualKeyboard.mapKeyboardToStaff(keyData.note);
+                    this.intersectionLineRenderer.handleKeyRelease(baseNote);
+                }
             }
 
             /**
-             * Show positive feedback on the staff note when user clicks correct key
+             * Show enhanced positive feedback with unique colors and intersection lines
              * @param {string} keyNote - Note name that was correctly pressed
+             * @param {string} inputSource - Source of input ('virtual' or 'midi')
              */
             showCorrectNoteHighlight(keyNote, inputSource = 'virtual') {
                 // Find the current note that should be played
@@ -7613,6 +8042,24 @@
                         const feedbackClass = inputSource === 'midi' ? 'correct-note-midi' : 'correct-note';
                         noteElement.classList.add('correct-note', feedbackClass);
 
+                        // Show intersection line if renderer is available
+                        if (this.intersectionLineRenderer) {
+                            const currentNote = this.positionedNotes[this.currentHighlightedNoteIndex];
+                            if (currentNote && currentNote.pitch !== 'rest') {
+                                // Calculate note duration in milliseconds for intersection line
+                                const noteDuration = this.calculateNoteDurationMs(currentNote.duration);
+                                
+                                // Show intersection line with unique color
+                                this.intersectionLineRenderer.showIntersectionLine(
+                                    noteElement, 
+                                    currentNote.pitch, 
+                                    noteDuration
+                                );
+                                
+                                console.log(`🎨 Intersection line shown for ${currentNote.pitch} (duration: ${noteDuration}ms)`);
+                            }
+                        }
+
                         // Remove the feedback after a short duration
                         setTimeout(() => {
                             noteElement.classList.remove('correct-note', feedbackClass);
@@ -7622,16 +8069,71 @@
                     }
                 }
 
-                // Also show feedback on the virtual keyboard
+                // Enhanced keyboard feedback with unique colors
+                this.showEnhancedKeyboardFeedback(keyNote, inputSource, true);
+            }
+
+            /**
+             * Show enhanced keyboard feedback with unique colors for each key
+             * @param {string} keyNote - Note name that was pressed
+             * @param {string} inputSource - Source of input ('virtual' or 'midi')
+             * @param {boolean} isCorrect - Whether the key press was correct
+             */
+            showEnhancedKeyboardFeedback(keyNote, inputSource = 'virtual', isCorrect = true) {
                 const mappedNote = this.virtualKeyboard.mapNoteToKeyboard(keyNote);
                 const keyElement = this.virtualKeyboard.keys.get(mappedNote);
+                
                 if (keyElement) {
-                    const keyFeedbackClass = inputSource === 'midi' ? 'correct-midi' : 'correct';
-                    keyElement.classList.add('correct', keyFeedbackClass);
+                    if (isCorrect) {
+                        // Get the base note name for color mapping (remove octave numbers)
+                        const baseNote = this.virtualKeyboard.mapKeyboardToStaff(keyNote);
+                        const colorClass = `correct-${baseNote}`;
+                        
+                        // Add unique color class for this specific key
+                        keyElement.classList.add(colorClass);
+                        
+                        // Track key press for intersection line management
+                        if (this.intersectionLineRenderer) {
+                            this.intersectionLineRenderer.trackKeyPress(baseNote);
+                        }
 
-                    setTimeout(() => {
-                        keyElement.classList.remove('correct', keyFeedbackClass);
-                    }, 500);
+                        setTimeout(() => {
+                            keyElement.classList.remove(colorClass);
+                        }, 500);
+
+                        console.log(`✅ Enhanced keyboard feedback: ${mappedNote} -> ${baseNote} (${colorClass})`);
+                    } else {
+                        // Show gray color with shake animation for incorrect keys
+                        keyElement.classList.add('incorrect-gray');
+
+                        setTimeout(() => {
+                            keyElement.classList.remove('incorrect-gray');
+                        }, 300);
+
+                        console.log(`❌ Incorrect keyboard feedback: ${mappedNote} (gray + shake)`);
+                    }
+                }
+            }
+
+            /**
+             * Calculate note duration in milliseconds based on note type and current tempo
+             * @param {string} duration - Note duration type ('quarter', 'eighth', 'half', etc.)
+             * @returns {number} Duration in milliseconds
+             */
+            calculateNoteDurationMs(duration) {
+                // Base duration for quarter note at 120 BPM = 500ms
+                const quarterNoteDuration = (60 / this.currentTempo) * 1000;
+                
+                switch (duration) {
+                    case 'whole': return quarterNoteDuration * 4;
+                    case 'half': return quarterNoteDuration * 2;
+                    case 'quarter': return quarterNoteDuration;
+                    case 'eighth': return quarterNoteDuration / 2;
+                    case 'sixteenth': return quarterNoteDuration / 4;
+                    case 'dotted quarter': return quarterNoteDuration * 1.5;
+                    case 'dotted half': return quarterNoteDuration * 3;
+                    case 'dotted eighth': return quarterNoteDuration * 0.75;
+                    default: return quarterNoteDuration; // Default to quarter note
                 }
             }
 
@@ -7673,7 +8175,7 @@
             }
 
             /**
-             * Process MIDI-specific learning feedback with enhanced velocity handling
+             * Process MIDI-specific learning feedback with enhanced velocity handling and intersection line integration
              * @param {Object} keyData - MIDI key data with velocity information
              * @returns {boolean} True if the key press was correct
              */
@@ -7687,7 +8189,7 @@
                 const isCorrect = pressedNote === this.expectedNote;
                 const { velocity, rawVelocity, deviceName, timestamp } = keyData;
 
-                // Enhanced MIDI statistics tracking (Requirements 9.7, 9.11)
+                // Enhanced MIDI statistics tracking (Requirements 10.7, 9.11)
                 this.updateMIDILearningStats(keyData.note, isCorrect, {
                     velocity: velocity,
                     rawVelocity: rawVelocity,
@@ -7703,15 +8205,40 @@
 
                     // Show correct note highlight on staff with MIDI styling
                     this.showCorrectNoteHighlight(keyData.note, 'midi');
+
+                    // Integrate MIDI input with intersection line rendering system (Requirements 10.7)
+                    if (this.intersectionLineRenderer && this.currentHighlightedNoteIndex >= 0) {
+                        const currentNote = this.positionedNotes[this.currentHighlightedNoteIndex];
+                        if (currentNote && currentNote.pitch === pressedNote) {
+                            const noteElement = document.querySelector(`.note-rectangle[data-note-index="${this.currentHighlightedNoteIndex}"]`);
+                            if (noteElement) {
+                                // Show intersection line with MIDI-specific handling
+                                const noteDuration = this.calculateNoteDuration(currentNote.duration);
+                                this.intersectionLineRenderer.showIntersectionLine(
+                                    noteElement, 
+                                    currentNote.pitch, 
+                                    noteDuration
+                                );
+                                
+                                // Track MIDI key press for intersection line management
+                                this.intersectionLineRenderer.trackKeyPress(pressedNote);
+                                
+                                console.log(`🎨 [MIDI-LEARNING] Intersection line created for MIDI input: ${pressedNote}`);
+                            }
+                        }
+                    }
                 } else {
                     console.log(`❌ [MIDI-LEARNING] Incorrect MIDI match! Played ${pressedNote}, expected ${this.expectedNote} (velocity: ${velocity.toFixed(3)}, device: ${deviceName})`);
 
-                    // Enhanced MIDI-specific incorrect feedback
+                    // Enhanced MIDI-specific incorrect feedback with gray color (Requirements 10.7)
                     this.showMIDIIncorrectFeedback(keyData.note, velocity);
                 }
 
                 // Update the learning progress display with MIDI-specific data
                 this.updateLearningProgressDisplay();
+
+                // Show MIDI-specific statistics in the progress display (Requirements 10.7)
+                this.showMIDIStatistics();
 
                 return isCorrect;
             }
@@ -7779,27 +8306,13 @@
             }
 
             /**
-             * Show negative visual feedback for incorrect key press (supports both virtual and MIDI input)
+             * Show enhanced negative visual feedback for incorrect key press
              * @param {string} keyNote - Note name that was incorrectly pressed
              * @param {string} inputSource - Source of input ('virtual' or 'midi')
              */
             showIncorrectFeedback(keyNote, inputSource = 'virtual') {
-                const mappedNote = this.virtualKeyboard.mapNoteToKeyboard(keyNote);
-                const keyElement = this.virtualKeyboard.keys.get(mappedNote);
-
-                if (keyElement) {
-                    // Add source-specific incorrect feedback class
-                    const feedbackClass = inputSource === 'midi' ? 'incorrect-midi' : 'incorrect';
-                    keyElement.classList.add('incorrect', feedbackClass);
-
-
-                    // Remove incorrect feedback after a short duration
-                    setTimeout(() => {
-                        keyElement.classList.remove('incorrect', feedbackClass);
-                    }, 300);
-
-                    console.log(`❌ Incorrect key feedback: ${mappedNote} (${inputSource} input)`);
-                }
+                // Use the enhanced keyboard feedback system for incorrect keys
+                this.showEnhancedKeyboardFeedback(keyNote, inputSource, false);
             }
 
             /**
@@ -8197,6 +8710,43 @@
              */
             clearExpectedNote() {
                 this.expectedNote = null;
+            }
+
+            /**
+             * Show MIDI-specific statistics in the learning progress display
+             * Requirements 10.7 - Track performance statistics separately for MIDI vs virtual input
+             */
+            showMIDIStatistics() {
+                const learningProgressElement = document.getElementById('learningProgress');
+                const midiStatsElement = document.getElementById('midiStats');
+                const virtualStatsElement = document.getElementById('virtualStats');
+
+                if (!learningProgressElement || !this.learningStats) return;
+
+                // Show MIDI-specific statistics if MIDI input has been used
+                if (this.learningStats.midiAttempts > 0) {
+                    learningProgressElement.classList.add('show-midi-stats');
+                    
+                    if (midiStatsElement) {
+                        const midiAccuracy = this.learningStats.inputSourceBreakdown?.midi?.accuracy || 0;
+                        const midiAccuracyElement = document.getElementById('midiAccuracy');
+                        if (midiAccuracyElement) {
+                            midiAccuracyElement.textContent = `${midiAccuracy.toFixed(1)}%`;
+                        }
+                        midiStatsElement.style.display = 'flex';
+                    }
+
+                    if (virtualStatsElement) {
+                        const virtualAccuracy = this.learningStats.inputSourceBreakdown?.virtual?.accuracy || 0;
+                        const virtualAccuracyElement = document.getElementById('virtualAccuracy');
+                        if (virtualAccuracyElement) {
+                            virtualAccuracyElement.textContent = `${virtualAccuracy.toFixed(1)}%`;
+                        }
+                        virtualStatsElement.style.display = 'flex';
+                    }
+
+                    console.log(`📊 [MIDI-STATS] MIDI Statistics displayed - MIDI: ${this.learningStats.inputSourceBreakdown?.midi?.accuracy?.toFixed(1) || 0}%, Virtual: ${this.learningStats.inputSourceBreakdown?.virtual?.accuracy?.toFixed(1) || 0}%`);
+                }
             }
 
             /**

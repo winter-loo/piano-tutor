@@ -51,3 +51,94 @@ This document outlines the requirements for a minimal piano tutor app MVP. The a
 2. WHEN the interface is rendered THEN the system SHALL use a clean, uncluttered design
 3. WHEN the app is displayed THEN the system SHALL prioritize the music staff as the primary visual element
 4. WHEN controls are needed THEN the system SHALL provide only basic playback controls (play/pause/reset)
+
+### Requirement 5
+
+**User Story:** As a piano student, I want to manually navigate through the music by swiping or dragging, so that I can review specific sections at my own pace.
+
+#### Acceptance Criteria
+
+1. WHEN the user swipes right on the staff area THEN the system SHALL move the staff rightward to show earlier parts of the music
+2. WHEN the user swipes left on the staff area THEN the system SHALL move the staff leftward to show later parts of the music
+3. WHEN the user drags horizontally on the staff THEN the system SHALL move the staff smoothly in the corresponding direction
+4. WHEN manual navigation occurs during playback THEN the system SHALL pause automatic playback and allow manual control
+5. WHEN the user stops manual interaction THEN the system SHALL resume playback from the current staff position when playback is started again
+
+### Requirement 6
+
+**User Story:** As a piano student, I want to adjust the playback tempo using discrete BPM values, so that I can practice at different speeds appropriate for my skill level.
+
+#### Acceptance Criteria
+
+1. WHEN the app loads THEN the system SHALL provide a tempo control interface with discrete BPM values
+2. WHEN tempo options are displayed THEN the system SHALL include the following discrete BPM values: 40, 60, 76, 108, 120, 168, 180, and 200
+3. WHEN a tempo is selected THEN the system SHALL adjust the playback speed to match the corresponding BPM value
+4. WHEN tempo changes during playback THEN the system SHALL smoothly transition to the new speed without interrupting the current position
+5. WHEN a tempo is selected THEN the system SHALL display the current BPM value to the user
+6. WHEN the app initializes THEN the system SHALL default to 120 BPM
+
+### Requirement 7
+
+**User Story:** As a piano student, I want to interact with a virtual piano keyboard with realistic audio using Tone.js, so that I can click keys to play the notes shown on the staff and practice the song interactively with professional sound quality.
+
+#### Acceptance Criteria
+
+1. WHEN the app loads THEN the system SHALL display a virtual piano keyboard below the music staff
+2. WHEN the keyboard is rendered THEN the system SHALL show white keys for natural notes (C, D, E, F, G, A, B) and black keys for sharps/flats
+3. WHEN the keyboard is displayed THEN the system SHALL include all notes used in the song (C, D, F, G, A, C5) as clickable keys
+4. WHEN a user clicks a piano key THEN the system SHALL play the corresponding audio note sound using Tone.js library
+5. WHEN a user presses and holds a piano key THEN the system SHALL sustain the note sound for the duration of the press
+6. WHEN a user releases a held piano key THEN the system SHALL fade out the note sound naturally
+7. WHEN a user clicks correctly a piano key THEN the system SHALL highlight the note with a unique color specific to that piano key
+8. WHEN the user clicks a key that matches the current note in the playback THEN the system SHALL provide positive visual feedback with the key's unique color
+9. WHEN a user clicks incorrectly a piano key THEN the system SHALL set the pressed piano key to gray color
+10. WHEN a user clicks correctly the piano key and playback is not active THEN the system SHALL start the playback automatically
+11. WHEN the virtual keyboard is displayed THEN the system SHALL maintain the clean, uncluttered design consistent with the rest of the interface
+
+### Requirement 8
+
+**User Story:** As a piano student, I want realistic piano audio with professional sound quality, so that I can practice with authentic piano tones that respond naturally to my interactions.
+
+#### Acceptance Criteria
+
+1. WHEN the app initializes THEN the system SHALL load Tone.js library for professional audio synthesis
+2. WHEN a piano key is pressed THEN the system SHALL generate realistic piano tones using Tone.js synthesizers
+3. WHEN multiple keys are pressed simultaneously THEN the system SHALL play polyphonic audio without distortion
+4. WHEN a key is held down THEN the system SHALL sustain the note with natural decay characteristics
+5. WHEN a key is released THEN the system SHALL apply appropriate release envelope for realistic sound termination
+6. WHEN the audio system is active THEN the system SHALL maintain low latency for responsive key presses
+7. WHEN the app runs on different devices THEN the system SHALL optimize audio performance for the platform
+
+### Requirement 9
+
+**User Story:** As a piano student, I want to see visual intersection feedback when I play the correct notes, so that I can clearly understand when my timing and note selection are accurate.
+
+#### Acceptance Criteria
+
+1. WHEN a user clicks the correct piano key during playback THEN the system SHALL display a short colored block line that intersects with the corresponding note on the staff
+2. WHEN the intersection line is displayed THEN the system SHALL use the same unique color as the piano key that was pressed
+3. WHEN the intersection line appears THEN the system SHALL position it vertically to intersect with the center of the note rectangle on the staff
+4. WHEN the intersection line is shown THEN the system SHALL display it for the duration of the note being played, up to a maximum of the note's actual duration
+5. WHEN a user releases the piano key before the note's duration ends THEN the system SHALL make the intersection line disappear at the same time as the key release
+6. WHEN a user holds the piano key for the full note duration THEN the system SHALL fade out the intersection line smoothly when the note duration completes
+7. WHEN multiple correct notes are played in sequence THEN the system SHALL display multiple intersection lines with their respective colors
+8. WHEN the intersection line fades out THEN the system SHALL use a smooth animation transition
+
+### Requirement 10
+
+**User Story:** As a piano student, I want to connect my real piano or MIDI keyboard to the app through MIDI connectors, so that I can practice with my actual instrument while receiving feedback and guidance from the app.
+
+#### Acceptance Criteria
+
+1. WHEN the app loads THEN the system SHALL detect and list available MIDI input devices connected to the computer
+2. WHEN a MIDI device is detected and available THEN the system SHALL automatically connect to and use the first available MIDI device without requiring manual selection
+3. WHEN multiple MIDI devices are available THEN the system SHALL provide a device selection interface for the user to choose their preferred piano/keyboard
+4. WHEN a MIDI device is selected manually THEN the system SHALL establish a connection and listen for MIDI note events
+5. WHEN a key is pressed on the connected piano THEN the system SHALL receive the MIDI note-on message and process it as user input
+6. WHEN a key is released on the connected piano THEN the system SHALL receive the MIDI note-off message and handle the note release
+7. WHEN a correct note is played on the real piano THEN the system SHALL provide the same visual feedback as virtual keyboard interactions including unique key colors and intersection lines
+8. WHEN the real piano input matches the current playback note THEN the system SHALL highlight the note and advance the learning progress
+9. WHEN both virtual and real piano inputs are available THEN the system SHALL accept input from both sources simultaneously
+10. WHEN MIDI connection is lost THEN the system SHALL gracefully fall back to virtual keyboard mode and notify the user
+11. WHEN the user plays on the real piano and playback is not active THEN the system SHALL start the playback automatically
+12. WHEN MIDI velocity data is available THEN the system SHALL use it to provide dynamic audio response and visual feedback intensity
