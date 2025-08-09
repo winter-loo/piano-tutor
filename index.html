@@ -140,8 +140,11 @@
 
         .notes-container {
             position: absolute;
-            /* include the width of the playback line */
-            left: calc(30px + 4px);
+            /*
+             * subtract 'margin-left' value of '.staff' from the left value of
+             * '.playback-line'
+             */
+            left: 30px;
             top: 0;
             height: 120px;
         }
@@ -3907,6 +3910,7 @@
                     "quarter": 76,
                     "dotted_quarter": 114,
                     "half": 152,
+                    "whole": 304,
                 };
                 return widthMap[duration] || widthMap["quarter"];
             }
@@ -8816,12 +8820,6 @@
                 this.lastTouchX = clientX;
                 this.lastMoveTime = performance.now();
 
-                // Continuously update internal position tracking during manual movement
-                // This ensures the position is always synchronized for potential playback resumption
-                if (Math.abs(dragDistance) > 10) { // Only update for significant movements to avoid excessive calls
-                    this.updateInternalPositionTracking();
-                }
-
                 // Optional: Update debug info during drag
                 if (Math.abs(dragDistance) > 5) { // Only log significant movements
                     console.log(`Dragging ${dragDirection} - Distance: ${Math.round(dragDistance)}px, Position: ${Math.round(constrainedPosition)}px, Velocity: ${Math.round(dragVelocity)}px`);
@@ -8857,10 +8855,6 @@
                     this.finalizeStaffPosition();
                 }
 
-                // Update internal position tracking for playback resumption
-                // This ensures that when playback resumes, it starts from the manually set position
-                this.updateInternalPositionTracking();
-
                 console.log('Pointer interaction ended at position:', this.currentPosition, 'with momentum:', momentum);
             }
 
@@ -8886,7 +8880,6 @@
                 if (notesContainerElement) {
                     // Use transform3d for hardware acceleration and smoother performance
                     notesContainerElement.style.transform = `translate3d(${xOffset}px, 0, 0)`;
-
 
                     // Temporarily remove transition during manual interaction for immediate response
                     notesContainerElement.style.transition = 'none';
@@ -9004,11 +8997,11 @@
                 if (!this.playbackLineElement) return;
 
                 const playbackLineRect = this.playbackLineElement.getBoundingClientRect();
-                const playbackLineCenter = playbackLineRect.left + (playbackLineRect.width / 2);
 
                 // Find the note that should be highlighted based on current position
                 let closestNoteIndex = null;
                 let closestDistance = Infinity;
+                let closestOffset = 0;
 
                 // Check all notes to find the one closest to the playback line
                 for (let i = 0; i < this.positionedNotes.length; i++) {
@@ -9021,42 +9014,24 @@
                     if (!noteElement) continue;
 
                     const noteRect = noteElement.getBoundingClientRect();
-                    const noteLeftEdge = noteRect.left;
 
-                    // Calculate distance from note's left edge to playback line center
-                    const distance = Math.abs(noteLeftEdge - playbackLineCenter);
+                    // Calculate distance from note's left edge to playback line left
+                    let offset = noteRect.left - playbackLineRect.left;
+                    const distance = Math.abs(offset);
 
-                    // Check if this note is the closest one that hasn't passed the playback line yet
-                    if (noteLeftEdge >= playbackLineCenter - 50 && distance < closestDistance) {
+                    if (distance < closestDistance) {
                         closestDistance = distance;
                         closestNoteIndex = i;
+                        closestOffset = offset;
+                    }
+
+                    if (playbackLineRect.right <= noteRect.left) {
+                      break;
                     }
                 }
-
-                // Update the current highlighted note index and related state
-                if (closestNoteIndex !== null && closestNoteIndex !== this.currentHighlightedNoteIndex) {
-                    const previousIndex = this.currentHighlightedNoteIndex;
-
-                    this.currentHighlightedNoteIndex = closestNoteIndex;
-                    this.currentHighlightedNote = this.positionedNotes[closestNoteIndex];
-
-                    // Update the next note to play index to be consistent
-                    this.nextNoteToPlayIndex = closestNoteIndex;
-
-                    // Set expected note for learning feedback
-                    this.setExpectedNote(this.currentHighlightedNote.pitch);
-
-                    console.log(`📍 Manual navigation: currentHighlightedNoteIndex updated from ${previousIndex} to ${closestNoteIndex}`);
-                    console.log(`   Expected note: ${this.currentHighlightedNote.pitch}, Position: ${this.currentPosition.toFixed(1)}px`);
-                } else if (closestNoteIndex === null) {
-                    // No suitable note found, clear the highlighted note
-                    if (this.currentHighlightedNoteIndex !== null) {
-                        console.log(`📍 Manual navigation: No suitable note found, clearing currentHighlightedNoteIndex`);
-                        this.currentHighlightedNoteIndex = null;
-                        this.currentHighlightedNote = null;
-                        this.clearExpectedNote();
-                    }
-                }
+                this.currentHighlightedNoteIndex = closestNoteIndex;
+                this.currentPosition += closestOffset;
+                this.updateStaffPosition(-this.currentPosition);
             }
 
             renderNotes() {
