@@ -147,7 +147,7 @@
        */
       left: 30px;
       top: 0;
-      height: 120px;
+      height: 200px;
     }
 
     /* Tempo control styles - clean minimal design */
@@ -389,54 +389,42 @@
       /* Darker purple for black keys */
     }
 
-    /* Enhanced color-based feedback for correct key matches */
+    /*
+     * piano key highlight effect for correct press
+     */
     .piano-key.correct-C {
-      background-color: #A768CE !important;
-      /* light purple */
+      background-color: #CE82FF !important;
       color: white;
-      box-shadow: 0 0 12px rgba(182, 111, 209, 0.8);
     }
 
     .piano-key.correct-D {
-      background-color: #CD7903 !important;
-      /* orange */
+      background-color: #FF9602 !important;
       color: white;
-      box-shadow: 0 0 12px rgba(227, 140, 37, 0.8);
     }
 
     .piano-key.correct-E {
-      background-color: #2DA901 !important;
-      /* green */
+      background-color: #57CD03 !important;
       color: white;
-      box-shadow: 0 0 12px rgba(63, 178, 65, 0.8);
     }
 
     .piano-key.correct-F {
-      background-color: #CE3590 !important;
-      /* magenta */
+      background-color: #CC348E !important;
       color: white;
-      box-shadow: 0 0 12px rgba(178, 61, 116, 0.8);
     }
 
     .piano-key.correct-G {
-      background-color: #526DD8 important;
-      /* blue */
+      background-color: #7090FF !important;
       color: white;
-      box-shadow: 0 0 12px rgba(75, 110, 204, 0.8);
     }
 
     .piano-key.correct-A {
-      background-color: #CE6BA9 !important;
-      /* pink */
+      background-color: #FF87D0 !important;
       color: white;
-      box-shadow: 0 0 12px rgba(215, 140, 171, 0.8);
     }
 
     .piano-key.correct-B {
-      background-color: #00A795 !important;
-      /* teal */
+      background-color: #00CE9C !important;
       color: white;
-      box-shadow: 0 0 12px rgba(48, 168, 154, 0.8);
     }
 
     .piano-key.incorrect-gray {
@@ -933,12 +921,8 @@
       <div class="tempo-control">
         <label class="tempo-label" for="tempoSelector">♩=</label>
         <select class="tempo-selector" id="tempoSelector">
-          <option value="40">40</option>
           <option value="60">60</option>
-          <option value="76">76</option>
-          <option value="108">108</option>
           <option value="120" selected>120</option>
-          <option value="168">168</option>
           <option value="180">180</option>
           <option value="200">200</option>
         </select>
@@ -4449,23 +4433,6 @@
       }
 
       /**
-       * Test audio functionality by playing a test note
-       * @returns {Promise<boolean>} True if test successful
-       */
-      async testAudio() {
-        console.log('Testing ToneJS audio functionality...');
-
-        try {
-          await this.playNoteByName('C4', 0.5);
-          console.log('ToneJS audio test successful');
-          return true;
-        } catch (error) {
-          console.error('ToneJS audio test failed:', error);
-          return false;
-        }
-      }
-
-      /**
        * Clean up audio resources
        */
       dispose() {
@@ -6222,7 +6189,7 @@
           }, 150);
         }
 
-        console.log(`Piano key clicked: ${keyData.note} (${keyData.frequency}Hz)`);
+        console.log(`Piano key clicked: ${keyData.note}`);
 
         // Auto-start playback if not currently playing
         if (this.onAutoStartPlayback) {
@@ -6609,8 +6576,7 @@
        * @returns {string} Key state: 'normal', 'pressed', 'active', or 'correct'
        */
       getKeyState(keyNote) {
-        const mappedNote = this.mapNoteToKeyboard(keyNote);
-        const keyElement = this.keys.get(mappedNote);
+        const keyElement = this.keys.get(keyNote);
 
         if (!keyElement) return 'normal';
 
@@ -6724,8 +6690,7 @@
        * @param {number} duration - Duration to maintain state (optional)
        */
       setKeyState(keyNote, state, duration = null) {
-        const mappedNote = this.mapNoteToKeyboard(keyNote);
-        const keyElement = this.keys.get(mappedNote);
+        const keyElement = this.keys.get(keyNote);
 
         if (!keyElement) return;
 
@@ -6738,9 +6703,9 @@
 
           // Update internal state tracking
           if (state === 'pressed') {
-            this.pressedKeys.add(mappedNote);
+            this.pressedKeys.add(keyNote);
           } else if (state === 'active') {
-            this.activeKeys.add(mappedNote);
+            this.activeKeys.add(keyNote);
           }
         }
 
@@ -6749,14 +6714,12 @@
           setTimeout(() => {
             keyElement.classList.remove(state);
             if (state === 'pressed') {
-              this.pressedKeys.delete(mappedNote);
+              this.pressedKeys.delete(keyNote);
             } else if (state === 'active') {
-              this.activeKeys.delete(mappedNote);
+              this.activeKeys.delete(keyNote);
             }
           }, duration);
         }
-
-        // console.log(`Key state set: ${mappedNote} -> ${state}${duration ? ` (${duration}ms)` : ''}`);
       }
 
       /**
@@ -6782,23 +6745,21 @@
        * @param {number} duration - Duration to keep the key highlighted (optional)
        */
       highlightKey(keyNote, duration = null) {
-        // Convert note names to match keyboard layout
-        const mappedNote = this.mapNoteToKeyboard(keyNote);
-        const keyElement = this.keys.get(mappedNote);
+        const keyElement = this.keys.get(keyNote);
 
         if (keyElement) {
           keyElement.classList.add('active');
-          this.activeKeys.add(mappedNote);
+          this.activeKeys.add(keyNote);
 
           // Remove highlight after duration if specified
           if (duration) {
             setTimeout(() => {
               keyElement.classList.remove('active');
-              this.activeKeys.delete(mappedNote);
+              this.activeKeys.delete(keyNote);
             }, duration);
           }
 
-          console.log(`Key highlighted: ${mappedNote}`);
+          console.log(`Key highlighted: ${keyNote}`);
         }
       }
 
@@ -6807,12 +6768,11 @@
        * @param {string} keyNote - Note name to unhighlight
        */
       unhighlightKey(keyNote) {
-        const mappedNote = this.mapNoteToKeyboard(keyNote);
-        const keyElement = this.keys.get(mappedNote);
+        const keyElement = this.keys.get(keyNote);
 
         if (keyElement) {
           keyElement.classList.remove('active');
-          this.activeKeys.delete(mappedNote);
+          this.activeKeys.delete(keyNote);
         }
       }
 
@@ -6827,27 +6787,6 @@
           }
         });
         this.activeKeys.clear();
-      }
-
-      /**
-       * Map note names from the song data to keyboard note names
-       * @param {string} songNote - Note name from song data (e.g., 'C', 'D', 'C5')
-       * @returns {string} Keyboard note name (e.g., 'C4', 'D4', 'C5')
-       */
-      mapNoteToKeyboard(songNote) {
-        // Handle the mapping between song notation and keyboard notation
-        const noteMapping = {
-          'C': 'C4',
-          'D': 'D4',
-          'E': 'E4',
-          'F': 'F4',
-          'G': 'G4',
-          'A': 'A4',
-          'B': 'B4',
-          'C5': 'C5'
-        };
-
-        return noteMapping[songNote] || songNote;
       }
 
       /**
@@ -6880,8 +6819,7 @@
        * @returns {boolean} True if key is pressed
        */
       isKeyPressed(keyNote) {
-        const mappedNote = this.mapNoteToKeyboard(keyNote);
-        return this.pressedKeys.has(mappedNote);
+        return this.pressedKeys.has(keyNote);
       }
 
       /**
@@ -6890,8 +6828,7 @@
        * @returns {boolean} True if key is active
        */
       isKeyActive(keyNote) {
-        const mappedNote = this.mapNoteToKeyboard(keyNote);
-        return this.activeKeys.has(mappedNote);
+        return this.activeKeys.has(keyNote);
       }
 
       /**
@@ -6968,28 +6905,6 @@
           }))
         };
       }
-
-      /**
-       * Map keyboard note names back to staff note names
-       * @param {string} keyboardNote - Keyboard note name (e.g., 'C4', 'D4')
-       * @returns {string} Staff note name (e.g., 'C', 'D', 'C5')
-       */
-      mapKeyboardToStaff(keyboardNote) {
-        const reverseMapping = {
-          'C4': 'C',
-          'D4': 'D',
-          'E4': 'E',
-          'F4': 'F',
-          'G4': 'G',
-          'A4': 'A',
-          'B4': 'B',
-          'C5': 'C5'
-        };
-
-        return reverseMapping[keyboardNote] || keyboardNote;
-      }
-
-
 
       /**
        * Get audio engine status and capabilities
@@ -7134,8 +7049,7 @@
 
         if (isCorrect) {
           // Apply unique color feedback for correct MIDI key presses (Requirements 10.7)
-          const baseNote = this.mapKeyboardToStaff(keyboardNote);
-          const correctClass = `correct-${baseNote}`;
+          const correctClass = `correct-${keyboardNote[0]}`;
           keyElement.classList.add(correctClass);
 
           // Enhanced velocity-based visual intensity for MIDI input (Requirements 9.11)
@@ -7143,12 +7057,7 @@
           const glowSize = 12 + (velocity * 8); // 12-20px glow based on velocity
           const scaleIntensity = 1.05 + (velocity * 0.15); // 1.05-1.2 scale based on velocity
 
-          // Get the unique color for this note
-          const noteColors = {
-            'C': '#B66FD1', 'D': '#E38C25', 'E': '#3FB241', 'F': '#B23D74',
-            'G': '#4B6ECC', 'A': '#D78CAB', 'B': '#30A89A'
-          };
-          const noteColor = noteColors[baseNote] || '#B66FD1';
+          const noteColor = this.getNoteColor(keyboardNote);
 
           // Apply enhanced visual feedback with MIDI-specific styling
           keyElement.style.boxShadow = `0 0 ${glowSize}px rgba(111, 66, 193, ${glowIntensity}), 0 0 ${glowSize * 1.5}px ${noteColor}80`;
@@ -7163,7 +7072,7 @@
             keyElement.style.borderColor = '';
           }, animationDuration);
 
-          console.log(`✅ [MIDI-LEARNING] Applied correct MIDI feedback: ${baseNote} with color ${noteColor} (velocity: ${velocity.toFixed(3)})`);
+          console.log(`✅ [MIDI-LEARNING] Applied correct MIDI feedback: ${keyboardNote} with color ${noteColor} (velocity: ${velocity.toFixed(3)})`);
         } else {
           // Apply gray color feedback for incorrect MIDI key presses (Requirements 10.7)
           keyElement.classList.add('incorrect-gray');
@@ -7302,10 +7211,8 @@
 
         // Check mapping table
         if (midiToKeyboardMapping[midiNote]) {
-          const mappedNote = midiToKeyboardMapping[midiNote];
-          if (this.keys.has(mappedNote)) {
-            console.log(`🎹 [MIDI-INTEGRATION] Mapped MIDI note ${midiNote} → ${mappedNote}`);
-            return mappedNote;
+          if (this.keys.has(midiNote)) {
+            return midiNote;
           }
         }
 
@@ -7401,59 +7308,12 @@
       }
 
       /**
-       * Test MIDI integration with a specific note
-       * @param {string} midiNote - MIDI note to test (e.g., 'C4')
-       * @returns {Promise<boolean>} True if test was successful
-       */
-      async testMIDIIntegration(midiNote = 'C4') {
-        console.log(`🎹 [MIDI-TEST] Testing MIDI integration with note: ${midiNote}`);
-
-        try {
-          // Simulate MIDI note pressed
-          const testNoteData = {
-            note: midiNote,
-            velocity: 0.7,
-            rawVelocity: 89,
-            channel: 0,
-            source: 'midi',
-            timestamp: Date.now(),
-            deviceName: 'Test Device'
-          };
-
-          await this.handleMIDINotePressed(testNoteData);
-
-          // Wait a moment
-          await new Promise(resolve => setTimeout(resolve, 1000));
-
-          // Simulate MIDI note released
-          await this.handleMIDINoteReleased(testNoteData);
-
-          console.log(`🎹 [MIDI-TEST] MIDI integration test completed successfully`);
-          return true;
-        } catch (error) {
-          console.error(`🎹 [MIDI-TEST] MIDI integration test failed:`, error);
-          return false;
-        }
-      }
-
-      /**
        * Set audio volume
        * @param {number} volume - Volume level (0.0 to 1.0)
        */
       setAudioVolume(volume) {
         this.audioEngine.setMasterVolume(volume);
         console.log(`Keyboard audio volume set to: ${volume}`);
-      }
-
-      /**
-       * Test audio functionality
-       * @returns {Promise<boolean>} True if audio test successful
-       */
-      async testAudio() {
-        if (!this.audioInitialized) {
-          await this.initializeAudio();
-        }
-        return await this.audioEngine.testAudio();
       }
 
       /**
@@ -7890,9 +7750,8 @@
         this.virtualKeyboard.onMIDIKeyReleased = (keyData) => {
           // Handle intersection line management for MIDI key release
           if (this.intersectionLineRenderer) {
-            const baseNote = this.virtualKeyboard.mapKeyboardToStaff(keyData.note);
-            this.intersectionLineRenderer.handleKeyRelease(baseNote);
-            console.log(`🎨 [MIDI-INTEGRATION] Intersection line handled for MIDI key release: ${baseNote}`);
+            this.intersectionLineRenderer.handleKeyRelease(keyData.note);
+            console.log(`🎨 [MIDI-INTEGRATION] Intersection line handled for MIDI key release: ${keyData.note}`);
           }
         };
 
@@ -7927,8 +7786,7 @@
 
         // Handle intersection line management for key release
         if (this.intersectionLineRenderer) {
-          const baseNote = this.virtualKeyboard.mapKeyboardToStaff(keyData.note);
-          this.intersectionLineRenderer.handleKeyRelease(baseNote);
+          this.intersectionLineRenderer.handleKeyRelease(keyData.note);
         }
       }
 
@@ -7972,9 +7830,6 @@
             console.log(`✅ Correct note feedback: note-${this.currentHighlightedNoteIndex} (${inputSource} input)`);
           }
         }
-
-        // Enhanced keyboard feedback with unique colors
-        this.showEnhancedKeyboardFeedback(keyNote, inputSource, true);
       }
 
       /**
@@ -7983,29 +7838,28 @@
        * @param {string} inputSource - Source of input ('virtual' or 'midi')
        * @param {boolean} isCorrect - Whether the key press was correct
        */
-      showEnhancedKeyboardFeedback(keyNote, inputSource = 'virtual', isCorrect = true) {
-        const mappedNote = this.virtualKeyboard.mapNoteToKeyboard(keyNote);
-        const keyElement = this.virtualKeyboard.keys.get(mappedNote);
+      showKeyboardFeedback(keyNote, inputSource = 'virtual', isCorrect = true) {
+        const keyElement = this.virtualKeyboard.keys.get(keyNote);
+        let pureKeyNote = keyNote[0];
 
         if (keyElement) {
           if (isCorrect) {
             // Get the base note name for color mapping (remove octave numbers)
-            const baseNote = this.virtualKeyboard.mapKeyboardToStaff(keyNote);
-            const colorClass = `correct-${baseNote}`;
+            const colorClass = `correct-${pureKeyNote}`;
 
             // Add unique color class for this specific key
             keyElement.classList.add(colorClass);
 
             // Track key press for intersection line management
             if (this.intersectionLineRenderer) {
-              this.intersectionLineRenderer.trackKeyPress(baseNote);
+              this.intersectionLineRenderer.trackKeyPress(pureKeyNote);
             }
 
             setTimeout(() => {
               keyElement.classList.remove(colorClass);
             }, 500);
 
-            console.log(`✅ Enhanced keyboard feedback: ${mappedNote} -> ${baseNote} (${colorClass})`);
+            console.log(`✅ Enhanced keyboard feedback: ${pureKeyNote} (${colorClass})`);
           } else {
             // Show gray color with shake animation for incorrect keys
             keyElement.classList.add('incorrect-gray');
@@ -8014,7 +7868,7 @@
               keyElement.classList.remove('incorrect-gray');
             }, 300);
 
-            console.log(`❌ Incorrect keyboard feedback: ${mappedNote} (gray + shake)`);
+            console.log(`❌ Incorrect keyboard feedback: ${pureKeyNote} (gray + shake)`);
           }
         }
       }
@@ -8065,6 +7919,7 @@
           console.log(`✅ Correct match! Played ${keyData.note}, expected ${this.expectedNote} (${inputSource} input)`);
           // Show correct note highlight on staff
           this.showCorrectNoteHighlight(keyData.note, inputSource);
+          this.showKeyboardFeedback(keyData.note, inputSource, true);
         } else {
           console.log(`❌ Incorrect match! Played ${keyData.note}, expected ${this.expectedNote} (${inputSource} input)`);
           // Show negative visual feedback for incorrect match
@@ -8107,6 +7962,7 @@
 
           // Show correct note highlight on staff with MIDI styling
           this.showCorrectNoteHighlight(keyData.note, 'midi');
+          this.showKeyboardFeedback(keyData.note, inputSource, true);
 
           // Integrate MIDI input with intersection line rendering system (Requirements 10.7)
           if (this.intersectionLineRenderer && this.currentHighlightedNoteIndex >= 0) {
@@ -8151,8 +8007,7 @@
        * @param {number} velocity - MIDI velocity (0-1 range)
        */
       showMIDICorrectFeedback(keyNote, velocity = 0.8) {
-        const mappedNote = this.virtualKeyboard.mapNoteToKeyboard(keyNote);
-        const keyElement = this.virtualKeyboard.keys.get(mappedNote);
+        const keyElement = this.virtualKeyboard.keys.get(keyNote);
 
         if (keyElement) {
           // Add MIDI-specific correct feedback with velocity-based intensity
@@ -8174,7 +8029,7 @@
             keyElement.style.transform = '';
           }, animationDuration);
 
-          console.log(`✅ [MIDI-FEEDBACK] Correct MIDI key feedback: ${mappedNote} (velocity: ${velocity.toFixed(3)})`);
+          console.log(`✅ [MIDI-FEEDBACK] Correct MIDI key feedback: ${keyNote} (velocity: ${velocity.toFixed(3)})`);
         }
       }
 
@@ -8184,8 +8039,7 @@
        * @param {number} velocity - MIDI velocity (0-1 range)
        */
       showMIDIIncorrectFeedback(keyNote, velocity = 0.8) {
-        const mappedNote = this.virtualKeyboard.mapNoteToKeyboard(keyNote);
-        const keyElement = this.virtualKeyboard.keys.get(mappedNote);
+        const keyElement = this.virtualKeyboard.keys.get(keyNote);
 
         if (keyElement) {
           // Add MIDI-specific incorrect feedback with velocity-based intensity
@@ -8202,7 +8056,7 @@
             keyElement.style.boxShadow = '';
           }, 400);
 
-          console.log(`❌ [MIDI-FEEDBACK] Incorrect MIDI key feedback: ${mappedNote} (velocity: ${velocity.toFixed(3)})`);
+          console.log(`❌ [MIDI-FEEDBACK] Incorrect MIDI key feedback: ${keyNote} (velocity: ${velocity.toFixed(3)})`);
         }
       }
 
@@ -8213,7 +8067,7 @@
        */
       showIncorrectFeedback(keyNote, inputSource = 'virtual') {
         // Use the enhanced keyboard feedback system for incorrect keys
-        this.showEnhancedKeyboardFeedback(keyNote, inputSource, false);
+        this.showKeyboardFeedback(keyNote, inputSource, false);
       }
 
       /**
@@ -9599,40 +9453,6 @@
         console.log('🎹 MIDI device scan completed');
         return window.midiController.getAvailableDevices();
       },
-
-      // Test MIDI note conversion
-      testNoteConversion: function (midiNote = 60) {
-        if (!window.midiController) {
-          console.log('❌ MIDI Controller not initialized');
-          return null;
-        }
-
-        const noteName = window.midiController.convertMIDINoteToName(midiNote);
-        console.log(`🎹 MIDI Note ${midiNote} = ${noteName}`);
-        return noteName;
-      }
-    };
-
-    // Global test function for audio debugging
-    window.testAudio = function (noteName = 'C4') {
-      console.log(`🎯 [TEST] Manual audio test triggered for note: ${noteName}`);
-
-      if (window.pianoApp && window.pianoApp.virtualKeyboard) {
-        console.log(`🎯 [TEST] Piano app and virtual keyboard available`);
-        console.log(`🎯 [TEST] Audio initialized: ${window.pianoApp.virtualKeyboard.audioInitialized}`);
-
-        // Trigger audio initialization if not already done
-        if (!window.pianoApp.virtualKeyboard.audioInitialized) {
-          console.log(`🎯 [TEST] Initializing audio...`);
-          window.pianoApp.virtualKeyboard.initializeAudio();
-        }
-
-        // Test audio playback directly
-        console.log(`🎯 [TEST] Calling playNoteAudio directly...`);
-        window.pianoApp.virtualKeyboard.playNoteAudio(noteName);
-      } else {
-        console.error(`🎯 [ERROR] Piano app or virtual keyboard not available`);
-      }
     };
 
     // Initialize the Piano Tutor App when the page loads
