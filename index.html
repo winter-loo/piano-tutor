@@ -47,7 +47,7 @@
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 40px 0px;
+            padding: 0px 0px;
             margin-bottom: 30px;
             position: relative;
             overflow: hidden;
@@ -62,23 +62,24 @@
 
         .playback-line {
             position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background-color: #e74c3c;
+            top: 2px;
+            bottom: 2px;
+            width: 8px;
+            border-radius: 8px;
+            background-color: #eaeaea;
+            opacity: 0.8;
             left: 120px;
             z-index: 10;
-            opacity: 0.8;
         }
 
         /* Static staff lines that remain fixed during animation */
         .staff-lines {
             position: absolute;
-            top: 60px;
+            top: 59px;
             /* 40px margin + 20px staff top */
             left: 0;
             right: 0;
-            height: 80px;
+            height: 82px;
             z-index: 1;
         }
 
@@ -87,16 +88,17 @@
             left: 0;
             right: 0;
             height: 2px;
-            background-color: #54656F;
+            background-color: #dadada;
         }
 
         /* Animated content container - only this moves */
         .staff {
             position: relative;
             /* make some room to prevent hidden */
-            height: 140px;
+            height: 200px; /* 186px for notes from A3 to B5 */
             margin-left: 90px;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: visible;
             transition: transform 0.1s linear;
             z-index: 2;
         }
@@ -133,7 +135,6 @@
             left: 20px;
             top: 0px;
             font-size: 10rem;
-            color: #2c3e50;
             z-index: 4;
         }
 
@@ -148,115 +149,43 @@
         /* Tempo control styles - clean minimal design */
         .tempo-control {
             position: absolute;
-            top: 4px;
-            right: 25px;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: 8px;
+            top: 10px;
+            left: 25px;
             z-index: 15;
-            background: #ffffff;
-            padding: 8px 12px;
-            border-radius: 6px;
-            transition: all 0.2s ease;
-        }
-
-        .tempo-control:hover {
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
-            border-color: #dee2e6;
         }
 
         .tempo-control .tempo-label {
             color: #6c757d;
-            font-size: 13px;
+            font-size: 16px;
             font-weight: 500;
             white-space: nowrap;
         }
 
         .tempo-selector {
-            background: #f8f9fa;
             color: #495057;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            padding: 4px 8px;
-            font-size: 13px;
+            font-size: 16px;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s ease;
             min-width: 80px;
-        }
-
-        .tempo-selector:focus {
+            /* Remove default select styling to look like pure text */
+            background: none;
+            border: none;
             outline: none;
-            border-color: #80bdff;
-            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-            background: #ffffff;
-        }
-
-        .tempo-selector:hover {
-            background: #ffffff;
-            border-color: #adb5bd;
-        }
-
-
-
-        .info-panel {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            text-align: center;
-        }
-
-        .info-panel h3 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-
-        .info-panel p {
-            color: #7f8c8d;
-            line-height: 1.6;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            padding: 0;
+            margin: 0;
+            font-family: inherit;
         }
 
         /* Note rectangle styles */
         .note-rectangle {
             position: absolute;
-            height: 16px;
-            border-radius: 2px;
-            border: 1px solid rgba(0, 0, 0, 0.2);
+            height: 22px;
+            border-radius: 4px;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
             transition: all 0.2s ease;
-        }
-
-        /* Note colors based on pitch */
-        .note-rectangle.pitch-C {
-            background-color: #e74c3c;
-            border-color: #c0392b;
-        }
-
-        .note-rectangle.pitch-D {
-            background-color: #f39c12;
-            border-color: #e67e22;
-        }
-
-        .note-rectangle.pitch-F {
-            background-color: #27ae60;
-            border-color: #229954;
-        }
-
-        .note-rectangle.pitch-G {
-            background-color: #3498db;
-            border-color: #2980b9;
-        }
-
-        .note-rectangle.pitch-A {
-            background-color: #9b59b6;
-            border-color: #8e44ad;
-        }
-
-        .note-rectangle.pitch-C5 {
-            background-color: #e67e22;
-            border-color: #d35400;
         }
 
         /* Note highlighting for current playback */
@@ -280,10 +209,6 @@
             z-index: 10;
         }
 
-
-
-
-
         /* Simple Progress Bar Styles */
         .simple-progress-bar {
             position: absolute;
@@ -297,7 +222,7 @@
 
         .simple-progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
+            background: #64c83d;
             width: 0%;
             transition: width 0.1s linear;
         }
@@ -321,10 +246,10 @@
         /* Measure bar styles */
         .measure-bar {
             position: absolute;
-            top: 20px;
-            height: 80px;
-            width: 1px;
-            background-color: #2c3e50;
+            top: 59px;
+            height: 82px;
+            width: 2px;
+            background-color: #dadada;
             z-index: 3;
         }
 
@@ -900,37 +825,6 @@
             }
         }
 
-        /* Black key positioning - positioned between white keys */
-        .piano-key.black[data-note="C#4"] {
-            left: 63px;
-            /* Between C and D */
-        }
-
-        .piano-key.black[data-note="D#4"] {
-            left: 151px;
-            /* Between D and E */
-        }
-
-        .piano-key.black[data-note="F#4"] {
-            left: 327px;
-            /* Between F and G */
-        }
-
-        .piano-key.black[data-note="G#4"] {
-            left: 415px;
-            /* Between G and A */
-        }
-
-        .piano-key.black[data-note="A#4"] {
-            left: 503px;
-            /* Between A and B */
-        }
-
-        .piano-key.black[data-note="C#5"] {
-            left: 679px;
-            /* Between C5 and D5 */
-        }
-
         @media (max-width: 768px) {
             .app-container {
                 padding: 10px;
@@ -962,8 +856,6 @@
                 padding: 3px 6px;
             }
 
-
-
             /* Responsive keyboard styles */
             .keyboard-container {
                 padding: 20px 10px;
@@ -986,30 +878,7 @@
                 height: 80px;
             }
 
-            /* Adjust black key positions for smaller white keys */
-            .piano-key.black[data-note="C#4"] {
-                left: 37px;
-            }
 
-            .piano-key.black[data-note="D#4"] {
-                left: 88px;
-            }
-
-            .piano-key.black[data-note="F#4"] {
-                left: 190px;
-            }
-
-            .piano-key.black[data-note="G#4"] {
-                left: 241px;
-            }
-
-            .piano-key.black[data-note="A#4"] {
-                left: 292px;
-            }
-
-            .piano-key.black[data-note="C#5"] {
-                left: 394px;
-            }
         }
     </style>
 </head>
@@ -1050,16 +919,16 @@
             </div>
             <!-- Tempo control - integrated musical design -->
             <div class="tempo-control">
-                <label class="tempo-label" for="tempoSelector">Tempo</label>
+                <label class="tempo-label" for="tempoSelector">♩=</label>
                 <select class="tempo-selector" id="tempoSelector">
-                    <option value="40">40 BPM</option>
-                    <option value="60">60 BPM</option>
-                    <option value="76">76 BPM</option>
-                    <option value="108">108 BPM</option>
-                    <option value="120" selected>120 BPM</option>
-                    <option value="168">168 BPM</option>
-                    <option value="180">180 BPM</option>
-                    <option value="200">200 BPM</option>
+                    <option value="40">40</option>
+                    <option value="60">60</option>
+                    <option value="76">76</option>
+                    <option value="108">108</option>
+                    <option value="120" selected>120</option>
+                    <option value="168">168</option>
+                    <option value="180">180</option>
+                    <option value="200">200</option>
                 </select>
             </div>
         </div>
@@ -1148,113 +1017,137 @@
             measures: [
                 {
                     notes: [
-                        { pitch: "D", duration: "quarter", fingering: 1 },
+                        { pitch: "A3", duration: "quarter", fingering: 1 },
                         { pitch: "rest", duration: "quarter", fingering: null },
+                        { pitch: "A3", duration: "quarter", fingering: null },
+                        { pitch: "B3", duration: "quarter", fingering: null }
+                    ]
+                },
+                {
+                    notes: [
+                        { pitch: "C4", duration: "quarter", fingering: 1 },
+                        { pitch: "D4", duration: "quarter", fingering: null },
+                        { pitch: "E4", duration: "quarter", fingering: null },
+                        { pitch: "F4", duration: "quarter", fingering: null }
+                    ]
+                },
+                {
+                    notes: [
+                        { pitch: "G4", duration: "quarter", fingering: 1 },
+                        { pitch: "A4", duration: "quarter", fingering: null },
+                        { pitch: "B4", duration: "quarter", fingering: null },
+                        { pitch: "C5", duration: "quarter", fingering: null }
+                    ]
+                },
+                {
+                    notes: [
+                        { pitch: "D5", duration: "quarter", fingering: 1 },
+                        { pitch: "E5", duration: "quarter", fingering: null },
+                        { pitch: "F5", duration: "quarter", fingering: null },
+                        { pitch: "G5", duration: "quarter", fingering: null }
+                    ]
+                },
+                {
+                    notes: [
+                        { pitch: "A5", duration: "quarter", fingering: null },
+                        { pitch: "B5", duration: "quarter", fingering: null },
                         { pitch: "rest", duration: "quarter", fingering: null },
                         { pitch: "rest", duration: "quarter", fingering: null }
                     ]
                 },
                 {
                     notes: [
-                        { pitch: "rest", duration: "quarter", fingering: null },
-                        { pitch: "rest", duration: "quarter", fingering: null },
-                        { pitch: "rest", duration: "quarter", fingering: null },
+                        { pitch: "D4", duration: "quarter", fingering: 2 },
+                        { pitch: "F4", duration: "quarter", fingering: 4 },
+                        { pitch: "C4", duration: "quarter", fingering: 1 },
                         { pitch: "rest", duration: "quarter", fingering: null }
                     ]
                 },
                 {
                     notes: [
-                        { pitch: "D", duration: "quarter", fingering: 2 },
-                        { pitch: "F", duration: "quarter", fingering: 4 },
-                        { pitch: "C", duration: "quarter", fingering: 1 },
+                        { pitch: "G4", duration: "quarter", fingering: 5 },
+                        { pitch: "A4", duration: "eighth", fingering: 1 },
+                        { pitch: "G4", duration: "eighth", fingering: 5 },
+                        { pitch: "F4", duration: "quarter", fingering: 4 },
                         { pitch: "rest", duration: "quarter", fingering: null }
                     ]
                 },
                 {
                     notes: [
-                        { pitch: "G", duration: "quarter", fingering: 5 },
-                        { pitch: "A", duration: "eighth", fingering: 1 },
-                        { pitch: "G", duration: "eighth", fingering: 5 },
-                        { pitch: "F", duration: "quarter", fingering: 4 },
+                        { pitch: "D4", duration: "quarter", fingering: 2 },
+                        { pitch: "F4", duration: "quarter", fingering: 4 },
+                        { pitch: "C4", duration: "quarter", fingering: 1 },
                         { pitch: "rest", duration: "quarter", fingering: null }
                     ]
                 },
                 {
                     notes: [
-                        { pitch: "D", duration: "quarter", fingering: 2 },
-                        { pitch: "F", duration: "quarter", fingering: 4 },
-                        { pitch: "C", duration: "quarter", fingering: 1 },
+                        { pitch: "G4", duration: "quarter", fingering: 5 },
+                        { pitch: "A4", duration: "eighth", fingering: 1 },
+                        { pitch: "G4", duration: "eighth", fingering: 5 },
+                        { pitch: "F4", duration: "quarter", fingering: 4 },
                         { pitch: "rest", duration: "quarter", fingering: null }
                     ]
                 },
                 {
                     notes: [
-                        { pitch: "G", duration: "quarter", fingering: 5 },
-                        { pitch: "A", duration: "eighth", fingering: 1 },
-                        { pitch: "G", duration: "eighth", fingering: 5 },
-                        { pitch: "F", duration: "quarter", fingering: 4 },
-                        { pitch: "rest", duration: "quarter", fingering: null }
-                    ]
-                },
-                {
-                    notes: [
-                        { pitch: "A", duration: "quarter", fingering: 1 },
+                        { pitch: "A4", duration: "quarter", fingering: 1 },
                         { pitch: "C5", duration: "quarter", fingering: 3 },
-                        { pitch: "A", duration: "dotted_quarter", fingering: 1 },
-                        { pitch: "F", duration: "eighth", fingering: 4 }
+                        { pitch: "A4", duration: "dotted_quarter", fingering: 1 },
+                        { pitch: "F4", duration: "eighth", fingering: 4 }
                     ]
                 },
                 {
                     notes: [
-                        { pitch: "A", duration: "dotted_quarter", fingering: 1 },
-                        { pitch: "G", duration: "eighth", fingering: 5 },
-                        { pitch: "F", duration: "half", fingering: 4 }
+                        { pitch: "A4", duration: "dotted_quarter", fingering: 1 },
+                        { pitch: "G4", duration: "eighth", fingering: 5 },
+                        { pitch: "F4", duration: "half", fingering: 4 }
                     ]
                 },
                 {
                     notes: [
-                        { pitch: "A", duration: "quarter", fingering: 1 },
+                        { pitch: "A4", duration: "quarter", fingering: 1 },
                         { pitch: "C5", duration: "quarter", fingering: 3 },
-                        { pitch: "A", duration: "dotted_quarter", fingering: 1 },
-                        { pitch: "F", duration: "eighth", fingering: 4 }
+                        { pitch: "A4", duration: "dotted_quarter", fingering: 1 },
+                        { pitch: "F4", duration: "eighth", fingering: 4 }
                     ]
                 },
                 {
                     notes: [
-                        { pitch: "A", duration: "dotted_quarter", fingering: 1 },
-                        { pitch: "G", duration: "eighth", fingering: 5 },
-                        { pitch: "F", duration: "half", fingering: 4 }
+                        { pitch: "A4", duration: "dotted_quarter", fingering: 1 },
+                        { pitch: "G4", duration: "eighth", fingering: 5 },
+                        { pitch: "F4", duration: "half", fingering: 4 }
                     ]
                 },
                 {
                     notes: [
-                        { pitch: "A", duration: "quarter", fingering: 1 },
+                        { pitch: "A4", duration: "quarter", fingering: 1 },
                         { pitch: "C5", duration: "quarter", fingering: 3 },
-                        { pitch: "A", duration: "dotted_quarter", fingering: 1 },
-                        { pitch: "F", duration: "eighth", fingering: 4 }
+                        { pitch: "A4", duration: "dotted_quarter", fingering: 1 },
+                        { pitch: "F4", duration: "eighth", fingering: 4 }
                     ]
                 },
                 {
                     notes: [
-                        { pitch: "A", duration: "quarter", fingering: 1 },
-                        { pitch: "G", duration: "quarter", fingering: 5 },
-                        { pitch: "F", duration: "half", fingering: 4 }
+                        { pitch: "A4", duration: "quarter", fingering: 1 },
+                        { pitch: "G4", duration: "quarter", fingering: 5 },
+                        { pitch: "F4", duration: "half", fingering: 4 }
                     ]
                 },
                 {
                     notes: [
-                        { pitch: "D", duration: "quarter", fingering: 2 },
-                        { pitch: "F", duration: "quarter", fingering: 4 },
-                        { pitch: "C", duration: "quarter", fingering: 1 },
+                        { pitch: "D4", duration: "quarter", fingering: 2 },
+                        { pitch: "F4", duration: "quarter", fingering: 4 },
+                        { pitch: "C4", duration: "quarter", fingering: 1 },
                         { pitch: "rest", duration: "quarter", fingering: null }
                     ]
                 },
                 {
                     notes: [
-                        { pitch: "G", duration: "quarter", fingering: 5 },
-                        { pitch: "A", duration: "eighth", fingering: 1 },
-                        { pitch: "G", duration: "eighth", fingering: 5 },
-                        { pitch: "F", duration: "half", fingering: 4 }
+                        { pitch: "G4", duration: "quarter", fingering: 5 },
+                        { pitch: "A4", duration: "eighth", fingering: 1 },
+                        { pitch: "G4", duration: "eighth", fingering: 5 },
+                        { pitch: "F4", duration: "half", fingering: 4 }
                     ]
                 }
             ]
@@ -3962,37 +3855,31 @@
         class NotePositioning {
             constructor() {
                 // Staff configuration
-                this.staffTop = 20; // Top of staff lines container
+                this.staffTop = 59; // Top of staff lines container
                 this.staffLineSpacing = 20; // Distance between staff lines
                 this.staffHeight = 80; // Total height of staff lines area
-
-                // Staff line positions (y-coordinates from staff container top)
-                this.staffLines = {
-                    1: this.staffTop + 0,  // Top line (F5)
-                    2: this.staffTop + 20, // Second line (D5) 
-                    3: this.staffTop + 40, // Middle line (B4)
-                    4: this.staffTop + 60, // Fourth line (G4)
-                    5: this.staffTop + 80  // Bottom line (E4)
-                };
+                this.noteHeight = 22;
+                this.staffLineHeight = 2;
+                let halfHeight = (this.noteHeight - this.staffLineHeight) / 2;
 
                 // Note pitch to position mapping
                 this.notePositions = {
-                    "A3": 6 * this.staffLineSpacing + 12,
-                    "B3": 6 * this.staffLineSpacing + 2,
-                    "C": 5 * this.staffLineSpacing + 12,  // C4 (middle C) - ledger line below staff
-                    "D": 5 * this.staffLineSpacing + 2,   // D4 - below staff space
-                    "E": 4 * this.staffLineSpacing + 12,
-                    "F": 4 * this.staffLineSpacing + 2,
-                    "G": 3 * this.staffLineSpacing + 12,  // G4 - fourth line
-                    "A": 3 * this.staffLineSpacing + 2,   // A4 - third space
-                    "B": 2 * this.staffLineSpacing + 12,
-                    "C5": 2 * this.staffLineSpacing + 2,  // C5 - second space
-                    "D5": 1 * this.staffLineSpacing + 12,
-                    "E5": 1 * this.staffLineSpacing + 2,
-                    "F5": 0 * this.staffLineSpacing + 12,
-                    "G5": 0 * this.staffLineSpacing + 2,
-                    "A5": 0 * this.staffLineSpacing - 8,
-                    "B5": -1 * this.staffLineSpacing - 8,
+                    "A3": this.staffTop + 6 * this.staffLineSpacing - halfHeight,
+                    "B3": this.staffTop + 5 * this.staffLineSpacing,
+                    "C4": this.staffTop + 5 * this.staffLineSpacing - halfHeight,
+                    "D4": this.staffTop + 4 * this.staffLineSpacing,
+                    "E4": this.staffTop + 4 * this.staffLineSpacing - halfHeight,
+                    "F4": this.staffTop + 3 * this.staffLineSpacing,
+                    "G4": this.staffTop + 3 * this.staffLineSpacing - halfHeight,
+                    "A4": this.staffTop + 2 * this.staffLineSpacing,
+                    "B4": this.staffTop + 2 * this.staffLineSpacing - halfHeight,
+                    "C5": this.staffTop + 1 * this.staffLineSpacing,
+                    "D5": this.staffTop + 1 * this.staffLineSpacing - halfHeight,
+                    "E5": this.staffTop + 0 * this.staffLineSpacing,
+                    "F5": this.staffTop + 0 * this.staffLineSpacing - halfHeight, // F5 - first line
+                    "G5": this.staffTop + -1 * this.staffLineSpacing,
+                    "A5": this.staffTop + -1 * this.staffLineSpacing - halfHeight,
+                    "B5": this.staffTop + -2 * this.staffLineSpacing,
                 };
             }
 
@@ -4002,9 +3889,9 @@
              * @returns {number} Y-coordinate position from top of staff container
              */
             getVerticalPosition(pitch) {
-                if (!this.notePositions.hasOwnProperty(pitch)) {
-                    // console.warn(`Unknown pitch: ${pitch}. Using default position.`);
-                    return this.staffLines[3]; // Default to middle line
+                if (pitch == "rest") {
+                    // TODO: calculate 'rest' note position by its duration
+                    return 99; // Default to middle line
                 }
                 return this.notePositions[pitch];
             }
@@ -4016,22 +3903,25 @@
              */
             getNoteWidth(duration) {
                 const widthMap = {
-                    "eighth": 30,
-                    "quarter": 60,
-                    "dotted_quarter": 90,
-                    "half": 120
+                    "eighth": 38,
+                    "quarter": 76,
+                    "dotted_quarter": 114,
+                    "half": 152,
                 };
                 return widthMap[duration] || widthMap["quarter"];
             }
 
-            /**
-             * Check if a note position is on a staff line (vs space)
-             * @param {string} pitch - Note pitch
-             * @returns {boolean} True if note is on a staff line
-             */
-            isOnStaffLine(pitch) {
-                const position = this.getVerticalPosition(pitch);
-                return Object.values(this.staffLines).includes(position);
+            getNoteColor(pitch) {
+                const colorMap = {
+                  "C": "#CE82FF",
+                  "D": "#FF9602",
+                  "E": "#57CD03",
+                  "F": "#CC348E",
+                  "G": "#7090FF",
+                  "A": "#FF87D0",
+                  "B": "#00CE9C",
+                };
+                return colorMap[pitch[0]] || null;
             }
 
             /**
@@ -4043,8 +3933,8 @@
                 const positionedNotes = [];
                 let noteIndex = 0;
                 let cumulativeX = 0;
-                const noteSpacing = 20; // 20 pixels between notes
-                const measureBarMargin = 10; // 10 pixels from measure bar to notes
+                const noteSpacing = 12; // 16 pixels between notes
+                const measureBarMargin = 6; // 6 pixels from measure bar to notes
                 this.measurePositions = []; // Track measure start positions
 
                 measures.forEach((measure, measureIndex) => {
@@ -4058,6 +3948,7 @@
 
                     measure.notes.forEach((note, noteInMeasureIndex) => {
                         const noteWidth = this.getNoteWidth(note.duration);
+                        const noteColor = this.getNoteColor(note.pitch);
 
                         const positionData = {
                             ...note,
@@ -4066,8 +3957,7 @@
                             x: cumulativeX,
                             y: this.getVerticalPosition(note.pitch),
                             width: noteWidth,
-                            height: 16,
-                            isOnLine: this.isOnStaffLine(note.pitch)
+                            color: noteColor,
                         };
 
                         positionedNotes.push(positionData);
@@ -5785,26 +5675,97 @@
 
                 // Define the keyboard layout with note names and frequencies
                 this.keyLayout = [
-                    // White keys with their positions and note names
-                    { note: 'C4', type: 'white', frequency: 261.63, label: 'C' },
-                    { note: 'D4', type: 'white', frequency: 293.66, label: 'D' },
-                    { note: 'E4', type: 'white', frequency: 329.63, label: 'E' },
-                    { note: 'F4', type: 'white', frequency: 349.23, label: 'F' },
-                    { note: 'G4', type: 'white', frequency: 392.00, label: 'G' },
-                    { note: 'A4', type: 'white', frequency: 440.00, label: 'A' },
-                    { note: 'B4', type: 'white', frequency: 493.88, label: 'B' },
-                    { note: 'C5', type: 'white', frequency: 523.25, label: 'C' },
+                    // white keys
+                    { note: 'A3', label: 'A' },
+                    { note: 'B3', label: 'B' },
+                    { note: 'C4', label: 'C' },
+                    { note: 'D4', label: 'D' },
+                    { note: 'E4', label: 'E' },
+                    { note: 'F4', label: 'F' },
+                    { note: 'G4', label: 'G' },
+                    { note: 'A4', label: 'A' },
+                    { note: 'B4', label: 'B' },
+                    { note: 'C5', label: 'C' },
+                    { note: 'D5', label: 'D' },
+                    { note: 'E5', label: 'E' },
+                    { note: 'F5', label: 'F' },
 
-                    // Black keys positioned between white keys
-                    { note: 'C#4', type: 'black', frequency: 277.18, label: 'C#' },
-                    { note: 'D#4', type: 'black', frequency: 311.13, label: 'D#' },
-                    { note: 'F#4', type: 'black', frequency: 369.99, label: 'F#' },
-                    { note: 'G#4', type: 'black', frequency: 415.30, label: 'G#' },
-                    { note: 'A#4', type: 'black', frequency: 466.16, label: 'A#' },
-                    { note: 'C#5', type: 'black', frequency: 554.37, label: 'C#' }
+                    // black keys
+                    { note: 'A#3', label: 'A#' },
+                    { note: 'C#4', label: 'C#' },
+                    { note: 'D#4', label: 'D#' },
+                    { note: 'F#4', label: 'F#' },
+                    { note: 'G#4', label: 'G#' },
+                    { note: 'A#4', label: 'A#' },
+                    { note: 'C#5', label: 'C#' },
+                    { note: 'D#5', label: 'D#' },
                 ];
 
                 console.log('VirtualPianoKeyboard initialized with audio engine');
+                
+                // Add resize event listener to reposition black keys on screen size change
+                window.addEventListener('resize', () => {
+                    this.repositionBlackKeys();
+                });
+            }
+
+            isBlackKey(key) {
+              return key.note.includes('#');
+            }
+
+            /**
+             * Reposition all black keys when window is resized
+             */
+            repositionBlackKeys() {
+                // Get all black keys and reposition them
+                this.keyLayout.filter(key => this.isBlackKey(key)).forEach(keyData => {
+                    const keyElement = this.keys.get(keyData.note);
+                    if (keyElement) {
+                        this.positionBlackKey(keyElement, keyData.note);
+                    }
+                });
+            }
+
+            /**
+             * Dynamically position black keys between white keys with responsive support
+             * @param {HTMLElement} keyElement - The black key element
+             * @param {string} note - The note name (e.g., 'C#4')
+             */
+            positionBlackKey(keyElement, note) {
+                // Detect if we're in mobile view (matches CSS media query)
+                const isMobile = window.innerWidth <= 768;
+                
+                // Set responsive dimensions
+                const whiteKeyWidth = isMobile ? 51 : 88; // Mobile: 51px, Desktop: 88px
+                const blackKeyOffset = isMobile ? 37 : 63; // Adjusted offset for mobile
+                
+                // Define black key positions relative to white keys
+                // HOW TO change this when reduce the number of piano white keys?
+                // - find the corresponding white key, say C4, in the piano keys array.
+                // - the black keys should not be counted
+                const blackKeyPositions = {
+                    'C#': { whiteKeyIndex: 2, offset: blackKeyOffset }, // Between C4 and D4
+                    'D#': { whiteKeyIndex: 3, offset: blackKeyOffset }, // Between D4 and E4
+                    'F#': { whiteKeyIndex: 5, offset: blackKeyOffset }, // Between F4 and G4
+                    'G#': { whiteKeyIndex: 6, offset: blackKeyOffset }, // Between G4 and A4
+                    'A#': { whiteKeyIndex: 7, offset: blackKeyOffset }  // Between A4 and B4
+                };
+
+                // Extract the note name without octave (e.g., 'C#4' -> 'C#')
+                const noteName = note.slice(0, -1);
+                const octave = parseInt(note.slice(-1));
+                
+                if (blackKeyPositions[noteName]) {
+                    const position = blackKeyPositions[noteName];
+
+                    // Calculate base position for the octave
+                    const octaveOffset = (octave - 4) * (whiteKeyWidth * 7); // 7 white keys per octave
+
+                    // Calculate final position
+                    const leftPosition = (position.whiteKeyIndex * whiteKeyWidth) + position.offset + octaveOffset;
+                    
+                    keyElement.style.left = `${leftPosition}px`;
+                }
             }
 
             /**
@@ -5889,13 +5850,13 @@
                 containerElement.innerHTML = '';
 
                 // Create white keys first (they form the base layer)
-                const whiteKeys = this.keyLayout.filter(key => key.type === 'white');
+                const whiteKeys = this.keyLayout.filter(key => !this.isBlackKey(key));
                 whiteKeys.forEach(keyData => {
                     this.createKey(keyData, containerElement);
                 });
 
                 // Create black keys second (they overlay the white keys)
-                const blackKeys = this.keyLayout.filter(key => key.type === 'black');
+                const blackKeys = this.keyLayout.filter(key => this.isBlackKey(key));
                 blackKeys.forEach(keyData => {
                     this.createKey(keyData, containerElement);
                 });
@@ -5910,10 +5871,9 @@
              */
             createKey(keyData, container) {
                 const keyElement = document.createElement('div');
-                keyElement.className = `piano-key ${keyData.type}`;
+                let keyType = this.isBlackKey(keyData) ? 'black' : 'white';
+                keyElement.className = `piano-key ${keyType}`;
                 keyElement.setAttribute('data-note', keyData.note);
-                keyElement.setAttribute('data-frequency', keyData.frequency);
-                keyElement.setAttribute('tabindex', '0'); // Make keyboard accessible
                 keyElement.textContent = keyData.label;
 
                 // Add mouse event handlers for press/hold/release
@@ -5938,6 +5898,11 @@
 
                 // Prevent text selection
                 keyElement.addEventListener('selectstart', (event) => event.preventDefault());
+
+                // Dynamic positioning for black keys
+                if (this.isBlackKey(keyData)) {
+                    this.positionBlackKey(keyElement, keyData.note);
+                }
 
                 // Store key element reference
                 this.keys.set(keyData.note, keyElement);
@@ -6040,7 +6005,7 @@
              * @param {boolean} forward - True for forward navigation, false for backward
              */
             navigateKeys(currentNote, forward) {
-                const whiteKeys = this.keyLayout.filter(key => key.type === 'white').map(key => key.note);
+                const whiteKeys = this.keyLayout.filter(key => !this.isBlackKey(key)).map(key => key.note);
                 const currentIndex = whiteKeys.indexOf(currentNote);
 
                 if (currentIndex === -1) return;
@@ -7000,8 +6965,8 @@
                     totalKeys: this.keys.size,
                     pressedKeys: this.pressedKeys.size,
                     activeKeys: this.activeKeys.size,
-                    whiteKeys: this.keyLayout.filter(key => key.type === 'white').length,
-                    blackKeys: this.keyLayout.filter(key => key.type === 'black').length,
+                    whiteKeys: this.keyLayout.filter(key => !this.isBlackKey(key)).length,
+                    blackKeys: this.keyLayout.filter(key => this.isBlackKey(key)).length,
                     keyStates: Array.from(this.keys.keys()).map(note => ({
                         note: note,
                         state: this.getKeyState(note)
@@ -7673,7 +7638,7 @@
                 this.intersectionLineRenderer = null;
 
                 this.initializeControls();
-                this.initializeNotePositioning();
+                this.initializeNotes();
                 this.initializeStaffInteraction();
                 this.initializeVirtualKeyboard();
                 this.initializeProgressBar();
@@ -7830,8 +7795,6 @@
                 console.log(`Tempo control integrated: ${previousTempo} → ${selectedTempo}, playback system updated`);
             }
 
-
-
             initializeControls() {
                 this.tempoSelector = document.getElementById('tempoSelector');
 
@@ -7841,7 +7804,7 @@
                 this.tempoSelector.addEventListener('change', (event) => this.handleTempoChange(event));
             }
 
-            initializeNotePositioning() {
+            initializeNotes() {
                 // Calculate positions for all notes in the song
                 this.positionedNotes = this.notePositioning.calculateAllNotePositions(SONG_DATA.measures);
 
@@ -7853,7 +7816,7 @@
                 }
 
                 // Render the note rectangles
-                this.renderNoteRectangles();
+                this.renderNotes();
 
                 // Render the measure bars
                 this.renderMeasureBars();
@@ -9114,7 +9077,7 @@
                 }
             }
 
-            renderNoteRectangles() {
+            renderNotes() {
                 const notesContainer = document.querySelector('.notes-container');
                 if (!notesContainer) {
                     console.error('Notes container not found');
@@ -9139,7 +9102,7 @@
                     noteElement.style.left = `${note.x}px`;
                     noteElement.style.top = `${note.y}px`;
                     noteElement.style.width = `${note.width}px`;
-                    noteElement.style.height = `${note.height}px`;
+                    noteElement.style.backgroundColor = `${note.color}`;
 
                     // Add data attributes for debugging and future use
                     noteElement.setAttribute('data-pitch', note.pitch);
