@@ -8046,19 +8046,18 @@
                     return false;
                 }
 
-                const pressedNote = this.virtualKeyboard.mapKeyboardToStaff(keyData.note);
-                const isCorrect = pressedNote === this.expectedNote;
+                const isCorrect = keyData.note === this.expectedNote;
                 const inputSource = keyData.source || 'virtual';
 
                 // Update learning statistics with input source tracking
                 this.updateLearningStats(keyData.note, isCorrect, inputSource);
 
                 if (isCorrect) {
-                    console.log(`✅ Correct match! Played ${pressedNote}, expected ${this.expectedNote} (${inputSource} input)`);
+                    console.log(`✅ Correct match! Played ${keyData.note}, expected ${this.expectedNote} (${inputSource} input)`);
                     // Show correct note highlight on staff
                     this.showCorrectNoteHighlight(keyData.note, inputSource);
                 } else {
-                    console.log(`❌ Incorrect match! Played ${pressedNote}, expected ${this.expectedNote} (${inputSource} input)`);
+                    console.log(`❌ Incorrect match! Played ${keyData.note}, expected ${this.expectedNote} (${inputSource} input)`);
                     // Show negative visual feedback for incorrect match
                     this.showIncorrectFeedback(keyData.note, inputSource);
                 }
@@ -8080,8 +8079,7 @@
                     return false;
                 }
 
-                const pressedNote = this.virtualKeyboard.mapKeyboardToStaff(keyData.note);
-                const isCorrect = pressedNote === this.expectedNote;
+                const isCorrect = keyData.note === this.expectedNote;
                 const { velocity, rawVelocity, deviceName, timestamp } = keyData;
 
                 // Enhanced MIDI statistics tracking (Requirements 10.7, 9.11)
@@ -8093,7 +8091,7 @@
                 });
 
                 if (isCorrect) {
-                    console.log(`✅ [MIDI-LEARNING] Correct MIDI match! Played ${pressedNote}, expected ${this.expectedNote} (velocity: ${velocity.toFixed(3)}, device: ${deviceName})`);
+                    console.log(`✅ [MIDI-LEARNING] Correct MIDI match! Played ${keyData.note}, expected ${this.expectedNote} (velocity: ${velocity.toFixed(3)}, device: ${deviceName})`);
 
                     // Enhanced MIDI-specific correct feedback with velocity-based intensity
                     this.showMIDICorrectFeedback(keyData.note, velocity);
@@ -8104,7 +8102,7 @@
                     // Integrate MIDI input with intersection line rendering system (Requirements 10.7)
                     if (this.intersectionLineRenderer && this.currentHighlightedNoteIndex >= 0) {
                         const currentNote = this.positionedNotes[this.currentHighlightedNoteIndex];
-                        if (currentNote && currentNote.pitch === pressedNote) {
+                        if (currentNote && currentNote.pitch === keyData.note) {
                             const noteElement = document.querySelector(`.note-rectangle[data-note-index="${this.currentHighlightedNoteIndex}"]`);
                             if (noteElement) {
                                 // Show intersection line with MIDI-specific handling
@@ -8116,14 +8114,14 @@
                                 );
                                 
                                 // Track MIDI key press for intersection line management
-                                this.intersectionLineRenderer.trackKeyPress(pressedNote);
+                                this.intersectionLineRenderer.trackKeyPress(keyData.note);
                                 
-                                console.log(`🎨 [MIDI-LEARNING] Intersection line created for MIDI input: ${pressedNote}`);
+                                console.log(`🎨 [MIDI-LEARNING] Intersection line created for MIDI input: ${keyData.note}`);
                             }
                         }
                     }
                 } else {
-                    console.log(`❌ [MIDI-LEARNING] Incorrect MIDI match! Played ${pressedNote}, expected ${this.expectedNote} (velocity: ${velocity.toFixed(3)}, device: ${deviceName})`);
+                    console.log(`❌ [MIDI-LEARNING] Incorrect MIDI match! Played ${keyData.note}, expected ${this.expectedNote} (velocity: ${velocity.toFixed(3)}, device: ${deviceName})`);
 
                     // Enhanced MIDI-specific incorrect feedback with gray color (Requirements 10.7)
                     this.showMIDIIncorrectFeedback(keyData.note, velocity);
@@ -9030,6 +9028,7 @@
                     }
                 }
                 this.currentHighlightedNoteIndex = closestNoteIndex;
+                this.setExpectedNote(this.positionedNotes[closestNoteIndex].pitch);
                 this.currentPosition += closestOffset;
                 this.updateStaffPosition(-this.currentPosition);
             }
