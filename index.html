@@ -5795,21 +5795,6 @@
                         if (audioReady) {
                             this.audioInitialized = true;
                             console.log('🎵 [TONEJS-INIT] ToneJS keyboard audio engine initialized and ready');
-
-                            // Test ToneJS audio functionality with a simple note
-                            try {
-                                console.log('🎵 [TONEJS-INIT] Testing ToneJS audio with test note...');
-
-                                // Play a brief test note using ToneJS
-                                await this.audioEngine.playNote('A4', 0.3, '0.1s');
-
-                                console.log('🎵 [TONEJS-INIT] ToneJS audio test note played successfully');
-                                return true;
-
-                            } catch (testError) {
-                                console.warn('🎵 [TONEJS-INIT] ToneJS audio test failed but continuing:', testError);
-                                return true; // Still consider it initialized
-                            }
                         } else {
                             console.warn('🎵 [TONEJS-INIT] ToneJS audio context not ready after initialization');
                             return false;
@@ -9782,94 +9767,6 @@
                     }
                 }
             });
-
-            // Add test button for manual audio testing
-            console.log('🎯 [TEST] Audio test function available as window.testAudio()');
-            console.log('🎯 [TEST] Try calling: testAudio("C4") in the console');
-            console.log('🎯 [TEST] Audio will be initialized on first click anywhere on the page');
-
-            // Add MIDI testing instructions
-            console.log('🎹 [MIDI TEST] MIDI test functions available:');
-            console.log('  - testMIDI.getStatus() - Check MIDI system status');
-            console.log('  - testMIDI.listDevices() - List available MIDI devices');
-            console.log('  - testMIDI.connect(deviceId) - Connect to a MIDI device');
-            console.log('  - testMIDI.disconnect() - Disconnect current MIDI device');
-            console.log('  - testMIDI.rescan() - Rescan for MIDI devices');
-            console.log('  - testMIDI.testNoteConversion(60) - Test MIDI note conversion');
-            console.log('  - testMIDI.testIntegration() - Test MIDI-keyboard integration');
-            console.log('  - testMIDI.getIntegrationStatus() - Check integration status');
-            console.log('🎹 [MIDI TEST] Connect a MIDI piano/keyboard and try the functions above!');
-
-            // Add MIDI integration test functions
-            window.testMIDI = {
-                ...window.testMIDI,
-
-                testIntegration: async function () {
-                    console.log('🎹 [MIDI-INTEGRATION-TEST] Testing MIDI-keyboard integration...');
-
-                    if (!window.pianoApp || !window.pianoApp.virtualKeyboard) {
-                        console.error('❌ Virtual keyboard not available');
-                        return false;
-                    }
-
-                    try {
-                        const result = await window.pianoApp.virtualKeyboard.testMIDIIntegration('C4');
-                        console.log(`🎹 [MIDI-INTEGRATION-TEST] Integration test ${result ? 'PASSED' : 'FAILED'}`);
-                        return result;
-                    } catch (error) {
-                        console.error('❌ MIDI integration test error:', error);
-                        return false;
-                    }
-                },
-
-                getIntegrationStatus: function () {
-                    console.log('🎹 [MIDI-INTEGRATION-STATUS] Checking integration status...');
-
-                    if (!window.pianoApp || !window.pianoApp.virtualKeyboard) {
-                        console.error('❌ Virtual keyboard not available');
-                        return null;
-                    }
-
-                    const status = window.pianoApp.virtualKeyboard.getMIDIIntegrationStatus();
-                    console.log('🎹 [MIDI-INTEGRATION-STATUS] Status:', status);
-                    return status;
-                },
-
-                simulateNote: async function (note = 'C4', velocity = 0.7) {
-                    console.log(`🎹 [MIDI-SIMULATION] Simulating MIDI note: ${note} (velocity: ${velocity})`);
-
-                    if (!window.pianoApp || !window.pianoApp.virtualKeyboard) {
-                        console.error('❌ Virtual keyboard not available');
-                        return false;
-                    }
-
-                    try {
-                        // Simulate note press
-                        const noteData = {
-                            note: note,
-                            velocity: velocity,
-                            rawVelocity: Math.round(velocity * 127),
-                            channel: 0,
-                            source: 'midi',
-                            timestamp: Date.now(),
-                            deviceName: 'Test Simulation'
-                        };
-
-                        await window.pianoApp.virtualKeyboard.handleMIDINotePressed(noteData);
-
-                        // Wait 1 second then release
-                        setTimeout(async () => {
-                            await window.pianoApp.virtualKeyboard.handleMIDINoteReleased(noteData);
-                            console.log(`🎹 [MIDI-SIMULATION] Note ${note} simulation completed`);
-                        }, 1000);
-
-                        return true;
-                    } catch (error) {
-                        console.error('❌ MIDI simulation error:', error);
-                        return false;
-                    }
-                }
-            };
         });
     </script>
 </body>
