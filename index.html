@@ -439,9 +439,9 @@
             border-radius: 2px;
             opacity: 0.9;
             background-color: white;
-            width: 4px;
+            width: 8px;
             /* the note height */
-            height: 16px;
+            height: 22px;
             /* same Y scale as the note */
             transform: scaleY(1.2);
             pointer-events: none;
@@ -5556,9 +5556,6 @@
                 lineElement.style.position = 'absolute';
                 lineElement.style.left = `${position.x}px`;
                 lineElement.style.top = `${position.y}px`;
-                lineElement.style.zIndex = '15';
-                lineElement.style.borderRadius = '2px';
-                lineElement.style.pointerEvents = 'none';
                 
                 // Add to staff container
                 this.staffContainer.appendChild(lineElement);
