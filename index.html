@@ -7612,6 +7612,9 @@
             this.intersectionLineRenderer.handleKeyRelease(keyData.note);
             console.log(`🎨 [MIDI-INTEGRATION] Intersection line handled for MIDI key release: ${keyData.note}`);
           }
+
+          // Remove note feedback when MIDI key is released
+          this.removeAllActiveFeedback();
         };
 
         // Initialize learning progress display
@@ -7641,6 +7644,9 @@
           this.intersectionLineRenderer.handleKeyRelease(keyData.note);
         }
         this.hideKeyboardFeedback(keyData.note);
+
+        // Remove note feedback when key is released
+        this.removeAllActiveFeedback();
       }
 
       /**
@@ -7656,12 +7662,13 @@
           const feedbackClass = inputSource === 'midi' ? 'correct-note-midi' : 'correct-note';
           noteElement.classList.add('correct-note', feedbackClass);
 
+          const currentNote = this.positionedNotes[this.nextNoteToPlayIndex];
+          // Calculate note duration in milliseconds for intersection line
+          const noteDuration = this.calculateNoteDurationMs(currentNote.duration);
+
           // Show intersection line if renderer is available
           if (this.intersectionLineRenderer) {
-            const currentNote = this.positionedNotes[this.nextNoteToPlayIndex];
             if (currentNote && currentNote.pitch !== 'rest') {
-              // Calculate note duration in milliseconds for intersection line
-              const noteDuration = this.calculateNoteDurationMs(currentNote.duration);
 
               // Show intersection line with unique color
               this.intersectionLineRenderer.showIntersectionLine(
@@ -7674,10 +7681,8 @@
             }
           }
 
-          // Remove the feedback after a short duration
-          setTimeout(() => {
-            noteElement.classList.remove('correct-note', feedbackClass);
-          }, 500);
+          // Store feedback info for later removal based on events
+          this.storeActiveFeedback(this.nextNoteToPlayIndex, noteElement, feedbackClass);
 
           console.log(`✅ Correct note feedback: note-${this.nextNoteToPlayIndex} (${inputSource} input)`);
         }
@@ -7721,11 +7726,97 @@
         const keyElement = this.virtualKeyboard.keys.get(keyNote);
 
         if (keyElement) {
-            let pureKeyNote = keyNote[0];
-            const colorClass = `correct-${pureKeyNote}`;
-            keyElement.classList.remove(colorClass);
-            keyElement.classList.remove('incorrect-gray');
+          let pureKeyNote = keyNote[0];
+          const colorClass = `correct-${pureKeyNote}`;
+          keyElement.classList.remove(colorClass);
+          keyElement.classList.remove('incorrect-gray');
         }
+      }
+
+      /**
+       * Store active feedback for later removal based on events
+       * @param {number} noteIndex - Index of the note receiving feedback
+       * @param {HTMLElement} noteElement - The note element with feedback
+       * @param {string} feedbackClass - The CSS class applied for feedback
+       */
+      storeActiveFeedback(noteIndex, noteElement, feedbackClass) {
+        if (!this.activeFeedbacks) {
+          this.activeFeedbacks = new Map();
+        }
+
+        this.activeFeedbacks.set(noteIndex, {
+          element: noteElement,
+          feedbackClass: feedbackClass,
+          timestamp: Date.now()
+        });
+      }
+
+      /**
+       * Remove feedback from a specific note
+       * @param {number} noteIndex - Index of the note to remove feedback from
+       */
+      removeNoteFeedback(noteIndex) {
+        if (!this.activeFeedbacks || !this.activeFeedbacks.has(noteIndex)) {
+          return;
+        }
+
+        const feedback = this.activeFeedbacks.get(noteIndex);
+        feedback.element.classList.remove('correct-note', feedback.feedbackClass);
+        this.activeFeedbacks.delete(noteIndex);
+
+        console.log(`🔄 Removed feedback from note-${noteIndex}`);
+      }
+
+      /**
+       * Check and remove feedback when playback position is out of note bounds
+       */
+      checkAndRemoveOutOfBoundsFeedback() {
+        if (!this.activeFeedbacks || this.activeFeedbacks.size === 0) {
+          return;
+        }
+
+        const playbackLineElement = this.playbackLineElement;
+        if (!playbackLineElement) {
+          return;
+        }
+
+        const playbackLineRect = playbackLineElement.getBoundingClientRect();
+
+        // Check each active feedback
+        for (const [noteIndex, feedback] of this.activeFeedbacks.entries()) {
+          const noteElement = document.getElementById(`note-${noteIndex}`);
+          if (!noteElement) {
+            this.activeFeedbacks.delete(noteIndex);
+            continue;
+          }
+
+          const noteRect = noteElement.getBoundingClientRect();
+
+          // Check if playback line is outside the note's horizontal bounds
+          // Add small tolerance for decimal precision in getBoundingClientRect()
+          const tolerance = 0.5; // 0.5px tolerance for floating-point precision
+          const isOutOfBounds = (playbackLineRect.left + tolerance) < noteRect.left ||
+            (playbackLineRect.left - tolerance) > noteRect.right;
+
+          if (isOutOfBounds) {
+            this.removeNoteFeedback(noteIndex);
+          }
+        }
+      }
+
+      /**
+       * Remove all active feedback (called when keys are released)
+       */
+      removeAllActiveFeedback() {
+        if (!this.activeFeedbacks) {
+          return;
+        }
+
+        for (const noteIndex of this.activeFeedbacks.keys()) {
+          this.removeNoteFeedback(noteIndex);
+        }
+
+        console.log(`🔄 Removed all active feedback`);
       }
 
       /**
@@ -8883,6 +8974,9 @@
           // Update learning feedback detection
           this.detectPlaybackLineNoteIntersection();
 
+          // Check and remove feedback when playback position is out of note bounds
+          this.checkAndRemoveOutOfBoundsFeedback();
+
           // Update progress bar
           this.updateProgressBar();
 
@@ -9082,7 +9176,7 @@
       }
 
       updateNextNodeToPlayIndex(index = null) {
-        if (index == null) { 
+        if (index == null) {
           this.nextNoteToPlayIndex += 1;
         } else {
           this.nextNoteToPlayIndex = index;
