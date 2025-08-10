@@ -3974,7 +3974,7 @@
 
         // Enhanced audio configuration for realistic piano sound with natural decay
         this.config = {
-          masterVolumeDb: -6,       // Master volume in dB
+          masterVolumeDb: 0,       // Master volume in dB
           noteLength: 1.0,          // Default note duration in seconds
           polyphony: 32,            // Maximum simultaneous notes
           envelope: {
@@ -6071,11 +6071,6 @@
           const responseTime = performance.now() - startTime;
           console.log(`🎹 [ASYNC-SERIALIZE] Key pressed successfully (${eventType}): ${note} (${keyData.frequency}Hz) - Response time: ${responseTime.toFixed(2)}ms`);
 
-          // Auto-start playback if not currently playing (Requirement 7.9)
-          if (this.onAutoStartPlayback) {
-            this.onAutoStartPlayback(keyData);
-          }
-
           // Trigger key press handler - let the app handle all feedback logic
           if (this.onKeyPressed) {
             this.onKeyPressed(keyData);
@@ -6140,44 +6135,6 @@
 
         // Handle normal hover leave
         this.handleKeyHover(event, keyData, false);
-      }
-
-      /**
-       * Legacy method for compatibility with existing click handlers
-       * @param {Event} event - The click event
-       * @param {Object} keyData - Key configuration object
-       */
-      async handleKeyPress(event, keyData) {
-        // For quick clicks without hold, play a short note
-        event.preventDefault();
-        event.stopPropagation();
-
-        // Initialize audio on first user interaction
-        if (!this.audioInitialized) {
-          await this.initializeAudio();
-        }
-
-        // Play short note for quick clicks
-        await this.playNoteAudio(keyData.note);
-
-        // Add brief visual feedback
-        const keyElement = this.keys.get(keyData.note);
-        if (keyElement) {
-          keyElement.classList.add('pressed');
-          setTimeout(() => {
-            keyElement.classList.remove('pressed');
-          }, 150);
-        }
-
-        console.log(`Piano key clicked: ${keyData.note}`);
-
-        // Auto-start playback if not currently playing
-        if (this.onAutoStartPlayback) {
-          this.onAutoStartPlayback(keyData);
-        }
-
-        // Trigger key press handler
-        this.onKeyPressed(keyData);
       }
 
       /**
@@ -6519,23 +6476,6 @@
       }
 
       /**
-       * Legacy method for handling multiple key interactions
-       * @param {Array} keyNotes - Array of note names to press simultaneously
-       */
-      handleMultipleKeyPress_Legacy(keyNotes) {
-        keyNotes.forEach(note => {
-          const keyData = this.keyLayout.find(key => key.note === note);
-          if (keyData && !this.pressedKeys.has(note)) {
-            // Simulate key press for each key
-            const mockEvent = {preventDefault: () => { }, stopPropagation: () => { }};
-            this.handleKeyPress(mockEvent, keyData);
-          }
-        });
-
-        console.log(`Multiple keys pressed simultaneously: ${keyNotes.join(', ')}`);
-      }
-
-      /**
        * Release all currently pressed keys
        */
       releaseAllKeys() {
@@ -6658,7 +6598,6 @@
           callbacks: {
             onKeyPressed: typeof this.onKeyPressed === 'function',
             onKeyReleased: typeof this.onKeyReleased === 'function',
-            onAutoStartPlayback: typeof this.onAutoStartPlayback === 'function'
           }
         };
       }
@@ -6962,19 +6901,6 @@
             }
 
             console.log(`🎹 [MIDI-INTEGRATION] MIDI key pressed successfully: ${keyboardNote} (velocity: ${velocity.toFixed(3)})`);
-
-            // Enhanced auto-start playback with MIDI-specific handling (Requirement 9.10)
-            if (this.onAutoStartPlayback && !this.isPlaybackActive) {
-              console.log(`🎹 [MIDI-INTEGRATION] Auto-starting playback from MIDI input: ${keyboardNote}`);
-              this.onAutoStartPlayback({
-                ...keyData,
-                source: 'midi',
-                velocity: velocity,
-                rawVelocity: rawVelocity,
-                deviceName: deviceName,
-                timestamp: timestamp
-              });
-            }
 
             // Process MIDI learning feedback with enhanced velocity handling (Requirements 10.7, 9.10, 9.11)
             if (this.onMIDILearningFeedback) {
@@ -7412,17 +7338,16 @@
         this.pausedTime = 0;
         this.currentPosition = 0;
 
-        // Note highlighting and keyboard synchronization state
-        this.currentHighlightedNoteIndex = null;
-        this.currentHighlightedNote = null;
-
         // Learning feedback trigger state - improved algorithm
+        // state management:
+        // - update nextNoteToPlayIndex when playback line is not in the boundries of a note
+        //   and is playing
+        // - update nextNoteToPlayIndex on manual navigation
         this.nextNoteToPlayIndex = 0; // Index of the next note that should be played
         this.lastTriggeredNoteIndex = null; // Keep for compatibility
         this.playbackLineElement = null; // Will be set after DOM is ready
 
         // Learning feedback system properties (moved from VirtualPianoKeyboard)
-        this.expectedNote = null;
         this.isPlaybackActive = false;
         this.learningStats = {
           correctMatches: 0,
@@ -7477,41 +7402,6 @@
         this.initializeStaffInteraction();
         this.initializeVirtualKeyboard();
         this.initializeProgressBar();
-      }
-
-      /**
-       * Find the first non-rest note in the song data
-       * @returns {string|null} The pitch of the first non-rest note, or null if none found
-       */
-      findFirstNonRestNote() {
-        for (const measure of SONG_DATA.measures) {
-          for (const note of measure.notes) {
-            if (note.pitch !== "rest") {
-              return note.pitch;
-            }
-          }
-        }
-        return null;
-      }
-
-      /**
-       * Find the first non-rest note and its index in the positioned notes array
-       * @returns {Object|null} Object with {note, index} or null if no non-rest note found
-       */
-      findFirstNonRestNoteWithIndex() {
-        let noteIndex = 0;
-        for (const measure of SONG_DATA.measures) {
-          for (const note of measure.notes) {
-            if (note.pitch !== "rest") {
-              return {
-                note: note.pitch,
-                index: noteIndex
-              };
-            }
-            noteIndex++;
-          }
-        }
-        return null;
       }
 
       /**
@@ -7643,18 +7533,13 @@
         // Calculate positions for all notes in the song
         this.positionedNotes = this.notePositioning.calculateAllNotePositions(SONG_DATA.measures);
 
-        // Initialize highlighting variables to the first non-rest note
-        const firstNonRestInfo = this.findFirstNonRestNoteWithIndex();
-        if (firstNonRestInfo) {
-          this.currentHighlightedNoteIndex = firstNonRestInfo.index;
-          console.log(`Initialized highlighting to first non-rest note: ${firstNonRestInfo.note} at index ${firstNonRestInfo.index}`);
-        }
-
         // Render the note rectangles
         this.renderNotes();
 
         // Render the measure bars
         this.renderMeasureBars();
+
+        this.attachToFirstNote();
       }
 
       /**
@@ -7716,11 +7601,6 @@
           this.handleVirtualKeyReleased(keyData);
         };
 
-        // Auto-start playback callback removed since play controls have been removed
-        this.virtualKeyboard.onAutoStartPlayback = (keyData) => {
-          this.startPlaybackAnimation();
-        };
-
         // MIDI learning feedback callback
         this.virtualKeyboard.onMIDILearningFeedback = (keyData) => {
           return this.processMIDILearningFeedback(keyData);
@@ -7737,13 +7617,6 @@
 
         // Initialize learning progress display
         this.updateLearningProgressDisplay();
-
-        // Set initial expected note to the first non-rest note in the song
-        const firstNote = this.findFirstNonRestNote();
-        if (firstNote) {
-          this.setExpectedNote(firstNote);
-          console.log(`Initial expected note set to: ${firstNote}`);
-        }
       }
 
       /**
@@ -7751,7 +7624,7 @@
        * @param {Object} keyData - Key configuration object
        */
       handleVirtualKeyPressed(keyData) {
-        console.log(`Virtual key pressed: ${keyData.note} - ${keyData.frequency}Hz`);
+        console.log(`Virtual key pressed: ${keyData.note}`);
 
         // Process learning feedback if in learning mode
         this.processLearningFeedback(keyData);
@@ -7777,40 +7650,39 @@
        */
       showCorrectNoteHighlight(keyNote, inputSource = 'virtual') {
         // Find the current note that should be played
-        if (this.currentHighlightedNoteIndex !== null) {
-          const noteElement = document.getElementById(`note-${this.currentHighlightedNoteIndex}`);
-          if (noteElement) {
-            // Add positive feedback class to the note with input source indication
-            const feedbackClass = inputSource === 'midi' ? 'correct-note-midi' : 'correct-note';
-            noteElement.classList.add('correct-note', feedbackClass);
+        const noteElement = document.getElementById(`note-${this.nextNoteToPlayIndex}`);
+        if (noteElement) {
+          // Add positive feedback class to the note with input source indication
+          const feedbackClass = inputSource === 'midi' ? 'correct-note-midi' : 'correct-note';
+          noteElement.classList.add('correct-note', feedbackClass);
 
-            // Show intersection line if renderer is available
-            if (this.intersectionLineRenderer) {
-              const currentNote = this.positionedNotes[this.currentHighlightedNoteIndex];
-              if (currentNote && currentNote.pitch !== 'rest') {
-                // Calculate note duration in milliseconds for intersection line
-                const noteDuration = this.calculateNoteDurationMs(currentNote.duration);
+          // Show intersection line if renderer is available
+          if (this.intersectionLineRenderer) {
+            const currentNote = this.positionedNotes[this.nextNoteToPlayIndex];
+            if (currentNote && currentNote.pitch !== 'rest') {
+              // Calculate note duration in milliseconds for intersection line
+              const noteDuration = this.calculateNoteDurationMs(currentNote.duration);
 
-                // Show intersection line with unique color
-                this.intersectionLineRenderer.showIntersectionLine(
-                  noteElement,
-                  currentNote.pitch,
-                  noteDuration
-                );
+              // Show intersection line with unique color
+              this.intersectionLineRenderer.showIntersectionLine(
+                noteElement,
+                currentNote.pitch,
+                noteDuration
+              );
 
-                console.log(`🎨 Intersection line shown for ${currentNote.pitch} (duration: ${noteDuration}ms)`);
-              }
+              console.log(`🎨 Intersection line shown for ${currentNote.pitch} (duration: ${noteDuration}ms)`);
             }
-
-            // Remove the feedback after a short duration
-            setTimeout(() => {
-              noteElement.classList.remove('correct-note', feedbackClass);
-            }, 500);
-
-            console.log(`✅ Correct note feedback: note-${this.currentHighlightedNoteIndex} (${inputSource} input)`);
           }
+
+          // Remove the feedback after a short duration
+          setTimeout(() => {
+            noteElement.classList.remove('correct-note', feedbackClass);
+          }, 500);
+
+          console.log(`✅ Correct note feedback: note-${this.nextNoteToPlayIndex} (${inputSource} input)`);
         }
       }
+
 
       /**
        * Show enhanced keyboard feedback with unique colors for each key
@@ -7837,7 +7709,7 @@
 
             setTimeout(() => {
               keyElement.classList.remove(colorClass);
-            }, 500);
+            }, 500); // TODO: use note duration insteaf of a fixed value
 
             console.log(`✅ Enhanced keyboard feedback: ${pureKeyNote} (${colorClass})`);
           } else {
@@ -7875,7 +7747,9 @@
         }
       }
 
-
+      getExpectedNote() {
+        return this.positionedNotes[this.nextNoteToPlayIndex] || null;
+      }
 
       /**
        * Process positive feedback for correct key matches
@@ -7884,24 +7758,28 @@
        * @returns {boolean} True if the key press was correct
        */
       processLearningFeedback(keyData) {
-        // Only process feedback during playback and when expected note is set
-        if (!this.isPlaybackActive || !this.expectedNote) {
+        let expectedNote = this.getExpectedNote();
+        // process feedback when expected note is set
+        if (!expectedNote) {
           return false;
         }
 
-        const isCorrect = keyData.note === this.expectedNote;
+        const isCorrect = keyData.note === expectedNote.pitch;
         const inputSource = keyData.source || 'virtual';
 
         // Update learning statistics with input source tracking
         this.updateLearningStats(keyData.note, isCorrect, inputSource);
 
         if (isCorrect) {
-          console.log(`✅ Correct match! Played ${keyData.note}, expected ${this.expectedNote} (${inputSource} input)`);
+          console.log(`✅ Correct match! Played ${keyData.note}, expected ${expectedNote.pitch} (${inputSource} input)`);
           // Show correct note highlight on staff
           this.showCorrectNoteHighlight(keyData.note, inputSource);
           this.showKeyboardFeedback(keyData.note, inputSource, true);
+          if (!this.playbackActive) {
+            this.startPlaybackAnimation();
+          }
         } else {
-          console.log(`❌ Incorrect match! Played ${keyData.note}, expected ${this.expectedNote} (${inputSource} input)`);
+          console.log(`❌ Incorrect match! Played ${keyData.note}, expected ${expectedNote.pitch} (${inputSource} input)`);
           // Show negative visual feedback for incorrect match
           this.showIncorrectFeedback(keyData.note, inputSource);
         }
@@ -7918,12 +7796,13 @@
        * @returns {boolean} True if the key press was correct
        */
       processMIDILearningFeedback(keyData) {
+        let expectedNote = this.getExpectedNote();
         // Only process feedback during playback and when expected note is set
-        if (!this.isPlaybackActive || !this.expectedNote) {
+        if (!this.isPlaybackActive || !expectedNote) {
           return false;
         }
 
-        const isCorrect = keyData.note === this.expectedNote;
+        const isCorrect = keyData.note === expectedNote.pitch;
         const {velocity, rawVelocity, deviceName, timestamp} = keyData;
 
         // Enhanced MIDI statistics tracking (Requirements 10.7, 9.11)
@@ -7935,7 +7814,7 @@
         });
 
         if (isCorrect) {
-          console.log(`✅ [MIDI-LEARNING] Correct MIDI match! Played ${keyData.note}, expected ${this.expectedNote} (velocity: ${velocity.toFixed(3)}, device: ${deviceName})`);
+          console.log(`✅ [MIDI-LEARNING] Correct MIDI match! Played ${keyData.note}, expected ${expectedNote.pitch} (velocity: ${velocity.toFixed(3)}, device: ${deviceName})`);
 
           // Enhanced MIDI-specific correct feedback with velocity-based intensity
           this.showMIDICorrectFeedback(keyData.note, velocity);
@@ -7945,8 +7824,8 @@
           this.showKeyboardFeedback(keyData.note, inputSource, true);
 
           // Integrate MIDI input with intersection line rendering system (Requirements 10.7)
-          if (this.intersectionLineRenderer && this.currentHighlightedNoteIndex >= 0) {
-            const currentNote = this.positionedNotes[this.currentHighlightedNoteIndex];
+          if (this.intersectionLineRenderer && this.nextNoteToPlayIndex >= 0) {
+            const currentNote = this.positionedNotes[this.nextNoteToPlayIndex];
             if (currentNote && currentNote.pitch === keyData.note) {
               const noteElement = document.querySelector(`.note-rectangle[data-note-index="${this.currentHighlightedNoteIndex}"]`);
               if (noteElement) {
@@ -7966,7 +7845,7 @@
             }
           }
         } else {
-          console.log(`❌ [MIDI-LEARNING] Incorrect MIDI match! Played ${keyData.note}, expected ${this.expectedNote} (velocity: ${velocity.toFixed(3)}, device: ${deviceName})`);
+          console.log(`❌ [MIDI-LEARNING] Incorrect MIDI match! Played ${keyData.note}, expected ${expectedNote.pitch} (velocity: ${velocity.toFixed(3)}, device: ${deviceName})`);
 
           // Enhanced MIDI-specific incorrect feedback with gray color (Requirements 10.7)
           this.showMIDIIncorrectFeedback(keyData.note, velocity);
@@ -8432,22 +8311,6 @@
       }
 
       /**
-       * Set the expected note for learning feedback
-       * @param {string} noteNote - The note that should be played (e.g., 'C', 'D', 'F')
-       */
-      setExpectedNote(noteNote) {
-        this.expectedNote = noteNote;
-        console.log(`Expected note set to: ${noteNote}`);
-      }
-
-      /**
-       * Clear the expected note
-       */
-      clearExpectedNote() {
-        this.expectedNote = null;
-      }
-
-      /**
        * Show MIDI-specific statistics in the learning progress display
        * Requirements 10.7 - Track performance statistics separately for MIDI vs virtual input
        */
@@ -8494,14 +8357,15 @@
           this.initializeLearningStats();
         }
 
+        let expectedNote = this.getExpectedNote();
         // Ensure MIDI and virtual input use the same expected note
-        if (this.expectedNote) {
-          console.log(`[CONSISTENCY-CHECK] Expected note: ${this.expectedNote}, Playback active: ${this.isPlaybackActive}`);
+        if (expectedNote) {
+          console.log(`[CONSISTENCY-CHECK] Expected note: ${expectedNote.pitch}, Playback active: ${this.isPlaybackActive}`);
         }
 
         // Verify that both input methods trigger the same feedback mechanisms
         const consistencyCheck = {
-          expectedNoteSet: !!this.expectedNote,
+          expectedNoteSet: !!expectedNote,
           playbackActive: this.isPlaybackActive,
           learningStatsInitialized: !!this.learningStats,
           midiStatsTracking: !!(this.learningStats && this.learningStats.inputSourceBreakdown && this.learningStats.inputSourceBreakdown.midi),
@@ -8562,7 +8426,6 @@
         this.ensureLearningFeedbackConsistency();
 
         if (!active) {
-          this.clearExpectedNote();
         } else {
           console.log('🎓 Learning feedback system activated - positive feedback enabled');
         }
@@ -8663,7 +8526,7 @@
 
         // Optional: Update debug info during drag
         if (Math.abs(dragDistance) > 5) { // Only log significant movements
-          console.log(`Dragging ${dragDirection} - Distance: ${Math.round(dragDistance)}px, Position: ${Math.round(constrainedPosition)}px, Velocity: ${Math.round(dragVelocity)}px`);
+          console.debug(`Dragging ${dragDirection} - Distance: ${Math.round(dragDistance)}px, Position: ${Math.round(constrainedPosition)}px, Velocity: ${Math.round(dragVelocity)}px`);
         }
       }
 
@@ -8696,7 +8559,7 @@
           this.finalizeStaffPosition();
         }
 
-        console.log('Pointer interaction ended at position:', this.currentPosition, 'with momentum:', momentum);
+        console.debug('Pointer interaction ended at position:', this.currentPosition, 'with momentum:', momentum);
       }
 
       /**
@@ -8814,8 +8677,8 @@
           this.isPaused = true;
         }
 
-        // Update currentHighlightedNoteIndex based on current position during manual navigation
-        this.updateCurrentHighlightedNoteIndexForManualNavigation();
+        // Update based on current position during manual navigation
+        this.updateStatesForManualNavigation();
 
         // Update learning feedback detection during manual navigation
         this.detectPlaybackLineNoteIntersection();
@@ -8831,10 +8694,10 @@
       }
 
       /**
-       * Update currentHighlightedNoteIndex based on current staff position during manual navigation
-       * This ensures the correct note is highlighted when user manually moves the staff
+       * Update states based on current staff position during manual navigation
+       * This ensures the correct note is highlighted when user will to play
        */
-      updateCurrentHighlightedNoteIndexForManualNavigation() {
+      updateStatesForManualNavigation() {
         if (!this.playbackLineElement) return;
 
         const playbackLineRect = this.playbackLineElement.getBoundingClientRect();
@@ -8870,10 +8733,13 @@
             break;
           }
         }
-        this.currentHighlightedNoteIndex = closestNoteIndex;
-        this.setExpectedNote(this.positionedNotes[closestNoteIndex].pitch);
+        this.updateNextNodeToPlayIndex(closestNoteIndex);
         this.currentPosition += closestOffset;
         this.updateStaffPosition(-this.currentPosition);
+      }
+
+      attachToFirstNote() {
+        this.updateStatesForManualNavigation();
       }
 
       renderNotes() {
@@ -9020,7 +8886,6 @@
           // Check if we've reached the end of the song
           const totalSongWidth = this.getTotalSongWidth();
           if (this.currentPosition >= totalSongWidth) {
-            console.log('Playback complete - auto resetting');
             return;
           }
 
@@ -9104,8 +8969,6 @@
         // Reset learning feedback state
         this.nextNoteToPlayIndex = 0;
         this.lastTriggeredNoteIndex = null;
-        this.currentHighlightedNoteIndex = null;
-        this.currentHighlightedNote = null;
         this.setPlaybackActive(false);
 
         // Reset staff position to beginning
@@ -9167,30 +9030,10 @@
       detectPlaybackLineNoteIntersection() {
         if (!this.virtualKeyboard || !this.playbackLineElement) return;
 
-        // Find the next note to be played (skip rest notes) - O(1) amortized performance
         let nextNoteIndex = this.nextNoteToPlayIndex;
-        while (nextNoteIndex < this.positionedNotes.length &&
-          this.positionedNotes[nextNoteIndex].pitch === 'rest') {
-          nextNoteIndex++;
-        }
-
         // If we've reached the end of the song, check if we should maintain the last note
         if (nextNoteIndex >= this.positionedNotes.length) {
-          // If we haven't set any note yet, or if the current highlighted note is null,
-          // try to set the last non-rest note as the expected note
-          if (this.currentHighlightedNoteIndex === null) {
-            // Find the last non-rest note
-            for (let i = this.positionedNotes.length - 1; i >= 0; i--) {
-              if (this.positionedNotes[i].pitch !== 'rest') {
-                this.currentHighlightedNoteIndex = i;
-                this.currentHighlightedNote = this.positionedNotes[i];
-                this.setExpectedNote(this.positionedNotes[i].pitch);
-                console.log(`🎯 End of song: Set last note as expected - ${this.positionedNotes[i].pitch} (index ${i})`);
-                break;
-              }
-            }
-          }
-          // Don't clear the expected note if we're at the end - let the user play the last note
+          console.debug('SONG play finished!!!');
           return;
         }
 
@@ -9216,47 +9059,31 @@
           if (this.lastTriggeredNoteIndex !== nextNoteIndex) {
             this.lastTriggeredNoteIndex = nextNoteIndex;
 
-            // Set the current highlighted note index to the note that should be played
-            this.currentHighlightedNoteIndex = nextNoteIndex;
-            this.currentHighlightedNote = nextNote;
-
-            // Set expected note for learning feedback - this enables positive feedback detection
-            this.setExpectedNote(nextNote.pitch);
-
             console.log(`🎯 Learning feedback triggered: note ${nextNote.pitch} (index ${nextNoteIndex}) intersects playback line`);
             console.log(`   Current highlighted note index set to: ${nextNoteIndex}`);
-
-            // Move to the next note for future checks (O(1) performance optimization)
-            this.nextNoteToPlayIndex = nextNoteIndex + 1;
           }
         } else {
-          // Check if we've moved past this note (note is now completely to the left of playback line)
-          if (noteRect.right < playbackLineRect.left) {
-            // Check if this is the last note in the song
-            const isLastNote = nextNoteIndex === this.positionedNotes.length - 1 ||
-              (nextNoteIndex < this.positionedNotes.length - 1 &&
-                this.positionedNotes.slice(nextNoteIndex + 1).every(note => note.pitch === 'rest'));
-
-            if (!isLastNote) {
-              // This note has passed and it's not the last note, move to the next one
-              this.clearExpectedNote();
-              this.lastTriggeredNoteIndex = null;
-
-              // Clear current highlighted note since this note has passed
-              this.currentHighlightedNoteIndex = null;
-              this.currentHighlightedNote = null;
-
-              console.log(`📍 Note ${nextNote.pitch} (index ${nextNoteIndex}) has passed playback line`);
-              console.log(`   Current highlighted note index cleared`);
-            } else {
-              // This is the last note, keep it active so user can still play it
-              console.log(`📍 Last note ${nextNote.pitch} (index ${nextNoteIndex}) has passed playback line but keeping it active`);
-            }
+          console.debug(`${nextNote.pitch}(index ${nextNoteIndex}) not intersected`);
+          if (this.isPlaybackActive && noteRect.right <= playbackLineRect.left) {
+            this.updateNextNodeToPlayIndex();
+            console.log(`next note to play index updated to ${this.nextNoteToPlayIndex}`);
           }
         }
+      }
 
-        // Performance optimization: Only check one note per frame instead of all notes
-        // This maintains O(1) performance regardless of song length
+      updateNextNodeToPlayIndex(index = null) {
+        if (index == null) { 
+          this.nextNoteToPlayIndex += 1;
+        } else {
+          this.nextNoteToPlayIndex = index;
+        }
+
+        // Find the next note to be played (skip rest notes) - O(1) amortized performance
+        while (this.nextNoteToPlayIndex < this.positionedNotes.length &&
+          this.positionedNotes[this.nextNoteToPlayIndex].pitch === 'rest') {
+          this.nextNoteToPlayIndex++;
+        }
+        console.log(`update nextNoteToPlayIndex to ${this.nextNoteToPlayIndex}`);
       }
 
       /**
