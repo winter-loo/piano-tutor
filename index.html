@@ -884,7 +884,6 @@
 
 <body>
   <div class="app-container">
-    <img src="duolingo.png" style="width: 100%; height: 100%; object-fit: contain;" />
     <header class="header">
       <h1>Piano Tutor App</h1>
       <p>Learn to play "Different Colors" by Walk the Moon</p>
@@ -8924,6 +8923,13 @@
         // Disable learning feedback when pausing
         this.setPlaybackActive(false);
 
+        // At pause, this.currentPosition should be updated to have the realtime
+        // value. Its value was updated in the startPlaybackAnimation frame.
+        let notesContainer = document.querySelector('.notes-container');
+        let playbackLine = document.querySelector('.playback-line');
+        let notesContainerRect = notesContainer.getBoundingClientRect();
+        let playbackLineRect = playbackLine.getBoundingClientRect();
+        this.currentPosition = playbackLineRect.left - notesContainerRect.left;
         console.log(`Playback paused at position: ${this.currentPosition}px, time: ${this.pausedTime}ms`);
       }
 
