@@ -7640,6 +7640,7 @@
         if (this.intersectionLineRenderer) {
           this.intersectionLineRenderer.handleKeyRelease(keyData.note);
         }
+        this.hideKeyboardFeedback(keyData.note);
       }
 
       /**
@@ -7706,21 +7707,24 @@
               this.intersectionLineRenderer.trackKeyPress(pureKeyNote);
             }
 
-            setTimeout(() => {
-              keyElement.classList.remove(colorClass);
-            }, 500); // TODO: use note duration insteaf of a fixed value
-
             console.log(`✅ Enhanced keyboard feedback: ${pureKeyNote} (${colorClass})`);
           } else {
             // Show gray color with shake animation for incorrect keys
             keyElement.classList.add('incorrect-gray');
 
-            setTimeout(() => {
-              keyElement.classList.remove('incorrect-gray');
-            }, 300);
-
             console.log(`❌ Incorrect keyboard feedback: ${pureKeyNote} (gray + shake)`);
           }
+        }
+      }
+
+      hideKeyboardFeedback(keyNote) {
+        const keyElement = this.virtualKeyboard.keys.get(keyNote);
+
+        if (keyElement) {
+            let pureKeyNote = keyNote[0];
+            const colorClass = `correct-${pureKeyNote}`;
+            keyElement.classList.remove(colorClass);
+            keyElement.classList.remove('incorrect-gray');
         }
       }
 
@@ -7730,7 +7734,7 @@
        * @returns {number} Duration in milliseconds
        */
       calculateNoteDurationMs(duration) {
-        // Base duration for quarter note at 120 BPM = 500ms
+        // Base duration for quarter note at 60 BPM = 500ms
         const quarterNoteDuration = (60 / this.currentTempo) * 1000;
 
         switch (duration) {
@@ -7829,7 +7833,7 @@
               const noteElement = document.querySelector(`.note-rectangle[data-note-index="${this.currentHighlightedNoteIndex}"]`);
               if (noteElement) {
                 // Show intersection line with MIDI-specific handling
-                const noteDuration = this.calculateNoteDuration(currentNote.duration);
+                const noteDuration = this.calculateNoteDurationMs(currentNote.duration);
                 this.intersectionLineRenderer.showIntersectionLine(
                   noteElement,
                   currentNote.pitch,
