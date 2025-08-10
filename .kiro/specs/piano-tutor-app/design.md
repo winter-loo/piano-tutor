@@ -245,6 +245,64 @@ class MIDIDeviceManager {
 - Handle device hot-plugging (connect/disconnect during use)
 - Manage device naming and identification
 
+### ProgressBarController
+```javascript
+class ProgressBarController {
+  constructor(staffRenderer, playbackController)
+  createProgressBar(containerElement)
+  updateProgress(currentPosition, totalDuration)
+  handleProgressBarClick(clickEvent)
+  handleProgressBarDrag(dragEvent)
+  calculatePositionFromClick(clickX, progressBarWidth)
+  jumpToPosition(targetPosition)
+  showProgressTooltip(position, noteInfo)
+  hideProgressTooltip()
+  setInteractionState(isInteracting)
+}
+```
+
+**Responsibilities:**
+- Create and render interactive progress bar UI element
+- Update progress bar position based on current playback position
+- Handle user clicks on progress bar to jump to specific positions
+- Support drag interactions for smooth navigation
+- Calculate target staff position from progress bar click coordinates
+- Coordinate with PlaybackController to update staff position
+- Provide visual feedback during user interactions (tooltips, hover states)
+- Maintain progress bar state during playback and manual navigation
+- Convert between progress percentage and actual staff pixel positions
+
+### TimingEvaluationSystem
+```javascript
+class TimingEvaluationSystem {
+  constructor(staffRenderer, playbackController)
+  evaluateKeyPress(keyNote, playbackLinePosition, noteElements)
+  checkNoteHeadInBounds(noteElement, playbackLinePosition, tolerance)
+  checkPlaybackLineInNoteBounds(noteElement, playbackLinePosition)
+  determineTimingResult(noteElement, playbackLinePosition, keyNote)
+  showTimingFeedback(result, keyNote)
+  displayIncorrectNote(keyNote, playbackLinePosition)
+  createIncorrectNoteElement(keyNote, xPosition)
+  removeIncorrectNoteAfterDelay(noteElement, delay)
+  clearAllIncorrectNotes()
+  getExpectedNoteAtPosition(playbackLinePosition, noteElements)
+  calculateNoteHeadPosition(noteElement)
+  calculateNoteBounds(noteElement)
+}
+```
+
+**Responsibilities:**
+- Evaluate timing accuracy of user key presses relative to playback line position
+- Determine if note head is within acceptable timing bounds for correct presses
+- Detect "too late" condition when playback line is within note bounds but note head is not
+- Detect "too early" condition when note head hasn't reached playback line range
+- Display incorrect notes as gray eighth notes aligned with playback line left boundary
+- Manage lifecycle of incorrect note visual elements (creation, display, removal)
+- Provide precise timing feedback messages ("correct", "too early", "too late", "incorrect")
+- Calculate note head positions and note rectangle boundaries for accurate evaluation
+- Coordinate with existing learning feedback system for comprehensive user guidance
+- Handle cleanup of temporary visual elements to prevent memory leaks
+
 ### Fingering Recommendations for "Different Colors"
 
 **Right Hand Finger Numbers:** 1=Thumb, 2=Index, 3=Middle, 4=Ring, 5=Pinky
@@ -669,6 +727,592 @@ class EnhancedLearningFeedback {
 - **5-pin DIN MIDI**: Traditional MIDI cables via USB interface
 - **Wireless MIDI**: Bluetooth MIDI (where supported by browser)
 
+## Progress Bar Navigation Design
+
+### Interactive Progress Bar Implementation
+
+**Enhanced Progress Bar Design (Building on Existing Implementation):**
+```javascript
+class ProgressBarController {
+  constructor(staffRenderer, playbackController) {
+    this.staffRenderer = staffRenderer;
+    this.playbackController = playbackController;
+    this.progressBarElement = null;
+    this.progressFillElement = null;
+    this.isInteracting = false;
+  }
+  
+  enhanceExistingProgressBar() {
+    // Get existing progress bar elements
+    this.progressBarElement = document.querySelector('.simple-progress-bar');
+    this.progressFillElement = document.getElementById('progressFill');
+    
+    if (!this.progressBarElement || !this.progressFillElement) {
+      console.error('Existing progress bar elements not found');
+      return false;
+    }
+    
+    // Add interactive functionality to existing progress bar
+    this.addInteractiveFeatures();
+    return true;
+  }
+  
+  addInteractiveFeatures() {
+    // Add click-to-jump functionality
+    this.progressBarElement.addEventListener('click', (event) => {
+      this.handleProgressBarClick(event);
+    });
+    
+    // Add cursor pointer style
+    this.progressBarElement.style.cursor = 'pointer';
+    
+    console.log('Enhanced existing progress bar with click-to-jump functionality');
+  }
+  
+  setupProgressBarInteractions(container) {
+    const track = container.querySelector('.progress-bar-track');
+    const handle = container.querySelector('.progress-bar-handle');
+    
+    // Click to jump functionality
+    track.addEventListener('click', (event) => {
+      this.handleProgressBarClick(event);
+    });
+    
+    // Drag functionality
+    let isDragging = false;
+    
+    handle.addEventListener('mousedown', (event) => {
+      isDragging = true;
+      this.setInteractionState(true);
+      event.preventDefault();
+    });
+    
+    document.addEventListener('mousemove', (event) => {
+      if (isDragging) {
+        this.handleProgressBarDrag(event);
+      }
+    });
+    
+    document.addEventListener('mouseup', () => {
+      if (isDragging) {
+        isDragging = false;
+        this.setInteractionState(false);
+      }
+    });
+    
+    // Hover tooltip
+    track.addEventListener('mousemove', (event) => {
+      this.showProgressTooltip(event);
+    });
+    
+    track.addEventListener('mouseleave', () => {
+      this.hideProgressTooltip();
+    });
+  }
+  
+  handleProgressBarClick(clickEvent) {
+    const trackRect = clickEvent.currentTarget.getBoundingClientRect();
+    const clickX = clickEvent.clientX - trackRect.left;
+    const progressPercentage = Math.max(0, Math.min(100, (clickX / trackRect.width) * 100));
+    
+    // Set interaction state
+    this.setInteractionState(true);
+    
+    // Convert percentage to staff position
+    const targetPosition = this.calculateStaffPositionFromProgress(progressPercentage);
+    
+    // Jump to position
+    this.jumpToPosition(targetPosition);
+    
+    // Update progress bar visual immediately
+    this.progressFillElement.style.width = `${progressPercentage}%`;
+    
+    // Reset interaction state after a brief delay
+    setTimeout(() => {
+      this.setInteractionState(false);
+    }, 200);
+    
+    console.log(`Progress bar clicked: ${progressPercentage.toFixed(1)}% -> position ${targetPosition}px`);
+  }
+  
+  calculateStaffPositionFromProgress(progressPercentage) {
+    const totalStaffWidth = this.staffRenderer.getStaffWidth();
+    const targetOffset = (progressPercentage / 100) * totalStaffWidth;
+    
+    // Convert to negative offset for staff movement (staff moves right to left)
+    return -targetOffset;
+  }
+  
+  jumpToPosition(targetPosition) {
+    // Pause current playback if active
+    if (this.playbackController.isPlaying) {
+      this.playbackController.pausePlayback();
+    }
+    
+    // Update staff position immediately
+    this.staffRenderer.updateStaffPosition(targetPosition);
+    
+    // Update playback controller's internal position
+    this.playbackController.setCurrentPosition(targetPosition);
+    
+    // Update current note index based on new position
+    this.playbackController.updateCurrentNoteFromPosition(targetPosition);
+  }
+  
+
+  
+  setInteractionState(isInteracting) {
+    this.isInteracting = isInteracting;
+    
+    if (this.progressBarElement) {
+      if (isInteracting) {
+        this.progressBarElement.classList.add('interacting');
+      } else {
+        this.progressBarElement.classList.remove('interacting');
+      }
+    }
+  }
+  
+  updateProgress(currentPosition, totalDuration) {
+    if (!this.progressFillElement || this.isInteracting) {
+      return; // Don't update during user interaction
+    }
+    
+    const progressPercentage = totalDuration > 0 ? 
+      Math.max(0, Math.min(100, (Math.abs(currentPosition) / totalDuration) * 100)) : 0;
+    
+    this.progressFillElement.style.width = `${progressPercentage}%`;
+  }
+  
+  findNearestNoteAtProgress(progressPercentage) {
+    // Get all note elements from staff renderer
+    const noteElements = this.staffRenderer.getAllNoteElements();
+    if (!noteElements || noteElements.length === 0) return null;
+    
+    // Calculate target position
+    const totalStaffWidth = this.staffRenderer.getStaffWidth();
+    const targetPosition = (progressPercentage / 100) * totalStaffWidth;
+    
+    // Find closest note
+    let closestNote = null;
+    let closestDistance = Infinity;
+    
+    noteElements.forEach(noteElement => {
+      const notePosition = parseFloat(noteElement.style.left) || 0;
+      const distance = Math.abs(notePosition - targetPosition);
+      
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestNote = {
+          pitch: noteElement.dataset.pitch || 'Unknown',
+          position: notePosition
+        };
+      }
+    });
+    
+    return closestNote;
+  }
+  
+  formatTime(milliseconds) {
+    const seconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  }
+}
+```
+
+**Enhanced CSS Styling (Building on Existing Styles):**
+```css
+/* Enhanced styles for existing simple-progress-bar */
+.simple-progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: rgba(0, 0, 0, 0.1);
+  z-index: 5;
+  cursor: pointer; /* Add cursor pointer for interactivity */
+  transition: height 0.2s ease; /* Smooth height transition on hover */
+}
+
+.simple-progress-bar:hover {
+  height: 6px; /* Slightly taller on hover for better interaction */
+}
+
+.simple-progress-fill {
+  height: 100%;
+  background: #64c83d;
+  width: 0%;
+  transition: width 0.1s linear;
+  border-radius: 0 2px 2px 0; /* Rounded right edge */
+}
+
+
+
+/* Interactive states */
+.simple-progress-bar.interacting {
+  height: 6px;
+}
+
+.simple-progress-bar.interacting .simple-progress-fill {
+  background: #5cb85c; /* Slightly different color during interaction */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .simple-progress-bar {
+    height: 6px; /* Larger touch target on mobile */
+  }
+  
+  .simple-progress-bar:hover {
+    height: 8px;
+  }
+
+}
+```
+
+## Enhanced Timing Evaluation System Design
+
+### Precise Timing Detection Implementation
+
+**Timing Evaluation Logic:**
+```javascript
+class TimingEvaluationSystem {
+  constructor(staffRenderer, playbackController) {
+    this.staffRenderer = staffRenderer;
+    this.playbackController = playbackController;
+    this.noteHeadTolerance = 10; // pixels
+    this.incorrectNoteElements = [];
+    this.timingFeedbackCallbacks = new Map();
+  }
+  
+  evaluateKeyPress(keyNote, playbackLinePosition, noteElements) {
+    // Find the expected note at current playback position
+    const expectedNote = this.getExpectedNoteAtPosition(playbackLinePosition, noteElements);
+    
+    if (!expectedNote) {
+      return this.handleNoExpectedNote(keyNote, playbackLinePosition);
+    }
+    
+    // Check if pressed key matches expected note
+    if (keyNote !== expectedNote.pitch) {
+      return this.handleIncorrectNote(keyNote, playbackLinePosition);
+    }
+    
+    // Evaluate timing for correct note
+    return this.evaluateCorrectNoteTiming(expectedNote, playbackLinePosition);
+  }
+  
+  evaluateCorrectNoteTiming(noteElement, playbackLinePosition) {
+    const noteHeadPosition = this.calculateNoteHeadPosition(noteElement);
+    const noteBounds = this.calculateNoteBounds(noteElement);
+    
+    // Check if note head is within playback line bounds (correct timing)
+    if (this.checkNoteHeadInBounds(noteHeadPosition, playbackLinePosition, this.noteHeadTolerance)) {
+      return {
+        result: 'correct',
+        feedback: 'Perfect timing!',
+        noteElement: noteElement
+      };
+    }
+    
+    // Check if playback line is within note bounds but note head is not (too late)
+    if (this.checkPlaybackLineInNoteBounds(noteBounds, playbackLinePosition) && 
+        noteHeadPosition < playbackLinePosition - this.noteHeadTolerance) {
+      return {
+        result: 'late',
+        feedback: 'Too late - try to press the key when the line reaches the note',
+        noteElement: noteElement
+      };
+    }
+    
+    // Note head hasn't reached playback line range (too early)
+    if (noteHeadPosition > playbackLinePosition + this.noteHeadTolerance) {
+      return {
+        result: 'early',
+        feedback: 'Too early - wait for the line to reach the note',
+        noteElement: noteElement
+      };
+    }
+    
+    // Default to correct if within reasonable bounds
+    return {
+      result: 'correct',
+      feedback: 'Good timing!',
+      noteElement: noteElement
+    };
+  }
+  
+  handleIncorrectNote(keyNote, playbackLinePosition) {
+    // Display incorrect note as gray eighth note
+    this.displayIncorrectNote(keyNote, playbackLinePosition);
+    
+    return {
+      result: 'incorrect',
+      feedback: `Incorrect note - expected different key`,
+      pressedNote: keyNote
+    };
+  }
+  
+  displayIncorrectNote(keyNote, playbackLinePosition) {
+    const incorrectNoteElement = this.createIncorrectNoteElement(keyNote, playbackLinePosition);
+    
+    // Add to staff
+    this.staffRenderer.addTemporaryElement(incorrectNoteElement);
+    
+    // Track for cleanup
+    this.incorrectNoteElements.push(incorrectNoteElement);
+    
+    // Remove after delay
+    setTimeout(() => {
+      this.removeIncorrectNoteElement(incorrectNoteElement);
+    }, 2000); // Show for 2 seconds
+  }
+  
+  createIncorrectNoteElement(keyNote, xPosition) {
+    const noteElement = document.createElement('div');
+    noteElement.className = 'incorrect-note-display';
+    
+    // Calculate y-position based on note pitch
+    const yPosition = this.staffRenderer.calculateNoteYPosition(keyNote);
+    
+    // Style as gray eighth note
+    noteElement.style.cssText = `
+      position: absolute;
+      left: ${xPosition}px;
+      top: ${yPosition}px;
+      width: 20px;
+      height: 12px;
+      background-color: #808080;
+      border-radius: 50%;
+      opacity: 0.8;
+    `;
+    
+    // Add eighth note stem
+    const stem = document.createElement('div');
+    stem.className = 'note-stem';
+    stem.style.cssText = `
+      position: absolute;
+      right: -1px;
+      top: -15px;
+      width: 2px;
+      height: 15px;
+      background-color: #808080;
+    `;
+    
+    // Add eighth note flag
+    const flag = document.createElement('div');
+    flag.className = 'note-flag';
+    flag.style.cssText = `
+      position: absolute;
+      right: -8px;
+      top: -15px;
+      width: 8px;
+      height: 8px;
+      background-color: #808080;
+      border-radius: 0 0 50% 0;
+    `;
+    
+    noteElement.appendChild(stem);
+    noteElement.appendChild(flag);
+    
+    return noteElement;
+  }
+  
+  checkNoteHeadInBounds(noteHeadPosition, playbackLinePosition, tolerance) {
+    return Math.abs(noteHeadPosition - playbackLinePosition) <= tolerance;
+  }
+  
+  checkPlaybackLineInNoteBounds(noteBounds, playbackLinePosition) {
+    return playbackLinePosition >= noteBounds.left && playbackLinePosition <= noteBounds.right;
+  }
+  
+  calculateNoteHeadPosition(noteElement) {
+    const rect = noteElement.getBoundingClientRect();
+    const staffRect = this.staffRenderer.getStaffContainer().getBoundingClientRect();
+    
+    // Return relative position within staff
+    return rect.left - staffRect.left;
+  }
+  
+  calculateNoteBounds(noteElement) {
+    const rect = noteElement.getBoundingClientRect();
+    const staffRect = this.staffRenderer.getStaffContainer().getBoundingClientRect();
+    
+    return {
+      left: rect.left - staffRect.left,
+      right: rect.right - staffRect.left,
+      width: rect.width
+    };
+  }
+  
+  getExpectedNoteAtPosition(playbackLinePosition, noteElements) {
+    // Find note whose bounds contain the playback line
+    for (const noteElement of noteElements) {
+      const noteBounds = this.calculateNoteBounds(noteElement);
+      
+      if (this.checkPlaybackLineInNoteBounds(noteBounds, playbackLinePosition)) {
+        return {
+          element: noteElement,
+          pitch: noteElement.dataset.pitch,
+          bounds: noteBounds
+        };
+      }
+    }
+    
+    return null;
+  }
+  
+  removeIncorrectNoteElement(noteElement) {
+    if (noteElement && noteElement.parentNode) {
+      noteElement.parentNode.removeChild(noteElement);
+    }
+    
+    // Remove from tracking array
+    const index = this.incorrectNoteElements.indexOf(noteElement);
+    if (index > -1) {
+      this.incorrectNoteElements.splice(index, 1);
+    }
+  }
+  
+  clearAllIncorrectNotes() {
+    this.incorrectNoteElements.forEach(element => {
+      this.removeIncorrectNoteElement(element);
+    });
+    this.incorrectNoteElements = [];
+  }
+}
+```
+
+**Integration with Existing Learning Feedback:**
+```javascript
+class EnhancedLearningFeedback {
+  constructor(timingEvaluationSystem) {
+    this.timingEvaluationSystem = timingEvaluationSystem;
+    // ... existing constructor code ...
+  }
+  
+  processLearningFeedback(keyNote, source = 'virtual') {
+    if (!this.isPlaybackActive) {
+      return false;
+    }
+    
+    const playbackLinePosition = this.playbackController.getPlaybackLinePosition();
+    const noteElements = this.staffRenderer.getAllNoteElements();
+    
+    // Use enhanced timing evaluation
+    const evaluationResult = this.timingEvaluationSystem.evaluateKeyPress(
+      keyNote, 
+      playbackLinePosition, 
+      noteElements
+    );
+    
+    // Update statistics based on evaluation result
+    this.updateLearningStats(keyNote, evaluationResult, source);
+    
+    // Show appropriate feedback
+    this.showTimingFeedback(evaluationResult, source);
+    
+    return evaluationResult.result === 'correct';
+  }
+  
+  showTimingFeedback(evaluationResult, source) {
+    const { result, feedback, noteElement, pressedNote } = evaluationResult;
+    
+    // Show visual feedback on keyboard
+    if (result === 'correct') {
+      this.showCorrectFeedback(noteElement.dataset.pitch, source);
+      this.showIntersectionLine(noteElement, source);
+    } else {
+      this.showIncorrectFeedback(pressedNote || 'unknown', source);
+    }
+    
+    // Show timing message
+    this.displayTimingMessage(feedback, result);
+  }
+  
+  displayTimingMessage(message, resultType) {
+    const messageElement = document.getElementById('timingFeedback') || this.createTimingMessageElement();
+    
+    messageElement.textContent = message;
+    messageElement.className = `timing-feedback ${resultType}`;
+    messageElement.style.display = 'block';
+    
+    // Auto-hide after delay
+    setTimeout(() => {
+      messageElement.style.display = 'none';
+    }, 1500);
+  }
+  
+  createTimingMessageElement() {
+    const messageElement = document.createElement('div');
+    messageElement.id = 'timingFeedback';
+    messageElement.className = 'timing-feedback';
+    
+    // Position above the keyboard
+    const keyboardContainer = document.querySelector('.virtual-keyboard-container');
+    keyboardContainer.parentNode.insertBefore(messageElement, keyboardContainer);
+    
+    return messageElement;
+  }
+}
+```
+
+**CSS for Timing Feedback:**
+```css
+.timing-feedback {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  z-index: 1000;
+  display: none;
+  animation: fadeInOut 1.5s ease-in-out;
+}
+
+.timing-feedback.correct {
+  background-color: rgba(59, 178, 65, 0.9);
+}
+
+.timing-feedback.early {
+  background-color: rgba(255, 193, 7, 0.9);
+}
+
+.timing-feedback.late {
+  background-color: rgba(255, 152, 0, 0.9);
+}
+
+.timing-feedback.incorrect {
+  background-color: rgba(244, 67, 54, 0.9);
+}
+
+.incorrect-note-display {
+  z-index: 10;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+  20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 0.8; }
+}
+```
+
 ## Virtual Piano Keyboard Design
 
 ### Keyboard Layout and Visual Design
@@ -913,6 +1557,24 @@ class KeyboardInteractionHandler {
     pressedKeys: Set,        // Currently pressed keys
     lastPlayedKey: string,   // Last key played by user
     correctMatches: number,  // Count of correct key presses
+    incorrectAttempts: number, // Count of incorrect key presses
+    currentStreak: number,   // Current consecutive correct streak
+    accuracyRate: number     // Overall accuracy percentage
+  },
+  progressBar: {
+    totalDuration: number,   // Total song duration in milliseconds
+    currentProgress: number, // Current progress as percentage (0-100)
+    isInteracting: boolean   // Whether user is currently clicking/dragging progress bar
+  },
+  timingEvaluation: {
+    playbackLinePosition: number,    // Current x-position of playback line
+    noteHeadTolerance: number,       // Pixel tolerance for "correct timing"
+    earlyThreshold: number,          // Threshold for "too early" feedback
+    lateThreshold: number,           // Threshold for "too late" feedback
+    lastEvaluationResult: string,    // "correct", "early", "late", or "incorrect"
+    incorrectNoteDisplay: Array      // Array of incorrect notes currently displayed
+  }
+}t key presses
     audioEnabled: boolean    // Audio playback state
   },
   midiState: {
@@ -1125,6 +1787,22 @@ class KeyboardInteractionHandler {
 - **MIDI input processing delays**: Implement input queuing and batch processing for high-frequency MIDI data
 - **Mixed input source conflicts**: Prioritize MIDI input over virtual keyboard when both are active simultaneously
 
+### Progress Bar Navigation Errors
+- **Invalid position calculations**: Boundary checking and position validation with fallback to current position
+- **Position synchronization issues**: Automatic correction and state reconciliation between progress bar and staff
+- **Mouse/touch event conflicts**: Implement event delegation and prevent default behaviors appropriately
+- **Progress calculation overflow**: Clamp values to valid ranges (0-100%) and log warnings for debugging
+- **Click event handling failures**: Fallback to current position and log error for debugging
+
+### Timing Evaluation System Errors
+- **Note position calculation errors**: Fallback to basic timing detection using default tolerance values
+- **Playback line position failures**: Use alternative position tracking methods or disable precise timing
+- **Incorrect note display issues**: Skip visual feedback creation and continue with evaluation logic
+- **Timing tolerance calculation errors**: Use default tolerance values and log warnings for debugging
+- **Note bounds calculation failures**: Fallback to simplified rectangular bounds detection
+- **DOM element access errors**: Graceful handling of missing or invalid note elements
+- **Animation cleanup failures**: Implement timeout-based cleanup as fallback for failed animations
+
 ## Testing Strategy
 
 ### Unit Tests
@@ -1164,3 +1842,6 @@ class KeyboardInteractionHandler {
 - **Audio Performance**: Test Tone.js latency, polyphonic performance, sustained note memory management, effects processing overhead
 - **Keyboard Responsiveness**: Measure click-to-feedback timing, visual update performance
 - **Cross-browser Audio**: Test Tone.js compatibility and performance across different browsers and devices
+- **Progress Bar Performance**: Test click responsiveness, position calculation accuracy, visual feedback performance
+- **Timing Evaluation Performance**: Measure note detection accuracy, timing calculation speed, incorrect note rendering performance
+- **Memory Management**: Test cleanup of temporary visual elements, progress bar interaction state management

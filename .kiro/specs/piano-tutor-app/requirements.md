@@ -142,3 +142,24 @@ This document outlines the requirements for a minimal piano tutor app MVP. The a
 10. WHEN MIDI connection is lost THEN the system SHALL gracefully fall back to virtual keyboard mode and notify the user
 11. WHEN the user plays on the real piano and playback is not active THEN the system SHALL start the playback automatically
 12. WHEN MIDI velocity data is available THEN the system SHALL use it to provide dynamic audio response and visual feedback intensity
+
+### Requirement 11
+
+**User Story:** As a piano student, I want to click on the progress bar to navigate to specific positions in the music, so that I can quickly jump to any section I want to practice.
+
+#### Acceptance Criteria
+
+1. WHEN a user clicks on the progress bar THEN the system SHALL move the staff to the correct position corresponding to the clicked location
+
+### Requirement 12
+
+**User Story:** As a piano student, I want precise timing feedback when I play notes, so that I can understand if I'm playing too early, too late, or at the correct time.
+
+#### Acceptance Criteria
+
+1. WHEN a user clicks a piano key correctly and the note's head is within the bounds of the playback line THEN the system SHALL count it as a correct press
+2. WHEN a user clicks a piano key correctly but the note's head is not within the bounds of the playback line AND the playback line is within the bounds of the note's rectangle bounds THEN the system SHALL report that it's too late
+3. WHEN a user clicks a piano key correctly but the note's head has not yet reached the playback line range THEN the system SHALL report that it's too early
+4. WHEN a user clicks a piano key incorrectly THEN the system SHALL show the clicked piano key as the corresponding note in the staff with gray color
+5. WHEN an incorrect note is displayed on the staff THEN the system SHALL render it as an eighth note
+6. WHEN an incorrect note is displayed on the staff THEN the system SHALL align the note's head with the left boundary of the playback line

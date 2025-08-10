@@ -44,7 +44,7 @@
     - Calculate movement speed based on note timing
     - _Requirements: 3.2, 3.3_
 
-  - [ ] 4.3 Add note highlighting during playback
+  - [x] 4.3 Add note highlighting during playback
     - Highlight current note when it aligns with vertical line
     - Change note color or add visual indicator for active note
     - Update highlighting as staff moves through notes
@@ -63,33 +63,33 @@
     - Style fingering numbers to be clearly readable
     - _Requirements: 2.1, 2.2_
 
-  - [ ] 6.2 Highlight current fingering during playback
+  - [x] 6.2 Highlight current fingering during playback
     - Emphasize fingering number for currently playing note
     - Coordinate fingering display with note highlighting
     - Update fingering emphasis as playback progresses
     - _Requirements: 3.4_
 
 - [ ] 7. Implement timing and synchronization
-  - [ ] 7.1 Calculate note timing intervals
+  - [x] 7.1 Calculate note timing intervals
     - Convert note durations to millisecond timing values
     - Account for different note types (quarter, eighth, dotted quarter, half)
     - Create timing array for smooth playback progression
     - _Requirements: 2.3, 3.3_
 
-  - [ ] 7.2 Synchronize staff movement with note timing
+  - [x] 7.2 Synchronize staff movement with note timing
     - Match staff movement speed to calculated note timings
     - Ensure notes align properly with vertical line at correct times
     - Handle tempo consistency throughout playback
     - _Requirements: 3.2, 3.3, 3.4_
 
 - [ ] 8. Add responsive design and polish
-  - [ ] 8.1 Implement responsive layout
+  - [x] 8.1 Implement responsive layout
     - Ensure staff scales appropriately on different screen sizes
     - Maintain proper proportions for notes and spacing
     - Test layout on mobile and desktop viewports
     - _Requirements: 4.1, 4.2_
 
-  - [ ] 8.2 Add visual polish and error handling
+  - [x] 8.2 Add visual polish and error handling
     - Implement smooth transitions and animations
     - Add error handling for edge cases
     - Ensure clean, professional appearance
@@ -154,7 +154,7 @@
     - Preserve manual navigation functionality with tempo changes
     - _Requirements: 6.3, 6.4_
 
-  - [ ] 10.5 Add tempo display and feedback
+  - [x] 10.5 Add tempo display and feedback
     - Show current tempo marking prominently in the UI
     - Display current BPM value alongside tempo name
     - Update tempo display when selection changes
@@ -232,6 +232,15 @@
     - Maintain clean, uncluttered design consistent with app interface
     - _Requirements: 7.10, 8.6, 8.7_
 
+- [ ] 17. Fix tempo control to match requirements specification
+  - [ ] 17.1 Update tempo markings to match requirements
+    - Replace current tempo values (40, 60, 72, 90, 120) with required values (40, 60, 76, 108, 120, 168, 180, 200)
+    - Update TEMPO_MARKINGS constant with all required BPM values and correct speed multipliers
+    - Update HTML select options to include all required tempo values
+    - Update default tempo to 120 BPM as specified in requirements (currently defaults to 60 BPM)
+    - Test tempo changes work correctly with all new values
+    - _Requirements: 6.1, 6.2, 6.6_
+
 - [ ] 13. Implement MIDI piano connectivity
   - [x] 13.1 Create MIDI system initialization and device detection
     - Implement Web MIDI API initialization with browser compatibility checks
@@ -305,21 +314,80 @@
     - Ensure automatic selection works with device hot-plugging
     - _Requirements: 9.2_
 
-- [ ] 11. Create comprehensive testing
-  - [ ] 11.1 Test note positioning accuracy
+- [x] 14. Implement enhanced progress bar navigation
+  - [x] 14.1 Enhance existing progress bar with click-to-jump functionality
+    - Create ProgressBarController class to manage enhanced progress bar features
+    - Add click event handlers to existing simple-progress-bar element
+    - Implement position calculation from click coordinates to staff position
+    - Ensure click navigation works during both playback and pause states
+    - _Requirements: 11.1_
+
+  - [x] 14.2 Integrate progress bar navigation with playback system
+    - Implement jumpToPosition method to update staff position immediately
+    - Coordinate with PlaybackController to update internal position tracking
+    - Ensure progress bar updates don't interfere with normal playback progress
+    - Handle boundary validation to prevent navigation beyond song limits
+    - Update current note index when jumping to new positions
+    - _Requirements: 11.1_
+
+  - [x] 14.3 Add progress bar interaction state management
+    - Implement interaction state tracking to prevent conflicts during user clicks
+    - Add visual feedback classes for interaction states
+    - Ensure smooth transitions between normal and interaction states
+    - Handle rapid successive clicks without position conflicts
+    - Maintain progress bar responsiveness across different screen sizes
+    - _Requirements: 11.1_
+
+- [x] 15. Implement enhanced timing evaluation system
+  - [x] 15.1 Create TimingEvaluationSystem class for precise timing detection
+    - Implement note head position calculation relative to playback line
+    - Add note rectangle bounds calculation for timing evaluation
+    - Create timing evaluation logic for correct, early, late, and incorrect scenarios
+    - Implement pixel-perfect timing detection with configurable tolerance
+    - Add expected note detection based on playback line position
+    - _Requirements: 12.1, 12.2, 12.3_
+
+  - [x] 15.2 Implement incorrect note visual feedback system
+    - Create gray eighth note display for incorrect key presses
+    - Position incorrect notes aligned with playback line left boundary
+    - Implement automatic cleanup of incorrect note elements after delay
+    - Add note stem and flag rendering for proper eighth note appearance
+    - Handle multiple simultaneous incorrect notes without visual conflicts
+    - _Requirements: 12.4, 12.5, 12.6_
+
+  - [x] 15.3 Integrate timing evaluation with existing learning feedback
+    - Enhance existing learning feedback system to use precise timing evaluation
+    - Implement timing feedback messages (correct, too early, too late, incorrect)
+    - Add visual feedback display for timing evaluation results
+    - Coordinate timing evaluation with keyboard and MIDI input systems
+    - Ensure timing evaluation works consistently across all tempo settings
+    - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6_
+
+  - [x] 15.4 Add timing evaluation error handling and performance optimization
+    - Implement fallback timing detection for edge cases
+    - Add boundary checking for note position calculations
+    - Handle DOM element access errors gracefully
+    - Optimize timing evaluation performance for real-time response
+    - Add cleanup mechanisms to prevent memory leaks from temporary elements
+    - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6_
+
+    - Implement fallback timing detection for edge cases
+
+- [ ] 16. Comprehensive testing and validation
+  - [ ] 16.1 Test note positioning accuracy
     - Verify all notes appear at correct staff positions
     - Test different note durations render with proper widths
     - Validate fingering numbers display correctly
     - _Requirements: 1.3, 1.4, 2.4, 2.5_
 
-  - [ ] 11.2 Test playback functionality
+  - [ ] 16.2 Test playback functionality
     - Verify smooth staff movement animation
     - Test play/pause/reset controls work correctly
     - Ensure note highlighting synchronizes properly
     - Validate timing accuracy throughout playback
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
 
-  - [ ] 11.3 Test manual navigation functionality
+  - [ ] 16.3 Test manual navigation functionality
     - Verify touch and mouse interactions work on all devices
     - Test smooth dragging and swiping in both directions
     - Ensure playback integration works correctly
@@ -327,7 +395,7 @@
     - Test position persistence after manual interaction
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-  - [ ] 11.4 Test tempo control functionality
+  - [ ] 16.4 Test tempo control functionality
     - Verify all Italian tempo markings are available and functional
     - Test tempo changes during playback maintain correct position
     - Validate BPM calculations produce correct playback speeds
@@ -336,7 +404,7 @@
     - Verify default tempo loads correctly on app initialization
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6_
 
-  - [ ] 11.5 Test virtual piano keyboard functionality with Tone.js
+  - [ ] 16.5 Test virtual piano keyboard functionality with Tone.js
     - Verify keyboard layout renders correctly with proper key dimensions
     - Test all keys respond to clicks/touches with Tone.js audio playback and visual feedback
     - Validate realistic piano audio works for each key with correct pitches and effects
@@ -352,7 +420,7 @@
     - Ensure clean, uncluttered design maintains app consistency
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 7.10, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7_
 
-  - [ ] 11.6 Test MIDI piano connectivity functionality
+  - [ ] 16.6 Test MIDI piano connectivity functionality
     - Verify Web MIDI API initialization and browser compatibility
     - Test MIDI device detection and enumeration with various device types
     - Validate device selection interface and connection status indicators
@@ -371,3 +439,29 @@
     - Test MIDI device preference persistence and auto-reconnection
     - Validate MIDI integration with tempo changes and manual navigation
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 9.10, 9.11, 9.12_
+
+  - [ ] 16.7 Test enhanced progress bar navigation functionality
+    - Verify click-to-jump functionality works accurately across entire progress bar
+    - Test progress bar position calculation accuracy for different screen sizes
+    - Validate visual feedback (hover effects) work on both desktop and mobile
+    - Test progress bar navigation during active playback and pause states
+    - Verify progress bar updates don't interfere with normal playback progression
+    - Test boundary validation prevents navigation beyond song start/end
+    - Validate progress bar interaction state management prevents conflicts
+    - Test rapid successive clicks handle smoothly without position errors
+    - _Requirements: 11.1_
+
+  - [ ] 16.8 Test enhanced timing evaluation system functionality
+    - Verify precise timing detection accuracy for correct note timing
+    - Test "too early" detection when note head hasn't reached playback line
+    - Validate "too late" detection when playback line is within note bounds
+    - Test incorrect note visual feedback displays gray eighth notes correctly
+    - Verify incorrect notes align properly with playback line left boundary
+    - Test automatic cleanup of incorrect note elements after display delay
+    - Validate timing evaluation works consistently across all tempo settings
+    - Test timing evaluation integration with both virtual and MIDI input
+    - Verify timing feedback messages display correctly for each scenario
+    - Test performance optimization handles real-time evaluation smoothly
+    - Validate error handling for edge cases and DOM element access failures
+    - Test memory management prevents leaks from temporary visual elements
+    - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6_
