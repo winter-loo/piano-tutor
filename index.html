@@ -201,7 +201,6 @@
 
     /* Positive feedback for correct note matches */
     .note-rectangle.correct-note {
-      transform: scale(1.2);
       box-shadow: 0 0 15px rgba(40, 167, 69, 0.8);
       z-index: 10;
     }
@@ -921,10 +920,11 @@
       <div class="tempo-control">
         <label class="tempo-label" for="tempoSelector">♩=</label>
         <select class="tempo-selector" id="tempoSelector">
-          <option value="60">60</option>
-          <option value="120" selected>120</option>
-          <option value="180">180</option>
-          <option value="200">200</option>
+          <option value="40">40</option>
+          <option value="60" selected>60</option>
+          <option value="72">72</option>
+          <option value="90">90</option>
+          <option value="120">120</option>
         </select>
       </div>
     </div>
@@ -1023,16 +1023,12 @@
           notes: [
             {pitch: "C4", duration: "quarter", fingering: 1},
             {pitch: "D4", duration: "quarter", fingering: null},
-            {pitch: "E4", duration: "quarter", fingering: null},
-            {pitch: "F4", duration: "quarter", fingering: null}
+            {pitch: "E4", duration: "half", fingering: null},
           ]
         },
         {
           notes: [
-            {pitch: "G4", duration: "quarter", fingering: 1},
-            {pitch: "A4", duration: "quarter", fingering: null},
-            {pitch: "B4", duration: "quarter", fingering: null},
-            {pitch: "C5", duration: "quarter", fingering: null}
+            {pitch: "G4", duration: "whole", fingering: 1},
           ]
         },
         {
@@ -1040,14 +1036,6 @@
             {pitch: "D5", duration: "quarter", fingering: 1},
             {pitch: "E5", duration: "quarter", fingering: null},
             {pitch: "F5", duration: "quarter", fingering: null},
-            {pitch: "G5", duration: "quarter", fingering: null}
-          ]
-        },
-        {
-          notes: [
-            {pitch: "A5", duration: "quarter", fingering: null},
-            {pitch: "B5", duration: "quarter", fingering: null},
-            {pitch: "rest", duration: "quarter", fingering: null},
             {pitch: "rest", duration: "quarter", fingering: null}
           ]
         },
@@ -1162,50 +1150,41 @@
       "40": {
         name: "40 BPM",
         bpm: 40,
-        speedMultiplier: 0.33 // 40/120 ≈ 0.33
+        speedMultiplier: 0.6 // 40/60 = 0.6
       },
       "60": {
         name: "60 BPM",
         bpm: 60,
-        speedMultiplier: 0.50 // 60/120 = 0.50
+        speedMultiplier: 1.0 // 60/60 = 1.0 (reference tempo)
       },
-      "76": {
-        name: "76 BPM",
-        bpm: 76,
-        speedMultiplier: 0.63 // 76/120 ≈ 0.63
+      "72": {
+        name: "72 BPM",
+        bpm: 72,
+        speedMultiplier: 1.2 // 72 / 60 = 1.2
       },
-      "108": {
-        name: "108 BPM",
-        bpm: 108,
-        speedMultiplier: 0.90 // 108/120 = 0.90
+      "90": {
+        name: "90 BPM",
+        bpm: 90,
+        speedMultiplier: 1.5 // 90 / 60 = 1.5
       },
       "120": {
         name: "120 BPM",
         bpm: 120,
-        speedMultiplier: 1.0 // 120/120 = 1.0 (reference tempo)
+        speedMultiplier: 2.0 // 120/60 = 2.0
       },
-      "168": {
-        name: "168 BPM",
-        bpm: 168,
-        speedMultiplier: 1.40 // 168/120 = 1.40
-      },
-      "180": {
-        name: "180 BPM",
-        bpm: 180,
-        speedMultiplier: 1.50 // 180/120 = 1.50
-      },
-      "200": {
-        name: "200 BPM",
-        bpm: 200,
-        speedMultiplier: 1.67 // 200/120 ≈ 1.67
-      }
     };
 
-    // Default tempo setting - 120 BPM as specified in requirements
-    const DEFAULT_TEMPO = "120";
+    // Default tempo setting - 60 BPM as specified in requirements
+    const DEFAULT_TEMPO = "60";
 
-    // Base playback speed in pixels per millisecond at default tempo (120 BPM)
-    const BASE_PLAYBACK_SPEED = 0.05;
+    // Base playback speed in pixels per millisecond at default tempo (60 BPM)
+    // The algorithm:
+    // 60 BMP = 60 beats per minute = 1 beat per second = 1 quarter note per second
+    // = 76 pixels per 1000 ms
+    //
+    // NotePositioning.getNoteWidth("quarter") / 1000
+    // => 76 / 1000 = 0.076 pixels/ms
+    const BASE_PLAYBACK_SPEED = 0.076;
 
     // MIDI Device Manager class for UI management
     class MIDIDeviceManager {
@@ -3930,8 +3909,8 @@
         const positionedNotes = [];
         let noteIndex = 0;
         let cumulativeX = 0;
-        const noteSpacing = 12; // 16 pixels between notes
-        const measureBarMargin = 6; // 6 pixels from measure bar to notes
+        const noteSpacing = 12; // pixels between notes
+        const measureBarMargin = 6; // pixels from measure bar to notes
         this.measurePositions = []; // Track measure start positions
 
         measures.forEach((measure, measureIndex) => {
@@ -5528,6 +5507,7 @@
        * @returns {HTMLElement} The created line element
        */
       createIntersectionLine(noteName, position, maxDuration) {
+        console.log(`........playing-hint line will sustain for duration ${maxDuration}`);
         const lineElement = document.createElement('div');
         lineElement.className = 'intersection-line';
         lineElement.setAttribute('data-note', noteName);
