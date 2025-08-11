@@ -7537,9 +7537,6 @@
           // Update playback speed
           this.playbackSpeed = newPlaybackSpeed;
 
-          // Maintain current position during tempo changes
-          this.currentPosition = currentPositionBeforeChange;
-
           // Recalculate start time based on new tempo and current position
           const currentTimePosition = this.currentPosition / this.playbackSpeed;
           this.pausedTime = currentTimePosition;
@@ -9287,6 +9284,9 @@
         let notesContainerRect = notesContainer.getBoundingClientRect();
         let playbackLineRect = playbackLine.getBoundingClientRect();
         this.currentPosition = playbackLineRect.left - notesContainerRect.left;
+        // when user changes the tempo, the animation paused and the playback line 
+        // should attach to the nearest note.
+        this.attachToNearestNote();
         console.log(`Playback paused at position: ${this.currentPosition}px, time: ${this.pausedTime}ms`);
       }
 
