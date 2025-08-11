@@ -205,13 +205,6 @@
       z-index: 10;
     }
 
-    /* MIDI-specific correct note feedback */
-    .note-rectangle.correct-note-midi {
-      transform: scale(1.2);
-      box-shadow: 0 0 15px rgba(111, 66, 193, 0.8);
-      z-index: 10;
-    }
-
     /* Simple Progress Bar Styles */
     .simple-progress-bar {
       position: absolute;
@@ -402,40 +395,6 @@
       background-color: #dc3545 !important;
       color: white;
       box-shadow: 0 0 10px rgba(220, 53, 69, 0.6);
-    }
-
-    /* MIDI-specific feedback classes */
-    .piano-key.correct-midi {
-      background-color: #6f42c1 !important;
-      /* Purple for MIDI correct feedback */
-      color: white;
-      box-shadow: 0 0 12px rgba(111, 66, 193, 0.8);
-    }
-
-    .piano-key.incorrect-midi {
-      background-color: #e83e8c !important;
-      /* Pink for MIDI incorrect feedback */
-      color: white;
-      box-shadow: 0 0 10px rgba(232, 62, 140, 0.6);
-    }
-
-    /* MIDI-specific key highlighting */
-    .piano-key.midi-pressed {
-      background-color: #6f42c1 !important;
-      /* Purple for MIDI input */
-      color: white;
-      box-shadow: 0 0 12px rgba(111, 66, 193, 0.8);
-      border: 2px solid rgba(111, 66, 193, 0.9);
-    }
-
-    .piano-key.midi-pressed.white {
-      background-color: #8a63d2 !important;
-      /* Lighter purple for white keys */
-    }
-
-    .piano-key.midi-pressed.black {
-      background-color: #5a3a9a !important;
-      /* Darker purple for black keys */
     }
 
     /*
@@ -1079,14 +1038,7 @@
         <div class="value" id="currentStreak">0</div>
         <div class="label">Streak</div>
       </div>
-      <div class="progress-stat midi-stat" id="midiStats" style="display: none;">
-        <div class="value" id="midiAccuracy">0%</div>
-        <div class="label">MIDI Accuracy</div>
-      </div>
-      <div class="progress-stat midi-stat" id="virtualStats" style="display: none;">
-        <div class="value" id="virtualAccuracy">0%</div>
-        <div class="label">Virtual Accuracy</div>
-      </div>
+
     </div>
   </div>
 
@@ -6951,40 +6903,18 @@
             // Add enhanced MIDI-specific visual feedback
             const keyElement = this.keys.get(keyboardNote);
             if (keyElement) {
-              // Add MIDI-specific visual styling with velocity-based intensity
-              keyElement.classList.add('pressed', 'midi-pressed');
-              keyElement.style.filter = 'brightness(0.85)';
-
-              // Velocity-based visual feedback intensity (Requirements 9.11)
-              const glowIntensity = Math.max(0.4, velocity);
-              const glowSize = 8 + (velocity * 4); // 8-12px glow based on velocity
-              keyElement.style.boxShadow = `0 0 ${glowSize}px rgba(111, 66, 193, ${glowIntensity})`;
+              // Add visual styling to match virtual keyboard
+              keyElement.classList.add('pressed');
+              keyElement.style.filter = 'brightness(0.9)';
 
               this.pressedKeys.add(keyboardNote);
             }
 
             console.log(`🎹 [MIDI-INTEGRATION] MIDI key pressed successfully: ${keyboardNote} (velocity: ${velocity.toFixed(3)})`);
 
-            // Process MIDI learning feedback with enhanced velocity handling (Requirements 10.7, 9.10, 9.11)
-            if (this.onMIDILearningFeedback) {
-              const midiLearningResult = this.onMIDILearningFeedback({
-                ...keyData,
-                source: 'midi',
-                velocity: velocity,
-                rawVelocity: rawVelocity,
-                channel: channel,
-                timestamp: timestamp,
-                deviceName: deviceName
-              });
-
-              // Apply enhanced MIDI-specific visual feedback based on learning result
-              if (midiLearningResult !== undefined) {
-                this.applyMIDILearningVisualFeedback(keyboardNote, midiLearningResult, velocity, keyElement);
-              }
-            }
-
             // Trigger key press handler with comprehensive MIDI source information
             if (this.onKeyPressed) {
+              // proxy to handleVirtualKeyPressed
               this.onKeyPressed({
                 ...keyData,
                 source: 'midi',
@@ -7000,64 +6930,6 @@
           }
         } catch (error) {
           console.error(`🎹 [MIDI-INTEGRATION] Error handling MIDI note pressed:`, error);
-        }
-      }
-
-      /**
-       * Apply enhanced MIDI-specific visual feedback based on learning result
-       * @param {string} keyboardNote - The keyboard note that was pressed
-       * @param {boolean} isCorrect - Whether the key press was correct
-       * @param {number} velocity - MIDI velocity (0-1 range)
-       * @param {HTMLElement} keyElement - The key element for visual feedback
-       */
-      applyMIDILearningVisualFeedback(keyboardNote, isCorrect, velocity, keyElement) {
-        if (!keyElement) return;
-
-        // Remove any existing learning feedback classes
-        keyElement.classList.remove('correct-C', 'correct-D', 'correct-E', 'correct-F', 'correct-G', 'correct-A', 'correct-B', 'incorrect-gray');
-
-        if (isCorrect) {
-          // Apply unique color feedback for correct MIDI key presses (Requirements 10.7)
-          const correctClass = `correct-${keyboardNote[0]}`;
-          keyElement.classList.add(correctClass);
-
-          // Enhanced velocity-based visual intensity for MIDI input (Requirements 9.11)
-          const glowIntensity = Math.max(0.6, velocity);
-          const glowSize = 12 + (velocity * 8); // 12-20px glow based on velocity
-          const scaleIntensity = 1.05 + (velocity * 0.15); // 1.05-1.2 scale based on velocity
-
-          const noteColor = this.getNoteColor(keyboardNote);
-
-          // Apply enhanced visual feedback with MIDI-specific styling
-          keyElement.style.boxShadow = `0 0 ${glowSize}px rgba(111, 66, 193, ${glowIntensity}), 0 0 ${glowSize * 1.5}px ${noteColor}80`;
-          keyElement.style.borderColor = noteColor;
-
-          // Enhanced animation duration based on velocity
-          const animationDuration = 500 + (velocity * 300); // 500-800ms based on velocity
-
-          setTimeout(() => {
-            keyElement.classList.remove(correctClass);
-            keyElement.style.boxShadow = '';
-            keyElement.style.borderColor = '';
-          }, animationDuration);
-
-          console.log(`✅ [MIDI-LEARNING] Applied correct MIDI feedback: ${keyboardNote} with color ${noteColor} (velocity: ${velocity.toFixed(3)})`);
-        } else {
-          // Apply gray color feedback for incorrect MIDI key presses (Requirements 10.7)
-          keyElement.classList.add('incorrect-gray');
-
-          // Enhanced shake animation with velocity-based intensity
-          const shakeIntensity = 2 + (velocity * 3); // 2-5px shake based on velocity
-          keyElement.style.animation = `shakeKey 0.3s ease-in-out`;
-          keyElement.style.setProperty('--shake-intensity', `${shakeIntensity}px`);
-
-          setTimeout(() => {
-            keyElement.classList.remove('incorrect-gray');
-            keyElement.style.animation = '';
-            keyElement.style.removeProperty('--shake-intensity');
-          }, 300);
-
-          console.log(`❌ [MIDI-LEARNING] Applied incorrect MIDI feedback: ${keyboardNote} (velocity: ${velocity.toFixed(3)})`);
         }
       }
 
@@ -7098,7 +6970,7 @@
             // Remove visual feedback for MIDI key release
             const keyElement = this.keys.get(keyboardNote);
             if (keyElement) {
-              keyElement.classList.remove('pressed', 'midi-pressed');
+              keyElement.classList.remove('pressed');
               keyElement.style.transform = '';
               keyElement.style.filter = '';
               keyElement.style.boxShadow = '';
@@ -7271,7 +7143,7 @@
           pressedKeys: Array.from(this.pressedKeys),
           midiPressedKeys: Array.from(this.pressedKeys).filter(note => {
             const keyElement = this.keys.get(note);
-            return keyElement && keyElement.classList.contains('midi-pressed');
+            return keyElement && keyElement.classList.contains('pressed');
           })
         };
       }
@@ -7318,10 +7190,10 @@
        */
       clearMIDIStates() {
         // Clear any MIDI-specific visual feedback
-        const midiActiveKeys = this.keyboardContainer?.querySelectorAll('.midi-active, .midi-pressed');
+        const midiActiveKeys = this.keyboardContainer?.querySelectorAll('.active, .pressed');
         if (midiActiveKeys) {
           midiActiveKeys.forEach(key => {
-            key.classList.remove('midi-active', 'midi-pressed', 'midi-correct', 'midi-incorrect');
+            key.classList.remove('active', 'pressed', 'midi-correct', 'midi-incorrect');
           });
         }
 
@@ -7676,11 +7548,6 @@
           this.handleVirtualKeyReleased(keyData);
         };
 
-        // MIDI learning feedback callback
-        this.virtualKeyboard.onMIDILearningFeedback = (keyData) => {
-          return this.processMIDILearningFeedback(keyData);
-        };
-
         // MIDI key release callback for intersection line management (Requirements 10.7)
         this.virtualKeyboard.onMIDIKeyReleased = (keyData) => {
           // Handle intersection line management for MIDI key release
@@ -7728,15 +7595,14 @@
       /**
        * Show enhanced positive feedback with unique colors and intersection lines
        * @param {string} keyNote - Note name that was correctly pressed
-       * @param {string} inputSource - Source of input ('virtual' or 'midi')
        */
-      showCorrectNoteHighlight(keyNote, inputSource = 'virtual') {
+      showCorrectNoteHighlight(keyNote) {
         // Find the current note that should be played
         const noteElement = document.getElementById(`note-${this.nextNoteToPlayIndex}`);
         if (noteElement) {
           // Add positive feedback class to the note with input source indication
-          const feedbackClass = inputSource === 'midi' ? 'correct-note-midi' : 'correct-note';
-          noteElement.classList.add('correct-note', feedbackClass);
+          const feedbackClass = 'correct-note';
+          noteElement.classList.add(feedbackClass);
 
           const currentNote = this.positionedNotes[this.nextNoteToPlayIndex];
           // Calculate note duration in milliseconds for intersection line
@@ -7760,7 +7626,7 @@
           // Store feedback info for later removal based on events
           this.storeActiveFeedback(this.nextNoteToPlayIndex, noteElement, feedbackClass);
 
-          console.log(`✅ Correct note feedback: note-${this.nextNoteToPlayIndex} (${inputSource} input)`);
+          console.log(`✅ Correct note feedback: note-${this.nextNoteToPlayIndex}`);
         }
       }
 
@@ -7771,7 +7637,7 @@
        * @param {string} inputSource - Source of input ('virtual' or 'midi')
        * @param {boolean} isCorrect - Whether the key press was correct
        */
-      showKeyboardFeedback(keyNote, inputSource = 'virtual', isCorrect = true) {
+      showKeyboardFeedback(keyNote, isCorrect = true) {
         const keyElement = this.virtualKeyboard.keys.get(keyNote);
         let pureKeyNote = keyNote[0];
 
@@ -7793,7 +7659,7 @@
             // Show gray color with shake animation for incorrect keys
             keyElement.classList.add('incorrect-gray');
 
-            console.log(`❌ Incorrect keyboard feedback: ${pureKeyNote} (gray + shake)`);
+            console.log(`❌ Incorrect keyboard feedback: ${pureKeyNote} (gray)`);
           }
         }
       }
@@ -7949,7 +7815,7 @@
             console.log(`✅ ${timingResult.message} (${inputSource} input)`);
             // Show correct note highlight on staff
             this.showCorrectNoteHighlight(keyData.note, inputSource);
-            this.showKeyboardFeedback(keyData.note, inputSource, true);
+            this.showKeyboardFeedback(keyData.note, true);
 
             // Show timing feedback message
             this.showTimingFeedbackMessage(timingResult.timing, keyData.note);
@@ -7994,7 +7860,7 @@
           console.log(`✅ Correct match! Played ${keyData.note}, expected ${expectedNote.pitch} (${inputSource} input)`);
           // Show correct note highlight on staff
           this.showCorrectNoteHighlight(keyData.note, inputSource);
-          this.showKeyboardFeedback(keyData.note, inputSource, true);
+          this.showKeyboardFeedback(keyData.note, true);
           if (!this.playbackActive) {
             this.startPlaybackAnimation();
           }
@@ -8006,76 +7872,6 @@
 
         // Update the learning progress display
         this.updateLearningProgressDisplay();
-
-        return isCorrect;
-      }
-
-      /**
-       * Process MIDI-specific learning feedback with enhanced velocity handling and intersection line integration
-       * @param {Object} keyData - MIDI key data with velocity information
-       * @returns {boolean} True if the key press was correct
-       */
-      processMIDILearningFeedback(keyData) {
-        let expectedNote = this.getExpectedNote();
-        // Only process feedback during playback and when expected note is set
-        if (!this.isPlaybackActive || !expectedNote) {
-          return false;
-        }
-
-        const isCorrect = keyData.note === expectedNote.pitch;
-        const {velocity, rawVelocity, deviceName, timestamp} = keyData;
-
-        // Enhanced MIDI statistics tracking (Requirements 10.7, 9.11)
-        this.updateMIDILearningStats(keyData.note, isCorrect, {
-          velocity: velocity,
-          rawVelocity: rawVelocity,
-          deviceName: deviceName,
-          timestamp: timestamp
-        });
-
-        if (isCorrect) {
-          console.log(`✅ [MIDI-LEARNING] Correct MIDI match! Played ${keyData.note}, expected ${expectedNote.pitch} (velocity: ${velocity.toFixed(3)}, device: ${deviceName})`);
-
-          // Enhanced MIDI-specific correct feedback with velocity-based intensity
-          this.showMIDICorrectFeedback(keyData.note, velocity);
-
-          // Show correct note highlight on staff with MIDI styling
-          this.showCorrectNoteHighlight(keyData.note, 'midi');
-          this.showKeyboardFeedback(keyData.note, inputSource, true);
-
-          // Integrate MIDI input with intersection line rendering system (Requirements 10.7)
-          if (this.intersectionLineRenderer && this.nextNoteToPlayIndex >= 0) {
-            const currentNote = this.positionedNotes[this.nextNoteToPlayIndex];
-            if (currentNote && currentNote.pitch === keyData.note) {
-              const noteElement = document.querySelector(`.note-rectangle[data-note-index="${this.currentHighlightedNoteIndex}"]`);
-              if (noteElement) {
-                // Show intersection line with MIDI-specific handling
-                const noteDuration = this.calculateNoteDurationMs(currentNote.duration);
-                this.intersectionLineRenderer.showIntersectionLine(
-                  noteElement,
-                  currentNote.pitch,
-                  noteDuration
-                );
-
-                // Track MIDI key press for intersection line management
-                this.intersectionLineRenderer.trackKeyPress(keyData.note);
-
-                console.log(`🎨 [MIDI-LEARNING] Intersection line created for MIDI input: ${keyData.note}`);
-              }
-            }
-          }
-        } else {
-          console.log(`❌ [MIDI-LEARNING] Incorrect MIDI match! Played ${keyData.note}, expected ${expectedNote.pitch} (velocity: ${velocity.toFixed(3)}, device: ${deviceName})`);
-
-          // Enhanced MIDI-specific incorrect feedback with gray color (Requirements 10.7)
-          this.showMIDIIncorrectFeedback(keyData.note, velocity);
-        }
-
-        // Update the learning progress display with MIDI-specific data
-        this.updateLearningProgressDisplay();
-
-        // Show MIDI-specific statistics in the progress display (Requirements 10.7)
-        this.showMIDIStatistics();
 
         return isCorrect;
       }
@@ -8146,7 +7942,7 @@
        */
       showIncorrectFeedback(keyNote, inputSource = 'virtual') {
         // Use the enhanced keyboard feedback system for incorrect keys
-        this.showKeyboardFeedback(keyNote, inputSource, false);
+        this.showKeyboardFeedback(keyNote, false);
       }
 
       /**
@@ -8242,132 +8038,7 @@
         console.log(`📝 UI Message: ${message} (${messageClass})`);
       }
 
-      /**
-       * Update enhanced MIDI learning statistics with velocity and device tracking
-       * @param {string} keyNote - The key that was pressed
-       * @param {boolean} isCorrect - Whether the key press was correct
-       * @param {Object} midiData - MIDI-specific data (velocity, device, etc.)
-       */
-      updateMIDILearningStats(keyNote, isCorrect, midiData = {}) {
-        const {velocity, rawVelocity, deviceName, timestamp} = midiData;
 
-        // Initialize enhanced MIDI learning stats if not present
-        if (!this.learningStats) {
-          this.learningStats = {
-            correctMatches: 0,
-            incorrectAttempts: 0,
-            totalAttempts: 0,
-            currentStreak: 0,
-            bestStreak: 0,
-            accuracyRate: 0,
-            lastPlayedKey: null,
-            isLearningMode: false,
-            // Enhanced MIDI-specific statistics
-            midiAttempts: 0,
-            midiCorrect: 0,
-            virtualAttempts: 0,
-            virtualCorrect: 0,
-            inputSourceBreakdown: {
-              midi: {
-                attempts: 0,
-                correct: 0,
-                accuracy: 0,
-                averageVelocity: 0,
-                velocitySum: 0,
-                deviceBreakdown: {},
-                lastActivity: null
-              },
-              virtual: {attempts: 0, correct: 0, accuracy: 0}
-            }
-          };
-        }
-
-        // Ensure enhanced MIDI properties exist
-        if (!this.learningStats.inputSourceBreakdown.midi.averageVelocity) {
-          this.learningStats.inputSourceBreakdown.midi.averageVelocity = 0;
-          this.learningStats.inputSourceBreakdown.midi.velocitySum = 0;
-          this.learningStats.inputSourceBreakdown.midi.deviceBreakdown = {};
-          this.learningStats.inputSourceBreakdown.midi.lastActivity = null;
-        }
-
-        // Update general statistics
-        this.learningStats.totalAttempts++;
-        this.learningStats.lastPlayedKey = keyNote;
-        this.learningStats.midiAttempts++;
-        this.learningStats.inputSourceBreakdown.midi.attempts++;
-        this.learningStats.inputSourceBreakdown.midi.lastActivity = timestamp || Date.now();
-
-        // Track velocity data (Requirements 9.11)
-        if (velocity !== undefined) {
-          this.learningStats.inputSourceBreakdown.midi.velocitySum += velocity;
-          this.learningStats.inputSourceBreakdown.midi.averageVelocity =
-            this.learningStats.inputSourceBreakdown.midi.velocitySum /
-            this.learningStats.inputSourceBreakdown.midi.attempts;
-        }
-
-        // Track device-specific statistics
-        if (deviceName) {
-          if (!this.learningStats.inputSourceBreakdown.midi.deviceBreakdown[deviceName]) {
-            this.learningStats.inputSourceBreakdown.midi.deviceBreakdown[deviceName] = {
-              attempts: 0,
-              correct: 0,
-              accuracy: 0,
-              averageVelocity: 0,
-              velocitySum: 0
-            };
-          }
-
-          const deviceStats = this.learningStats.inputSourceBreakdown.midi.deviceBreakdown[deviceName];
-          deviceStats.attempts++;
-
-          if (velocity !== undefined) {
-            deviceStats.velocitySum += velocity;
-            deviceStats.averageVelocity = deviceStats.velocitySum / deviceStats.attempts;
-          }
-        }
-
-        if (isCorrect) {
-          this.learningStats.correctMatches++;
-          this.learningStats.midiCorrect++;
-          this.learningStats.inputSourceBreakdown.midi.correct++;
-          this.learningStats.currentStreak++;
-
-          // Update device-specific correct count
-          if (deviceName && this.learningStats.inputSourceBreakdown.midi.deviceBreakdown[deviceName]) {
-            this.learningStats.inputSourceBreakdown.midi.deviceBreakdown[deviceName].correct++;
-          }
-
-          // Update best streak if current streak is better
-          if (this.learningStats.currentStreak > this.learningStats.bestStreak) {
-            this.learningStats.bestStreak = this.learningStats.currentStreak;
-          }
-        } else {
-          this.learningStats.incorrectAttempts++;
-          this.learningStats.currentStreak = 0; // Reset streak on incorrect attempt
-        }
-
-        // Calculate accuracy rates
-        this.learningStats.accuracyRate = this.learningStats.totalAttempts > 0
-          ? (this.learningStats.correctMatches / this.learningStats.totalAttempts) * 100
-          : 0;
-
-        // Calculate MIDI-specific accuracy
-        if (this.learningStats.inputSourceBreakdown.midi.attempts > 0) {
-          this.learningStats.inputSourceBreakdown.midi.accuracy =
-            (this.learningStats.inputSourceBreakdown.midi.correct /
-              this.learningStats.inputSourceBreakdown.midi.attempts) * 100;
-        }
-
-        // Calculate device-specific accuracy
-        if (deviceName && this.learningStats.inputSourceBreakdown.midi.deviceBreakdown[deviceName]) {
-          const deviceStats = this.learningStats.inputSourceBreakdown.midi.deviceBreakdown[deviceName];
-          deviceStats.accuracy = deviceStats.attempts > 0
-            ? (deviceStats.correct / deviceStats.attempts) * 100
-            : 0;
-        }
-
-        console.log(`[MIDI-STATS] Learning stats updated: ${this.learningStats.correctMatches}/${this.learningStats.totalAttempts} (${this.learningStats.accuracyRate.toFixed(1)}% accuracy) - MIDI input (velocity: ${velocity?.toFixed(3) || 'N/A'}, device: ${deviceName || 'Unknown'})`);
-      }
 
       /**
        * Update learning statistics based on user interaction (supports both virtual and MIDI input)
@@ -8378,53 +8049,7 @@
       updateLearningStats(keyNote, isCorrect, inputSource = 'virtual', timing = null) {
         // Initialize learning stats if not present
         if (!this.learningStats) {
-          this.learningStats = {
-            correctMatches: 0,
-            incorrectAttempts: 0,
-            totalAttempts: 0,
-            currentStreak: 0,
-            bestStreak: 0,
-            accuracyRate: 0,
-            lastPlayedKey: null,
-            isLearningMode: false,
-            // MIDI-specific statistics
-            midiAttempts: 0,
-            midiCorrect: 0,
-            virtualAttempts: 0,
-            virtualCorrect: 0,
-            inputSourceBreakdown: {
-              midi: {attempts: 0, correct: 0, accuracy: 0},
-              virtual: {attempts: 0, correct: 0, accuracy: 0}
-            },
-            // Timing-specific statistics
-            timingStats: {
-              correct: 0,
-              tooEarly: 0,
-              tooLate: 0,
-              incorrect: 0,
-              total: 0
-            }
-          };
-        }
-
-        // Ensure MIDI-specific properties exist for backward compatibility
-        if (!this.learningStats.hasOwnProperty('midiAttempts')) {
-          this.learningStats.midiAttempts = 0;
-        }
-        if (!this.learningStats.hasOwnProperty('midiCorrect')) {
-          this.learningStats.midiCorrect = 0;
-        }
-        if (!this.learningStats.hasOwnProperty('virtualAttempts')) {
-          this.learningStats.virtualAttempts = 0;
-        }
-        if (!this.learningStats.hasOwnProperty('virtualCorrect')) {
-          this.learningStats.virtualCorrect = 0;
-        }
-        if (!this.learningStats.hasOwnProperty('inputSourceBreakdown')) {
-          this.learningStats.inputSourceBreakdown = {
-            midi: {attempts: 0, correct: 0, accuracy: 0},
-            virtual: {attempts: 0, correct: 0, accuracy: 0}
-          };
+          this.initializeLearningStats();
         }
 
         // Update attempt counters
@@ -8573,25 +8198,8 @@
        * Reset learning statistics
        */
       resetLearningStats() {
-        this.learningStats = {
-          correctMatches: 0,
-          incorrectAttempts: 0,
-          totalAttempts: 0,
-          currentStreak: 0,
-          bestStreak: 0,
-          accuracyRate: 0,
-          lastPlayedKey: null,
-          isLearningMode: true,
-          // MIDI-specific statistics
-          midiAttempts: 0,
-          midiCorrect: 0,
-          virtualAttempts: 0,
-          virtualCorrect: 0,
-          inputSourceBreakdown: {
-            midi: {attempts: 0, correct: 0, accuracy: 0},
-            virtual: {attempts: 0, correct: 0, accuracy: 0}
-          }
-        };
+        this.initializeLearningStats();
+        this.learningStats.isLearningMode = true;
         this.updateLearningProgressDisplay();
 
         console.log('Learning statistics reset');
@@ -8618,47 +8226,7 @@
         if (accuracyElement) accuracyElement.textContent = `${stats.accuracyRate.toFixed(1)}%`;
         if (currentStreakElement) currentStreakElement.textContent = stats.currentStreak;
 
-        // Update MIDI-specific statistics if available
-        const learningProgressElement = document.getElementById('learningProgress');
-        const midiAccuracyElement = document.getElementById('midiAccuracy');
-        const virtualAccuracyElement = document.getElementById('virtualAccuracy');
-
-        // Show MIDI stats if there have been MIDI attempts
-        const hasMIDIActivity = stats.inputSourceBreakdown &&
-          stats.inputSourceBreakdown.midi &&
-          stats.inputSourceBreakdown.midi.attempts > 0;
-
-        const hasVirtualActivity = stats.inputSourceBreakdown &&
-          stats.inputSourceBreakdown.virtual &&
-          stats.inputSourceBreakdown.virtual.attempts > 0;
-
-        if (hasMIDIActivity || hasVirtualActivity) {
-          // Show the MIDI stats section
-          if (learningProgressElement) {
-            learningProgressElement.classList.add('show-midi-stats');
-          }
-
-          // Update MIDI accuracy
-          if (midiAccuracyElement && hasMIDIActivity) {
-            const midiAccuracy = stats.inputSourceBreakdown.midi.accuracy || 0;
-            midiAccuracyElement.textContent = `${midiAccuracy.toFixed(1)}%`;
-          }
-
-          // Update virtual accuracy
-          if (virtualAccuracyElement && hasVirtualActivity) {
-            const virtualAccuracy = stats.inputSourceBreakdown.virtual.accuracy || 0;
-            virtualAccuracyElement.textContent = `${virtualAccuracy.toFixed(1)}%`;
-          }
-
-          console.log(`[ENHANCED-DISPLAY] Learning progress updated: ${stats.correctMatches}/${stats.totalAttempts} (${stats.accuracyRate.toFixed(1)}% overall) - MIDI: ${hasMIDIActivity ? stats.inputSourceBreakdown.midi.accuracy.toFixed(1) : 'N/A'}%, Virtual: ${hasVirtualActivity ? stats.inputSourceBreakdown.virtual.accuracy.toFixed(1) : 'N/A'}%`);
-        } else {
-          // Hide MIDI stats if no activity
-          if (learningProgressElement) {
-            learningProgressElement.classList.remove('show-midi-stats');
-          }
-
-          console.log(`Learning progress display updated: ${stats.correctMatches}/${stats.totalAttempts} (${stats.accuracyRate.toFixed(1)}% accuracy)`);
-        }
+        console.log(`Learning progress display updated: ${stats.correctMatches}/${stats.totalAttempts} (${stats.accuracyRate.toFixed(1)}% accuracy)`);
       }
 
       /**
@@ -8739,26 +8307,9 @@
           bestStreak: 0,
           accuracyRate: 0,
           lastPlayedKey: null,
-          isLearningMode: false,
-          // Enhanced statistics for both input methods
-          midiAttempts: 0,
-          midiCorrect: 0,
-          virtualAttempts: 0,
-          virtualCorrect: 0,
-          inputSourceBreakdown: {
-            midi: {
-              attempts: 0,
-              correct: 0,
-              accuracy: 0,
-              averageVelocity: 0,
-              velocitySum: 0,
-              deviceBreakdown: {},
-              lastActivity: null
-            },
-            virtual: {attempts: 0, correct: 0, accuracy: 0}
-          }
+          isLearningMode: false
         };
-        console.log(`[INIT] Learning statistics initialized with MIDI and virtual tracking`);
+        console.log(`[INIT] Learning statistics initialized with unified tracking`);
       }
 
       /**
