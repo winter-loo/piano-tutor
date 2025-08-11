@@ -353,7 +353,8 @@
     .piano-key.black {
       position: absolute;
       top: 0;
-      right: -25px; /* Half of black key width (49px/2 ≈ 25px) to center between white keys */
+      right: -25px;
+      /* Half of black key width (49px/2 ≈ 25px) to center between white keys */
       width: 49px;
       height: 130px;
       background-color: #333333;
@@ -958,7 +959,8 @@
       .piano-key.black {
         width: 22px;
         height: 80px;
-        right: -11px; /* Half of mobile black key width (22px/2 = 11px) to center between white keys */
+        right: -11px;
+        /* Half of mobile black key width (22px/2 = 11px) to center between white keys */
       }
 
 
@@ -5828,25 +5830,25 @@
        */
       createRobustKeyboardLayout(containerElement) {
         const whiteKeys = this.keyLayout.filter(key => !this.isBlackKey(key));
-        
+
         whiteKeys.forEach((whiteKeyData, index) => {
           // Create white key container
           const whiteKeyContainer = document.createElement('div');
           whiteKeyContainer.className = 'piano-key-container';
-          
+
           // Create the white key element
           const whiteKeyElement = this.createKeyElement(whiteKeyData, 'white');
           whiteKeyContainer.appendChild(whiteKeyElement);
-          
+
           // Check if there should be a black key after this white key
           const blackKeyAfter = this.findBlackKeyAfter(whiteKeyData.note);
-          
+
           if (blackKeyAfter) {
             // Create the black key element positioned between this white key and the next
             const blackKeyElement = this.createKeyElement(blackKeyAfter, 'black');
             whiteKeyContainer.appendChild(blackKeyElement);
           }
-          
+
           containerElement.appendChild(whiteKeyContainer);
         });
       }
@@ -5860,15 +5862,15 @@
         // Extract note name and octave
         const noteName = whiteKeyNote.slice(0, -1);
         const octave = whiteKeyNote.slice(-1);
-        
+
         // Black keys exist after: C, D, F, G, A (but not after E and B)
         const hasBlackKeyAfter = ['C', 'D', 'F', 'G', 'A'].includes(noteName);
-        
+
         if (hasBlackKeyAfter) {
           const sharpNote = `${noteName}#${octave}`;
           return this.keyLayout.find(key => key.note === sharpNote);
         }
-        
+
         return null;
       }
 
@@ -8992,18 +8994,12 @@
        * Finalize staff position and restore normal transition behavior
        */
       finalizeStaffPosition() {
-        const notesContainerElement = document.querySelector('.notes-container');
-        if (notesContainerElement) {
-          // Restore transition for smooth playback animation
-          notesContainerElement.style.transition = 'transform 0.1s linear';
+        // Ensure final position is properly constrained
+        this.currentPosition = this.constrainPosition(this.currentPosition);
 
-          // Ensure final position is properly constrained
-          this.currentPosition = this.constrainPosition(this.currentPosition);
-          notesContainerElement.style.transform = `translate3d(${-this.currentPosition}px, 0, 0)`;
-        }
-
-        // Update internal position tracking after finalization
-        this.updateInternalPositionTracking();
+        this.updateStaffPosition(-this.currentPosition, () => {
+          this.updateInternalPositionTracking();
+        });
       }
 
       /**
@@ -9353,18 +9349,41 @@
       updateStaffPosition(xOffset, onDidUpdate = null) {
         const notesContainerElement = document.querySelector('.notes-container');
         if (notesContainerElement) {
-          
+          notesContainerElement.style.transition = 'transform 0.1s linear';
+
           if (onDidUpdate != null) {
-            const handleTransitionEnd = (e) => {
+            // Extract current X offset from transform and compare numerically
+            const currentTransform = notesContainerElement.style.transform;
+            let currentXOffset = 0;
+
+            if (currentTransform) {
+              const match = currentTransform.match(/translate3d\(([^,]+)px/);
+              if (match) {
+                currentXOffset = parseFloat(match[1]);
+              }
+            }
+
+            // Compare numeric values with small tolerance for floating-point precision
+            const tolerance = 0.1;
+            if (Math.abs(currentXOffset - xOffset) < tolerance) {
+              // No transition needed, call callback immediately
+              onDidUpdate();
+            } else {
+              // Set up transition end listener for actual transitions
+              const handleTransitionEnd = (e) => {
                 notesContainerElement.removeEventListener('transitionend', handleTransitionEnd);
                 onDidUpdate();
-            };
-            // .notes-container dom element has a css transform transition
-            notesContainerElement.addEventListener('transitionend', handleTransitionEnd);
-          }
+              };
+              notesContainerElement.addEventListener('transitionend', handleTransitionEnd);
 
-          // Use translate3d for hardware acceleration and consistency
-          notesContainerElement.style.transform = `translate3d(${xOffset}px, 0, 0)`;
+              // Use translate3d for hardware acceleration and consistency
+              notesContainerElement.style.transform = `translate3d(${xOffset}px, 0, 0)`;
+            }
+          } else {
+            // if no callback, set the transform
+            // Use translate3d for hardware acceleration and consistency
+            notesContainerElement.style.transform = `translate3d(${xOffset}px, 0, 0)`;
+          }
         }
       }
 
@@ -10539,9 +10558,9 @@
         // Update staff position immediately
         this.playbackController.currentPosition = constrainedPosition;
         this.playbackController.updateStaffPosition(-constrainedPosition, () => {
-        // Coordinate with PlaybackController to update internal position tracking
-        // This ensures progress bar updates don't interfere with normal playback progress
-        // Note: updateInternalPositionTracking() handles note index updates internally
+          // Coordinate with PlaybackController to update internal position tracking
+          // This ensures progress bar updates don't interfere with normal playback progress
+          // Note: updateInternalPositionTracking() handles note index updates internally
           this.playbackController.updateInternalPositionTracking();
         });
 
