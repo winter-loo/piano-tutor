@@ -8790,13 +8790,6 @@
         // Prevent default browser behaviors for smooth interaction
         event.preventDefault();
 
-        // Pause automatic playback when manual interaction begins
-        // This ensures manual control takes precedence over automatic playback
-        if (this.isPlaying) {
-          this.handlePause();
-          console.log('Automatic playback paused for manual navigation');
-        }
-
         // Get the pointer position with error handling
         let clientX;
         if (event.type === 'touchstart') {
@@ -8823,6 +8816,13 @@
         }
 
         console.log('Pointer interaction started at:', clientX, '- Manual navigation active');
+
+        // Pause automatic playback when manual interaction begins
+        // This ensures manual control takes precedence over automatic playback
+        if (this.isPlaying) {
+          this.handlePause();
+          console.log('Automatic playback paused for manual navigation');
+        }
       }
 
       /**
@@ -9078,7 +9078,7 @@
             break;
           }
         }
-        console.log(`attach to nearest note(index ${closestNoteIndex}), offset: ${closestOffset}`);
+        console.log(`[attachToNearestNote] note(index ${closestNoteIndex}), currentPosition: ${this.currentPosition} offset: ${closestOffset}`);
         this.updateNextNodeToPlayIndex(closestNoteIndex);
         this.currentPosition += closestOffset;
         this.updateStaffPosition(-this.currentPosition);
@@ -9255,17 +9255,18 @@
           return;
         }
 
-        console.log('Pausing playback animation at position:', this.currentPosition);
-
         // Stop the animation
         this.isPlaying = false;
         this.isPaused = true;
 
+        console.log(`[handlePause] before cancel animation, current position: ${this.currentPosition}`);
         // Cancel the animation frame
         if (this.animationId) {
+          // cancelAnimationFrame does't cancel a running animation!
           cancelAnimationFrame(this.animationId);
           this.animationId = null;
         }
+        console.log(`[handlePause] after cancel animation, current position: ${this.currentPosition}`);
 
         // Store the current playback time for resuming
         this.pausedTime = performance.now() - this.startTime;
@@ -9279,11 +9280,15 @@
         let playbackLine = document.querySelector('.playback-line');
         let notesContainerRect = notesContainer.getBoundingClientRect();
         let playbackLineRect = playbackLine.getBoundingClientRect();
-        this.currentPosition = playbackLineRect.left - notesContainerRect.left;
+        let currentPosition = playbackLineRect.left - notesContainerRect.left;
+        console.log(`[handlePause] Playback paused at position: ${currentPosition}px, current position memory value: ${this.currentPosition}`);
+        this.currentPosition = currentPosition;
+
         // when user changes the tempo, the animation paused and the playback line 
         // should attach to the nearest note.
         this.attachToNearestNote();
-        console.log(`Playback paused at position: ${this.currentPosition}px, time: ${this.pausedTime}ms`);
+
+        console.log('[handlePause] DONE');
       }
 
       /**
@@ -9382,6 +9387,7 @@
           } else {
             // if no callback, set the transform
             // Use translate3d for hardware acceleration and consistency
+            console.log(`[updateStaffPosition] will trigger a repain event, translate x to ${xOffset}`);
             notesContainerElement.style.transform = `translate3d(${xOffset}px, 0, 0)`;
           }
         }
