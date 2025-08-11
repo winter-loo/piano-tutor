@@ -8906,11 +8906,12 @@
         if (Math.abs(momentum) > momentumThreshold) {
           this.applyMomentumEasing(momentum);
         } else {
+          console.log('[handlePointerEnd] finalizeStaffPosition');
           // No momentum, just ensure smooth final positioning
           this.finalizeStaffPosition();
         }
 
-        console.debug('Pointer interaction ended at position:', this.currentPosition, 'with momentum:', momentum);
+        console.debug('[handlePointerEnd] Pointer interaction ended at position:', this.currentPosition, 'with momentum:', momentum);
       }
 
       /**
@@ -8994,9 +8995,15 @@
        * Finalize staff position and restore normal transition behavior
        */
       finalizeStaffPosition() {
+        let notesContainer = document.querySelector('.notes-container');
+        let playbackLine = document.querySelector('.playback-line');
+        let notesContainerRect = notesContainer.getBoundingClientRect();
+        let playbackLineRect = playbackLine.getBoundingClientRect();
+        let currentPosition = playbackLineRect.left - notesContainerRect.left;
         // Ensure final position is properly constrained
-        this.currentPosition = this.constrainPosition(this.currentPosition);
+        this.currentPosition = this.constrainPosition(currentPosition);
 
+        console.log(`[finalizeStaffPosition] current position: ${this.currentPosition}`);
         this.updateStaffPosition(-this.currentPosition, () => {
           this.updateInternalPositionTracking();
         });
@@ -9021,6 +9028,8 @@
         if (!this.isPlaying && this.currentPosition > 0) {
           this.isPaused = true;
         }
+
+        console.log('[updateInternalPositionTracking] will attachToNearestNote');
 
         // Update based on current position during manual navigation
         this.attachToNearestNote();
@@ -9357,37 +9366,34 @@
           notesContainerElement.style.transition = 'transform 0.1s linear';
 
           if (onDidUpdate != null) {
-            // Extract current X offset from transform and compare numerically
-            const currentTransform = notesContainerElement.style.transform;
-            let currentXOffset = 0;
-
-            if (currentTransform) {
-              const match = currentTransform.match(/translate3d\(([^,]+)px/);
-              if (match) {
-                currentXOffset = parseFloat(match[1]);
-              }
-            }
+            let playbackLine = document.querySelector('.playback-line');
+            let playbackLineRect = playbackLine.getBoundingClientRect();
+            let notesContainerRect = notesContainerElement.getBoundingClientRect();
+            let currentXOffset = notesContainerRect.left - playbackLineRect.left;
 
             // Compare numeric values with small tolerance for floating-point precision
             const tolerance = 0.1;
             if (Math.abs(currentXOffset - xOffset) < tolerance) {
               // No transition needed, call callback immediately
+              console.log(`[updateStaffPosition(willNotUpdate)], translate x to ${xOffset}`);
               onDidUpdate();
             } else {
               // Set up transition end listener for actual transitions
               const handleTransitionEnd = (e) => {
                 notesContainerElement.removeEventListener('transitionend', handleTransitionEnd);
+                console.log('[updateStaffPosition] transitionend, will do onDidUpdate');
                 onDidUpdate();
               };
               notesContainerElement.addEventListener('transitionend', handleTransitionEnd);
 
               // Use translate3d for hardware acceleration and consistency
+              console.log(`[updateStaffPosition(willUpdate)] will trigger a repain event(currentXOffset=${currentXOffset} targetXOffset=${xOffset}), translate x to ${xOffset}`);
               notesContainerElement.style.transform = `translate3d(${xOffset}px, 0, 0)`;
             }
           } else {
             // if no callback, set the transform
             // Use translate3d for hardware acceleration and consistency
-            console.log(`[updateStaffPosition] will trigger a repain event, translate x to ${xOffset}`);
+            console.log(`[updateStaffPosition(noUpdate)] will trigger a repain event, translate x to ${xOffset}`);
             notesContainerElement.style.transform = `translate3d(${xOffset}px, 0, 0)`;
           }
         }
