@@ -9393,7 +9393,7 @@
           } else {
             // if no callback, set the transform
             // Use translate3d for hardware acceleration and consistency
-            console.log(`[updateStaffPosition(noUpdate)] will trigger a repain event, translate x to ${xOffset}`);
+            console.debug(`[updateStaffPosition(noUpdate)] will trigger a repain event, translate x to ${xOffset}`);
             notesContainerElement.style.transform = `translate3d(${xOffset}px, 0, 0)`;
           }
         }
