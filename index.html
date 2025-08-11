@@ -301,8 +301,9 @@
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       margin-bottom: 30px;
       display: flex;
-      justify-content: center;
+      justify-content: flex-start;
       overflow-x: auto;
+      padding: 0 5px;
     }
 
     .keyboard {
@@ -314,11 +315,19 @@
       -webkit-user-select: none;
       -moz-user-select: none;
       -ms-user-select: none;
+      min-width: fit-content;
     }
 
-    /* White piano keys */
-    .piano-key {
+    /* Piano key container - holds both white and black keys */
+    .piano-key-container {
       position: relative;
+      display: flex;
+      flex-direction: column;
+      margin-right: 1px;
+    }
+
+    /* Base piano key styles */
+    .piano-key {
       cursor: pointer;
       transition: all 0.1s ease;
       display: flex;
@@ -328,17 +337,31 @@
       font-weight: 500;
       color: #666;
       padding-bottom: 8px;
+      border: 1px solid #333333;
     }
 
+    /* White piano keys */
     .piano-key.white {
       width: 87px;
       height: 200px;
       background-color: #ffffff;
-      border: 1px solid #333333;
       border-radius: 0 0 6px 6px;
-      margin-right: 1px;
       z-index: 1;
-      align-self: flex-start;
+    }
+
+    /* Black piano keys - positioned between white keys */
+    .piano-key.black {
+      position: absolute;
+      top: 0;
+      right: -25px; /* Half of black key width (49px/2 ≈ 25px) to center between white keys */
+      width: 49px;
+      height: 130px;
+      background-color: #333333;
+      border: 1px solid #000000;
+      border-radius: 0 0 3px 3px;
+      z-index: 2;
+      color: #ffffff;
+      font-size: 12px;
     }
 
     .piano-key.white:hover {
@@ -350,19 +373,7 @@
       background-color: #e0e0e0;
     }
 
-    /* Black piano keys */
-    .piano-key.black {
-      width: 49px;
-      height: 130px;
-      background-color: #333333;
-      border: 1px solid #000000;
-      border-radius: 0 0 3px 3px;
-      position: absolute;
-      top: 0;
-      z-index: 2;
-      color: #ffffff;
-      font-size: 12px;
-    }
+
 
     .piano-key.black:hover {
       background-color: #555555;
@@ -949,8 +960,9 @@
 
       /* Responsive keyboard styles */
       .keyboard-container {
-        padding: 20px 10px;
+        padding: 0px 5px;
         overflow-x: auto;
+        justify-content: flex-start;
       }
 
       .keyboard {
@@ -959,14 +971,14 @@
       }
 
       .piano-key.white {
-        width: 50px;
+        width: 37px;
         height: 120px;
-        align-self: flex-start;
       }
 
       .piano-key.black {
-        width: 28px;
+        width: 22px;
         height: 80px;
+        right: -11px; /* Half of mobile black key width (22px/2 = 11px) to center between white keys */
       }
 
 
@@ -5750,71 +5762,13 @@
         ];
 
         console.log('VirtualPianoKeyboard initialized with audio engine');
-
-        // Add resize event listener to reposition black keys on screen size change
-        window.addEventListener('resize', () => {
-          this.repositionBlackKeys();
-        });
       }
 
       isBlackKey(key) {
         return key.note.includes('#');
       }
 
-      /**
-       * Reposition all black keys when window is resized
-       */
-      repositionBlackKeys() {
-        // Get all black keys and reposition them
-        this.keyLayout.filter(key => this.isBlackKey(key)).forEach(keyData => {
-          const keyElement = this.keys.get(keyData.note);
-          if (keyElement) {
-            this.positionBlackKey(keyElement, keyData.note);
-          }
-        });
-      }
 
-      /**
-       * Dynamically position black keys between white keys with responsive support
-       * @param {HTMLElement} keyElement - The black key element
-       * @param {string} note - The note name (e.g., 'C#4')
-       */
-      positionBlackKey(keyElement, note) {
-        // Detect if we're in mobile view (matches CSS media query)
-        const isMobile = window.innerWidth <= 768;
-
-        // Set responsive dimensions
-        const whiteKeyWidth = isMobile ? 51 : 88; // Mobile: 51px, Desktop: 88px
-        const blackKeyOffset = isMobile ? 37 : 63; // Adjusted offset for mobile
-
-        // Define black key positions relative to white keys
-        // HOW TO change this when reduce the number of piano white keys?
-        // - find the corresponding white key, say C4, in the piano keys array.
-        // - the black keys should not be counted
-        const blackKeyPositions = {
-          'C#': {whiteKeyIndex: 2, offset: blackKeyOffset}, // Between C4 and D4
-          'D#': {whiteKeyIndex: 3, offset: blackKeyOffset}, // Between D4 and E4
-          'F#': {whiteKeyIndex: 5, offset: blackKeyOffset}, // Between F4 and G4
-          'G#': {whiteKeyIndex: 6, offset: blackKeyOffset}, // Between G4 and A4
-          'A#': {whiteKeyIndex: 7, offset: blackKeyOffset}  // Between A4 and B4
-        };
-
-        // Extract the note name without octave (e.g., 'C#4' -> 'C#')
-        const noteName = note.slice(0, -1);
-        const octave = parseInt(note.slice(-1));
-
-        if (blackKeyPositions[noteName]) {
-          const position = blackKeyPositions[noteName];
-
-          // Calculate base position for the octave
-          const octaveOffset = (octave - 4) * (whiteKeyWidth * 7); // 7 white keys per octave
-
-          // Calculate final position
-          const leftPosition = (position.whiteKeyIndex * whiteKeyWidth) + position.offset + octaveOffset;
-
-          keyElement.style.left = `${leftPosition}px`;
-        }
-      }
 
       /**
        * Initialize audio engine (called on first user interaction)
@@ -5882,29 +5836,70 @@
         // Clear any existing keyboard content
         containerElement.innerHTML = '';
 
-        // Create white keys first (they form the base layer)
-        const whiteKeys = this.keyLayout.filter(key => !this.isBlackKey(key));
-        whiteKeys.forEach(keyData => {
-          this.createKey(keyData, containerElement);
-        });
-
-        // Create black keys second (they overlay the white keys)
-        const blackKeys = this.keyLayout.filter(key => this.isBlackKey(key));
-        blackKeys.forEach(keyData => {
-          this.createKey(keyData, containerElement);
-        });
+        // Create the new robust keyboard layout where black keys are contained within white keys
+        this.createRobustKeyboardLayout(containerElement);
 
         console.log(`Virtual piano keyboard created with ${this.keyLayout.length} keys`);
       }
 
       /**
-       * Create an individual piano key element
-       * @param {Object} keyData - Key configuration object
-       * @param {HTMLElement} container - Container to append the key to
+       * Create the new robust keyboard layout where black keys are positioned between white keys
+       * @param {HTMLElement} containerElement - Container to append the keyboard to
        */
-      createKey(keyData, container) {
+      createRobustKeyboardLayout(containerElement) {
+        const whiteKeys = this.keyLayout.filter(key => !this.isBlackKey(key));
+        
+        whiteKeys.forEach((whiteKeyData, index) => {
+          // Create white key container
+          const whiteKeyContainer = document.createElement('div');
+          whiteKeyContainer.className = 'piano-key-container';
+          
+          // Create the white key element
+          const whiteKeyElement = this.createKeyElement(whiteKeyData, 'white');
+          whiteKeyContainer.appendChild(whiteKeyElement);
+          
+          // Check if there should be a black key after this white key
+          const blackKeyAfter = this.findBlackKeyAfter(whiteKeyData.note);
+          
+          if (blackKeyAfter) {
+            // Create the black key element positioned between this white key and the next
+            const blackKeyElement = this.createKeyElement(blackKeyAfter, 'black');
+            whiteKeyContainer.appendChild(blackKeyElement);
+          }
+          
+          containerElement.appendChild(whiteKeyContainer);
+        });
+      }
+
+      /**
+       * Find the black key that should be positioned after a given white key
+       * @param {string} whiteKeyNote - The white key note (e.g., 'C4', 'D4')
+       * @returns {Object|null} The black key data that comes after this white key, or null if none exists
+       */
+      findBlackKeyAfter(whiteKeyNote) {
+        // Extract note name and octave
+        const noteName = whiteKeyNote.slice(0, -1);
+        const octave = whiteKeyNote.slice(-1);
+        
+        // Black keys exist after: C, D, F, G, A (but not after E and B)
+        const hasBlackKeyAfter = ['C', 'D', 'F', 'G', 'A'].includes(noteName);
+        
+        if (hasBlackKeyAfter) {
+          const sharpNote = `${noteName}#${octave}`;
+          return this.keyLayout.find(key => key.note === sharpNote);
+        }
+        
+        return null;
+      }
+
+      /**
+       * Create an individual piano key element (for the new robust layout)
+       * @param {Object} keyData - Key configuration object
+       * @param {string} keyType - 'white' or 'black'
+       * @returns {HTMLElement} The created key element
+       */
+      createKeyElement(keyData, keyType) {
         const keyElement = document.createElement('div');
-        let keyType = this.isBlackKey(keyData) ? 'black' : 'white';
         keyElement.className = `piano-key ${keyType}`;
         keyElement.setAttribute('data-note', keyData.note);
         keyElement.textContent = keyData.label;
@@ -5932,15 +5927,10 @@
         // Prevent text selection
         keyElement.addEventListener('selectstart', (event) => event.preventDefault());
 
-        // Dynamic positioning for black keys
-        if (this.isBlackKey(keyData)) {
-          this.positionBlackKey(keyElement, keyData.note);
-        }
-
         // Store key element reference
         this.keys.set(keyData.note, keyElement);
 
-        container.appendChild(keyElement);
+        return keyElement;
       }
 
       /**
