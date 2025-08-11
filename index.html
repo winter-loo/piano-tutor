@@ -66,8 +66,8 @@
       bottom: 2px;
       width: 8px;
       border-radius: 8px;
-      background-color: #eaeaea;
-      opacity: 0.8;
+      background-color: #bbbbbb;
+      opacity: 0.5;
       left: 120px;
       z-index: 10;
     }
@@ -476,9 +476,20 @@
     }
 
     .piano-key.incorrect-gray {
-      background-color: #808080 !important;
-      /* gray */
-      color: white;
+      position: relative;
+    }
+
+    .piano-key.incorrect-gray::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(204, 204, 204, 0.2);
+      border-radius: inherit;
+      pointer-events: none;
+      z-index: 1;
     }
 
     /* Intersection line styles */
@@ -499,41 +510,10 @@
 
     /* Incorrect note styles for timing evaluation feedback */
     .note-rectangle.incorrect-note {
-      background-color: #808080 !important;
+      background-color: #cccccc !important;
+      opacity: 0.8;
       color: white;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-      animation: incorrectNoteAppear 0.3s ease-out;
-    }
-
-    .note-rectangle.incorrect-note .note-stem {
-      position: absolute;
-      right: 2px;
-      top: -15px;
-      width: 2px;
-      height: 25px;
-      background-color: #808080;
-    }
-
-    .note-rectangle.incorrect-note .note-flag {
-      position: absolute;
-      right: 0px;
-      top: -15px;
-      width: 8px;
-      height: 10px;
-      background-color: #808080;
-      border-radius: 0 4px 4px 0;
-    }
-
-    @keyframes incorrectNoteAppear {
-      from {
-        opacity: 0;
-        transform: scale(0.8);
-      }
-
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
     }
 
     /* Timing feedback styles for piano keys */
@@ -10058,7 +10038,6 @@
         noteElement.className = 'note-rectangle incorrect-note';
         noteElement.style.position = 'absolute';
         noteElement.style.left = `${xPosition}px`;
-        noteElement.style.backgroundColor = '#808080'; // Gray color
         let width = this.staffRenderer.notePositioning.getNoteWidth('eighth');
         noteElement.style.width = `${width}px`;
         noteElement.style.height = '22px';
