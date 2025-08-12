@@ -27,8 +27,6 @@
       padding: 20px;
     }
 
-
-
     .staff-container {
       background-color: white;
       border-radius: 8px;
@@ -283,6 +281,7 @@
       justify-content: flex-start;
       overflow-x: auto;
       padding: 0 5px;
+      position: relative;
     }
 
     .keyboard {
@@ -589,36 +588,245 @@
       }
     }
 
-    /* MIDI Device Selection Interface Styles */
-    .midi-device-panel {
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      margin-bottom: 20px;
-      padding: 20px;
+    /* MIDI Socket Styles (Realistic Design) */
+    .midi-socket-container {
+      position: absolute;
+      right: 15px;
+      bottom: -12px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
     }
 
-    .midi-header {
+    .midi-socket-label {
+      font-size: 8px;
+      font-weight: bold;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+
+    .midi-socket {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #e8e8e8, #d0d0d0);
+      border: 2px solid #c0c0c0;
+      box-shadow: 
+        inset 0 2px 4px rgba(0, 0, 0, 0.3),
+        0 1px 2px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease;
+      overflow: visible;
+    }
+
+    .midi-socket:hover {
+      background: linear-gradient(145deg, #f0f0f0, #d8d8d8);
+      box-shadow: 
+        inset 0 2px 4px rgba(0, 0, 0, 0.25),
+        0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    .socket-interior {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #2a2a2a 0%, #1a1a1a 100%);
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8);
+    }
+
+    .socket-pins {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .pin {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: #666;
+      border-radius: 50%;
+    }
+
+    .pin-1 { top: 3px; left: 50%; transform: translateX(-50%); }
+    .pin-2 { top: 6px; right: 3px; }
+    .pin-3 { bottom: 3px; right: 3px; }
+    .pin-4 { bottom: 3px; left: 3px; }
+    .pin-5 { top: 6px; left: 3px; }
+
+    /* MIDI Cable (hidden by default) */
+    .midi-cable {
+      position: absolute;
+      right: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .cable-connector {
+      width: 8px;
+      height: 12px;
+      background: linear-gradient(90deg, #333, #555);
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .cable-wire {
+      position: absolute;
+      top: 50%;
+      right: -10px;
+      width: 12px;
+      height: 3px;
+      background: #333;
+      border-radius: 2px;
+      transform: translateY(-50%);
+    }
+
+    /* Connected state - show cable and green glow */
+    .midi-socket.connected .midi-cable {
+      opacity: 1;
+    }
+
+    .midi-socket.connected {
+      box-shadow: 
+        inset 0 2px 4px rgba(0, 0, 0, 0.3),
+        0 1px 2px rgba(0, 0, 0, 0.2),
+        0 0 8px rgba(40, 167, 69, 0.6);
+    }
+
+    .midi-socket.connected .socket-interior {
+      background: radial-gradient(circle, #2d5a2d 0%, #1a3a1a 100%);
+    }
+
+    /* Connecting state - pulse animation */
+    .midi-socket.connecting {
+      animation: socketConnectingPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes socketConnectingPulse {
+      0%, 100% { 
+        box-shadow: 
+          inset 0 2px 4px rgba(0, 0, 0, 0.3),
+          0 1px 2px rgba(0, 0, 0, 0.2),
+          0 0 6px rgba(255, 193, 7, 0.4);
+      }
+      50% { 
+        box-shadow: 
+          inset 0 2px 4px rgba(0, 0, 0, 0.3),
+          0 1px 2px rgba(0, 0, 0, 0.2),
+          0 0 12px rgba(255, 193, 7, 0.8);
+      }
+    }
+
+    /* MIDI Configuration Popup Styles */
+    .midi-config-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .midi-config-popup.show {
+      display: flex;
+      opacity: 1;
+    }
+
+    .midi-config-content {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+
+    .midi-config-popup.show .midi-config-content {
+      transform: scale(1);
+    }
+
+    .midi-config-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      gap: 10px;
+      padding: 24px 24px 0 24px;
+      border-bottom: 1px solid #e9ecef;
+      margin-bottom: 24px;
     }
 
-    .midi-header h3 {
+    .midi-config-header h3 {
       color: #2c3e50;
       margin: 0;
-      font-size: 1.3rem;
+      font-size: 1.4rem;
+      font-weight: 600;
     }
 
-    .device-status {
+    .close-popup-btn {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background-color: transparent;
+      border-radius: 50%;
+      cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
+      justify-content: center;
+      color: #6c757d;
+      transition: all 0.2s ease;
     }
+
+    .close-popup-btn:hover {
+      background-color: #f8f9fa;
+      color: #495057;
+    }
+
+    .midi-config-body {
+      padding: 0 24px 24px 24px;
+    }
+
+    .device-status-section {
+      margin-bottom: 24px;
+    }
+
+    .status-display {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+    }
+
+    .device-selection-section {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+
 
     .status-indicator {
       padding: 4px 12px;
@@ -681,11 +889,7 @@
       font-weight: 500;
     }
 
-    .device-selection {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
+
 
     .device-preferences {
       padding: 15px;
@@ -827,10 +1031,40 @@
 
     /* Responsive MIDI interface */
     @media (max-width: 768px) {
-      .midi-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
+      .midi-socket-container {
+        right: 12px;
+        bottom: -10px;
+      }
+
+      .midi-socket {
+        width: 20px;
+        height: 20px;
+      }
+
+      .socket-interior {
+        width: 14px;
+        height: 14px;
+      }
+
+      .midi-socket-label {
+        font-size: 7px;
+      }
+
+      .midi-config-content {
+        width: 95%;
+        margin: 10px;
+      }
+
+      .midi-config-header {
+        padding: 20px 20px 0 20px;
+      }
+
+      .midi-config-header h3 {
+        font-size: 1.2rem;
+      }
+
+      .midi-config-body {
+        padding: 0 20px 20px 20px;
       }
 
       .device-status {
@@ -840,7 +1074,7 @@
 
       .device-select-container {
         flex-direction: column;
-        gap: 10px;
+        gap: 15px;
       }
 
       .device-select {
@@ -848,8 +1082,14 @@
       }
 
       .refresh-btn {
-        align-self: flex-start;
-        min-width: 120px;
+        width: 100%;
+        justify-content: center;
+      }
+
+      .status-display {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
       }
 
       .connection-help {
@@ -1597,43 +1837,77 @@
 
 
 
+
+
     <!-- Virtual Piano Keyboard -->
     <div class="keyboard-container">
       <div class="keyboard" id="virtualKeyboard">
         <!-- White keys will be generated here -->
         <!-- Black keys will be generated here -->
       </div>
+      
+      <!-- MIDI Socket (Realistic Design) -->
+      <div class="midi-socket-container">
+        <div class="midi-socket-label">MIDI</div>
+        <button class="midi-socket" id="midiSettingsIcon" title="MIDI Device Connection" aria-label="MIDI Device Configuration">
+          <div class="socket-interior">
+            <div class="socket-pins">
+              <div class="pin pin-1"></div>
+              <div class="pin pin-2"></div>
+              <div class="pin pin-3"></div>
+              <div class="pin pin-4"></div>
+              <div class="pin pin-5"></div>
+            </div>
+          </div>
+          <div class="midi-cable" id="midiCable">
+            <div class="cable-connector"></div>
+            <div class="cable-wire"></div>
+          </div>
+        </button>
+      </div>
     </div>
 
-    <!-- MIDI Device Selection Interface -->
-    <div class="midi-device-panel" id="midiDevicePanel">
-      <div class="midi-header">
-        <h3>MIDI Piano Connection</h3>
-        <div class="device-status">
-          <span class="status-indicator disconnected" id="midiStatus">Disconnected</span>
-          <span class="device-name" id="connectedDevice">No device selected</span>
+    <!-- MIDI Configuration Popup -->
+    <div class="midi-config-popup" id="midiConfigPopup">
+      <div class="midi-config-content">
+        <div class="midi-config-header">
+          <h3>🎹 MIDI Device Configuration</h3>
+          <button class="close-popup-btn" id="closeMidiConfig" title="Close">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"/>
+            </svg>
+          </button>
         </div>
-      </div>
 
-      <div class="device-selection">
-        <div class="device-controls">
-          <label for="midiDeviceSelect">Select MIDI Device:</label>
-          <div class="device-select-container">
-            <select id="midiDeviceSelect" class="device-select">
-              <option value="">No MIDI device</option>
-            </select>
-            <button id="refreshDevices" class="refresh-btn" title="Refresh device list">
-              <span class="refresh-icon">⟳</span>
-            </button>
+        <div class="midi-config-body">
+          <div class="device-status-section">
+            <div class="status-display">
+              <span class="status-indicator disconnected" id="midiStatus">Disconnected</span>
+              <span class="device-name" id="connectedDevice">No device selected</span>
+            </div>
           </div>
-        </div>
 
-        <div class="device-preferences">
-          <label class="preference-item">
-            <input type="checkbox" id="autoConnectCheckbox" checked>
-            <span class="checkmark"></span>
-            Automatically connect to MIDI devices when detected
-          </label>
+          <div class="device-selection-section">
+            <div class="device-controls">
+              <label for="midiDeviceSelect">Select MIDI Device:</label>
+              <div class="device-select-container">
+                <select id="midiDeviceSelect" class="device-select">
+                  <option value="">No MIDI device</option>
+                </select>
+                <button id="refreshDevices" class="refresh-btn" title="Refresh device list">
+                  <span class="refresh-icon">⟳</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="device-preferences">
+              <label class="preference-item">
+                <input type="checkbox" id="autoConnectCheckbox" checked>
+                <span class="checkmark"></span>
+                Automatically connect to MIDI devices when detected
+              </label>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -2590,14 +2864,29 @@
           this.statusIndicatorElement.classList.add('connecting');
           this.statusIndicatorElement.textContent = 'Connecting...';
           this.deviceNameElement.textContent = 'Establishing connection...';
+          
+          // Update popup manager icon status
+          if (window.midiPopupManager && window.midiPopupManager.isInitialized) {
+            window.midiPopupManager.updateConnectingStatus(true);
+          }
         } else if (state === 'error') {
           this.statusIndicatorElement.classList.add('error');
           this.statusIndicatorElement.textContent = 'Error';
           this.deviceNameElement.textContent = 'Connection failed';
+          
+          // Update popup manager icon status
+          if (window.midiPopupManager && window.midiPopupManager.isInitialized) {
+            window.midiPopupManager.updateConnectionStatus(false);
+          }
         } else if (state === 'auto_connected' && isConnected && deviceName) {
           this.statusIndicatorElement.classList.add('auto-connected');
           this.statusIndicatorElement.textContent = 'Auto-Connected';
           this.deviceNameElement.textContent = `${deviceName} (automatic)`;
+
+          // Update popup manager icon status
+          if (window.midiPopupManager && window.midiPopupManager.isInitialized) {
+            window.midiPopupManager.updateConnectionStatus(true, deviceName);
+          }
 
           // Add temporary visual feedback for auto-connection
           setTimeout(() => {
@@ -2612,10 +2901,20 @@
           this.statusIndicatorElement.classList.add('connected');
           this.statusIndicatorElement.textContent = 'Connected';
           this.deviceNameElement.textContent = deviceName;
+          
+          // Update popup manager icon status
+          if (window.midiPopupManager && window.midiPopupManager.isInitialized) {
+            window.midiPopupManager.updateConnectionStatus(true, deviceName);
+          }
         } else {
           this.statusIndicatorElement.classList.add('disconnected');
           this.statusIndicatorElement.textContent = 'Disconnected';
           this.deviceNameElement.textContent = 'No device selected';
+          
+          // Update popup manager icon status
+          if (window.midiPopupManager && window.midiPopupManager.isInitialized) {
+            window.midiPopupManager.updateConnectionStatus(false);
+          }
         }
       }
 
@@ -11587,10 +11886,108 @@
       }
     }
 
+    // MIDI Settings Popup Manager
+    class MIDISettingsPopupManager {
+      constructor() {
+        this.settingsIcon = null;
+        this.configPopup = null;
+        this.closeButton = null;
+        this.isInitialized = false;
+      }
+
+      initialize() {
+        // Get DOM elements
+        this.settingsIcon = document.getElementById('midiSettingsIcon');
+        this.configPopup = document.getElementById('midiConfigPopup');
+        this.closeButton = document.getElementById('closeMidiConfig');
+
+        if (!this.settingsIcon || !this.configPopup || !this.closeButton) {
+          console.error('MIDI popup elements not found in DOM');
+          return false;
+        }
+
+        // Set up event handlers
+        this.setupEventHandlers();
+        this.isInitialized = true;
+        console.log('MIDI Settings Popup Manager initialized successfully');
+        return true;
+      }
+
+      setupEventHandlers() {
+        // Settings icon click handler
+        this.settingsIcon.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.showPopup();
+        });
+
+        // Close button click handler
+        this.closeButton.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.hidePopup();
+        });
+
+        // Click outside popup to close
+        this.configPopup.addEventListener('click', (e) => {
+          if (e.target === this.configPopup) {
+            this.hidePopup();
+          }
+        });
+
+        // ESC key to close popup
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && this.configPopup.classList.contains('show')) {
+            this.hidePopup();
+          }
+        });
+      }
+
+      showPopup() {
+        this.configPopup.classList.add('show');
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        console.log('MIDI configuration popup opened');
+      }
+
+      hidePopup() {
+        this.configPopup.classList.remove('show');
+        document.body.style.overflow = ''; // Restore scrolling
+        console.log('MIDI configuration popup closed');
+      }
+
+      updateConnectionStatus(isConnected, deviceName = '') {
+        if (!this.settingsIcon) return;
+
+        // Update socket appearance based on connection status
+        this.settingsIcon.classList.remove('connected', 'connecting', 'disconnected');
+        
+        if (isConnected) {
+          this.settingsIcon.classList.add('connected');
+          this.settingsIcon.title = `MIDI Device Connection - Connected: ${deviceName}`;
+        } else {
+          this.settingsIcon.classList.add('disconnected');
+          this.settingsIcon.title = 'MIDI Device Connection - Disconnected';
+        }
+      }
+
+      updateConnectingStatus(isConnecting) {
+        if (!this.settingsIcon) return;
+
+        this.settingsIcon.classList.remove('connected', 'connecting', 'disconnected');
+        
+        if (isConnecting) {
+          this.settingsIcon.classList.add('connecting');
+          this.settingsIcon.title = 'MIDI Device Connection - Connecting...';
+        }
+      }
+    }
+
     // Initialize the Piano Tutor App when the page loads
     window.addEventListener('DOMContentLoaded', async function () {
       console.log('Piano Tutor App initialized successfully');
       window.pianoApp = new PianoTutorApp();
+
+      // Initialize MIDI Settings Popup Manager
+      window.midiPopupManager = new MIDISettingsPopupManager();
+      window.midiPopupManager.initialize();
 
       // Note: MIDI system and audio engine initialization is now handled by the start overlay
       // This prevents audio context issues and provides better user experience
