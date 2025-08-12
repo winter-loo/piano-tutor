@@ -27,21 +27,7 @@
       padding: 20px;
     }
 
-    .header {
-      text-align: center;
-      margin-bottom: 30px;
-    }
 
-    .header h1 {
-      font-size: 2.5rem;
-      color: #2c3e50;
-      margin-bottom: 10px;
-    }
-
-    .header p {
-      font-size: 1.1rem;
-      color: #7f8c8d;
-    }
 
     .staff-container {
       background-color: white;
@@ -568,7 +554,7 @@
     }
 
     .progress-stat.midi-stat .label {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
     }
 
     /* Show MIDI stats when MIDI input is detected */
@@ -1429,9 +1415,7 @@
         padding: 10px;
       }
 
-      .header h1 {
-        font-size: 2rem;
-      }
+
 
       /* Responsive tempo control styles */
       .tempo-control {
@@ -1570,10 +1554,7 @@
   </div>
 
   <div class="app-container">
-    <header class="header">
-      <h1>Piano Tutor App</h1>
-      <p>Learn to play "Different Colors" by Walk the Moon</p>
-    </header>
+
 
     <div class="staff-container">
       <!-- Simple Progress Bar -->
@@ -1657,30 +1638,7 @@
       </div>
     </div>
 
-    <!-- Learning Progress Display -->
-    <div class="learning-progress" id="learningProgress">
-      <div class="progress-stat correct">
-        <div class="value" id="correctCount">0</div>
-        <div class="label">Correct</div>
-      </div>
-      <div class="progress-stat incorrect">
-        <div class="value" id="incorrectCount">0</div>
-        <div class="label">Incorrect</div>
-      </div>
-      <div class="progress-stat">
-        <div class="value" id="totalAttempts">0</div>
-        <div class="label">Total</div>
-      </div>
-      <div class="progress-stat accuracy">
-        <div class="value" id="accuracyRate">0%</div>
-        <div class="label">Accuracy</div>
-      </div>
-      <div class="progress-stat">
-        <div class="value" id="currentStreak">0</div>
-        <div class="label">Streak</div>
-      </div>
 
-    </div>
   </div>
 
   <script>
@@ -8643,7 +8601,7 @@
         };
 
         // Initialize learning progress display
-        this.updateLearningProgressDisplay();
+
       }
 
       /**
@@ -8929,7 +8887,7 @@
           }
 
           // Update the learning progress display
-          this.updateLearningProgressDisplay();
+  
 
           return timingResult.isCorrect;
         }
@@ -8959,7 +8917,7 @@
         }
 
         // Update the learning progress display
-        this.updateLearningProgressDisplay();
+
 
         return isCorrect;
       }
@@ -9288,7 +9246,7 @@
       resetLearningStats() {
         this.initializeLearningStats();
         this.learningStats.isLearningMode = true;
-        this.updateLearningProgressDisplay();
+
 
         console.log('Learning statistics reset');
       }
@@ -9297,25 +9255,7 @@
        * Update the learning progress display with current statistics
        * Enhanced to show MIDI-specific statistics when available
        */
-      updateLearningProgressDisplay() {
-        // Get current statistics
-        const stats = this.getLearningStats();
 
-        // Update general DOM elements if they exist
-        const correctCountElement = document.getElementById('correctCount');
-        const incorrectCountElement = document.getElementById('incorrectCount');
-        const totalAttemptsElement = document.getElementById('totalAttempts');
-        const accuracyElement = document.getElementById('accuracyRate');
-        const currentStreakElement = document.getElementById('currentStreak');
-
-        if (correctCountElement) correctCountElement.textContent = stats.correctMatches;
-        if (incorrectCountElement) incorrectCountElement.textContent = stats.incorrectAttempts;
-        if (totalAttemptsElement) totalAttemptsElement.textContent = stats.totalAttempts;
-        if (accuracyElement) accuracyElement.textContent = `${stats.accuracyRate.toFixed(1)}%`;
-        if (currentStreakElement) currentStreakElement.textContent = stats.currentStreak;
-
-        console.log(`Learning progress display updated: ${stats.correctMatches}/${stats.totalAttempts} (${stats.accuracyRate.toFixed(1)}% accuracy)`);
-      }
 
       /**
        * Show MIDI-specific statistics in the learning progress display
@@ -10295,7 +10235,7 @@
         };
 
         // Update learning progress display
-        this.updateLearningProgressDisplay();
+
         
         console.log('Learning statistics reset');
       }
