@@ -2,23 +2,33 @@
 
 ## Overview
 
-The Piano Tutor App is a web-based application that displays musical notation and provides visual playback feedback through a moving staff mechanism. The app will render the "Different Colors" by Walk the Moon song data on a musical staff with a stationary vertical playback line, while the staff moves horizontally to create a scrolling effect.
+The Piano Tutor App is a comprehensive web-based piano learning application that combines musical notation display, interactive virtual piano keyboard, MIDI connectivity, and advanced learning feedback systems. The app renders the "Different Colors" by Walk the Moon song data on a musical staff with sophisticated timing evaluation, real-time performance tracking, and professional audio synthesis using Tone.js. The system supports both virtual keyboard interaction and physical MIDI piano input with seamless integration and fallback capabilities.
 
 ## Architecture
 
 ### Technology Stack
 - **Frontend Framework**: Vanilla JavaScript (HTML5/CSS3/JS)
 - **Audio Engine**: Tone.js library for professional audio synthesis and effects
-- **Music Notation Rendering**: HTML5 Canvas or CSS-based colored rectangles for note representation
+- **Music Notation Rendering**: CSS-based colored rectangles for note representation with fingering display
 - **Animation**: CSS transforms and JavaScript requestAnimationFrame for smooth staff movement
-- **Data Source**: Hardcoded note data from different_colors_WALK_THE_MOON.md
+- **MIDI Integration**: Web MIDI API for physical piano connectivity
+- **Data Persistence**: LocalStorage for user preferences and MIDI device settings
+- **Performance Optimization**: Message buffering, latency compensation, and adaptive processing
+- **Data Source**: Hardcoded note data structure for "Different Colors" by Walk the Moon
 
 ### Core Components
-1. **Staff Renderer**: Creates and manages the visual music staff using colored rectangles
-2. **Playback Controller**: Handles timing and staff movement animation
-3. **UI Controller**: Manages user interactions and app state
-4. **Fingering Guide**: Provides right-hand finger positioning hints for optimal playing technique
-5. **Virtual Piano Keyboard**: Interactive keyboard interface for note playback and learning
+1. **PianoTutorApp**: Main application class that orchestrates all components and manages app state
+2. **VirtualPianoKeyboard**: Interactive keyboard interface with Tone.js audio integration
+3. **MIDIController**: Comprehensive MIDI device management and message processing
+4. **MIDIDeviceManager**: User interface for MIDI device selection and status display
+5. **IntersectionLineRenderer**: Visual feedback system for correct note timing
+6. **TimingEvaluationSystem**: Precise timing analysis for user input evaluation
+7. **ProgressBarController**: Interactive progress bar for navigation and position tracking
+8. **ToneJSAudioEngine**: Professional audio synthesis with realistic piano sounds
+9. **NotePositioning**: Staff positioning and note layout calculation system
+10. **Performance Optimization Classes**: Message buffering, latency compensation, and error handling
+11. **StartOverlayManager**: Start page overlay with audio initialization
+12. **EndingOverlayManager**: Performance summary and restart functionality
 
 ## Components and Interfaces
 
@@ -302,6 +312,60 @@ class TimingEvaluationSystem {
 - Calculate note head positions and note rectangle boundaries for accurate evaluation
 - Coordinate with existing learning feedback system for comprehensive user guidance
 - Handle cleanup of temporary visual elements to prevent memory leaks
+
+### StartOverlayManager
+```javascript
+class StartOverlayManager {
+  constructor(appContainer)
+  createStartOverlay()
+  showStartOverlay()
+  hideStartOverlay()
+  handleStartButtonClick()
+  initializeAudioEngine()
+  addWelcomeMessage()
+  setupOverlayAnimations()
+  dispose()
+}
+```
+
+**Responsibilities:**
+- Create and manage start overlay interface that covers main app on load
+- Display prominent "Start" button with welcome message and app branding
+- Handle audio engine initialization when start button is clicked
+- Ensure Tone.js audio context is properly initialized and ready for playback
+- Implement smooth overlay removal animations when start button is clicked
+- Handle audio initialization errors gracefully with user feedback
+- Prevent interaction with main interface until overlay is dismissed
+- Manage overlay positioning and z-index for proper layering
+
+### EndingOverlayManager
+```javascript
+class EndingOverlayManager {
+  constructor(appContainer, learningProgressSystem)
+  createEndingOverlay()
+  showEndingOverlay(performanceMetrics)
+  hideEndingOverlay()
+  displayPerformanceMetrics(metrics)
+  calculatePerformanceLevel(accuracy)
+  addPerformanceLevelIndicators(level)
+  handleRestartButton()
+  handleReturnToBeginning()
+  resetPerformanceStatistics()
+  setupOverlayAnimations()
+  dispose()
+}
+```
+
+**Responsibilities:**
+- Create and manage ending overlay that appears when song playback completes
+- Display comprehensive performance metrics including accuracy, correct/incorrect counts, streak information, and timing statistics
+- Show MIDI-specific statistics when MIDI input was used during the session
+- Implement performance level indicators (excellent, good, needs improvement) with color coding
+- Provide restart and return-to-beginning functionality with proper state reset
+- Calculate and display performance metrics from learning statistics
+- Handle overlay animations for appearance and dismissal
+- Integrate with existing learning progress system for metric collection
+- Manage overlay state during manual navigation and tempo changes
 
 ### Fingering Recommendations for "Different Colors"
 

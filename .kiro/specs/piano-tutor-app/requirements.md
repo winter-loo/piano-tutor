@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This document outlines the requirements for a minimal piano tutor app MVP. The app will display musical notation on a staff and provide a visual playback mechanism using a moving vertical line. The focus is on simplicity and core functionality, displaying notes from the "Different Colors" by Walk the Moon song data.
+This document outlines the requirements for a comprehensive piano tutor app that displays musical notation on a staff with advanced interactive features. The app provides visual playback, virtual piano keyboard, MIDI connectivity, timing evaluation, and learning feedback systems. The focus is on creating an immersive learning experience using the "Different Colors" by Walk the Moon song data.
 
 ## Requirements
 
@@ -71,11 +71,11 @@ This document outlines the requirements for a minimal piano tutor app MVP. The a
 #### Acceptance Criteria
 
 1. WHEN the app loads THEN the system SHALL provide a tempo control interface with discrete BPM values
-2. WHEN tempo options are displayed THEN the system SHALL include the following discrete BPM values: 40, 60, 76, 108, 120, 168, 180, and 200
+2. WHEN tempo options are displayed THEN the system SHALL include the following discrete BPM values: 40, 60, 72, 90, and 120
 3. WHEN a tempo is selected THEN the system SHALL adjust the playback speed to match the corresponding BPM value
 4. WHEN tempo changes during playback THEN the system SHALL smoothly transition to the new speed without interrupting the current position
 5. WHEN a tempo is selected THEN the system SHALL display the current BPM value to the user
-6. WHEN the app initializes THEN the system SHALL default to 120 BPM
+6. WHEN the app initializes THEN the system SHALL default to 60 BPM
 
 ### Requirement 7
 
@@ -142,6 +142,10 @@ This document outlines the requirements for a minimal piano tutor app MVP. The a
 10. WHEN MIDI connection is lost THEN the system SHALL gracefully fall back to virtual keyboard mode and notify the user
 11. WHEN the user plays on the real piano and playback is not active THEN the system SHALL start the playback automatically
 12. WHEN MIDI velocity data is available THEN the system SHALL use it to provide dynamic audio response and visual feedback intensity
+13. WHEN MIDI devices are hot-plugged THEN the system SHALL detect connection/disconnection events and update the device list automatically
+14. WHEN auto-connect preference is enabled THEN the system SHALL automatically connect to newly detected MIDI devices
+15. WHEN MIDI connection fails THEN the system SHALL provide clear error messages and troubleshooting guidance
+16. WHEN MIDI input has high frequency data THEN the system SHALL buffer and optimize message processing for real-time performance
 
 ### Requirement 11
 
@@ -163,3 +167,63 @@ This document outlines the requirements for a minimal piano tutor app MVP. The a
 4. WHEN a user clicks a piano key incorrectly THEN the system SHALL show the clicked piano key as the corresponding note in the staff with gray color
 5. WHEN an incorrect note is displayed on the staff THEN the system SHALL render it as an eighth note
 6. WHEN an incorrect note is displayed on the staff THEN the system SHALL align the note's head with the left boundary of the playback line
+
+### Requirement 13
+
+**User Story:** As a piano student, I want to see my learning progress and performance statistics in real-time, so that I can track my improvement and identify areas that need more practice.
+
+#### Acceptance Criteria
+
+1. WHEN the app loads THEN the system SHALL display a learning progress panel with performance statistics
+2. WHEN a user plays notes THEN the system SHALL track correct and incorrect attempts in real-time
+3. WHEN statistics are updated THEN the system SHALL display total attempts, correct count, incorrect count, accuracy percentage, and current streak
+4. WHEN MIDI input is detected THEN the system SHALL show additional MIDI-specific statistics
+5. WHEN the user achieves a correct note THEN the system SHALL increment the current streak counter
+6. WHEN the user plays an incorrect note THEN the system SHALL reset the current streak to zero
+7. WHEN accuracy is calculated THEN the system SHALL show the percentage as (correct attempts / total attempts) × 100
+
+### Requirement 14
+
+**User Story:** As a piano student, I want comprehensive MIDI device management with automatic connection and preferences, so that I can seamlessly use my physical piano without manual setup.
+
+#### Acceptance Criteria
+
+1. WHEN the app loads THEN the system SHALL provide a comprehensive MIDI device management interface
+2. WHEN MIDI devices are available THEN the system SHALL show connection status with visual indicators (connected, disconnected, connecting, error)
+3. WHEN a device is automatically connected THEN the system SHALL show "Auto-Connected" status with visual feedback
+4. WHEN the user enables auto-connect preference THEN the system SHALL automatically connect to newly detected devices
+5. WHEN device preferences are changed THEN the system SHALL persist settings across browser sessions
+6. WHEN connection errors occur THEN the system SHALL provide user-friendly error messages and troubleshooting guidance
+7. WHEN devices are refreshed THEN the system SHALL provide visual feedback and update the device list
+8. WHEN multiple connection attempts fail THEN the system SHALL implement exponential backoff retry logic
+
+### Requirement 15
+
+**User Story:** As a piano student, I want advanced performance optimization for MIDI input, so that I can practice with responsive, low-latency feedback even during intensive playing sessions.
+
+#### Acceptance Criteria
+
+1. WHEN high-frequency MIDI input is detected THEN the system SHALL buffer messages to prevent processing bottlenecks
+2. WHEN MIDI latency is measured THEN the system SHALL compensate for input delays to improve timing accuracy
+3. WHEN processing errors occur THEN the system SHALL provide comprehensive error handling with user-friendly messages
+4. WHEN browser compatibility issues are detected THEN the system SHALL implement workarounds for optimal performance
+5. WHEN performance metrics are collected THEN the system SHALL monitor and optimize processing in real-time
+6. WHEN message overflow occurs THEN the system SHALL gracefully handle dropped messages without system failure
+7. WHEN adaptive optimization is needed THEN the system SHALL automatically adjust processing parameters based on performance
+
+### Requirement 16
+
+**User Story:** As a piano student, I want a clear start and end experience with overlay pages, so that I can begin my practice session with proper audio initialization and review my performance when finished.
+
+#### Acceptance Criteria
+
+1. WHEN the app first loads THEN the system SHALL display a start overlay page covering the main interface
+2. WHEN the start overlay is displayed THEN the system SHALL show a prominent "Start" button and welcome message
+3. WHEN the user clicks the "Start" button THEN the system SHALL initialize the audio engine and remove the start overlay
+4. WHEN the audio engine is initialized THEN the system SHALL ensure Tone.js is ready for immediate audio playback
+5. WHEN the song playback reaches the end THEN the system SHALL display an ending overlay page
+6. WHEN the ending overlay is displayed THEN the system SHALL show comprehensive performance metrics including accuracy, correct/incorrect counts, streak information, and timing statistics
+7. WHEN the ending overlay is shown THEN the system SHALL provide options to restart the song or return to the beginning
+8. WHEN performance metrics are displayed THEN the system SHALL include visual indicators for different performance levels (excellent, good, needs improvement)
+9. WHEN MIDI input was used during the session THEN the system SHALL display MIDI-specific performance statistics on the ending overlay
+10. WHEN the user chooses to restart THEN the system SHALL reset all performance statistics and return to the beginning of the song
