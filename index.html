@@ -10070,7 +10070,7 @@
           // Initialize audio engine if not already done
           if (!this.audioEngine) {
             this.audioEngine = new ToneJSAudioEngine();
-            await this.audioEngine.initialize();
+            await this.audioEngine.initializeAudio();
             console.log('✅ Audio engine initialized');
           }
 
