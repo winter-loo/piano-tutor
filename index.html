@@ -1272,23 +1272,6 @@
       animation: slideInUp 0.6s ease-out;
     }
 
-    .performance-header {
-      margin-bottom: 40px;
-    }
-
-    .performance-header h1 {
-      font-size: 3rem;
-      font-weight: 700;
-      margin-bottom: 15px;
-      text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    }
-
-    .performance-header .song-info {
-      font-size: 1.2rem;
-      opacity: 0.9;
-      margin-bottom: 10px;
-    }
-
     .performance-level {
       display: inline-block;
       padding: 8px 20px;
@@ -1372,43 +1355,6 @@
       color: #9b59b6;
     }
 
-    .midi-stats {
-      background: rgba(111, 66, 193, 0.2);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 30px;
-      border: 1px solid rgba(111, 66, 193, 0.3);
-    }
-
-    .midi-stats h3 {
-      color: #9b59b6;
-      margin-bottom: 15px;
-      font-size: 1.3rem;
-    }
-
-    .midi-stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 15px;
-    }
-
-    .midi-stat-item {
-      text-align: center;
-    }
-
-    .midi-stat-value {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: #bb86fc;
-      display: block;
-      margin-bottom: 5px;
-    }
-
-    .midi-stat-label {
-      font-size: 0.8rem;
-      opacity: 0.7;
-    }
-
     .celebration-message {
       font-size: 1.3rem;
       margin-bottom: 30px;
@@ -1480,20 +1426,6 @@
         max-width: 95%;
       }
 
-      .performance-header {
-        margin-bottom: 25px;
-      }
-
-      .performance-header h1 {
-        font-size: 1.8rem;
-        margin-bottom: 10px;
-      }
-
-      .performance-header .song-info {
-        font-size: 0.9rem;
-        margin-bottom: 8px;
-      }
-
       .performance-level {
         padding: 6px 16px;
         font-size: 0.9rem;
@@ -1525,29 +1457,6 @@
         line-height: 1.5;
       }
 
-      .midi-stats {
-        padding: 15px;
-        margin-bottom: 20px;
-      }
-
-      .midi-stats h3 {
-        font-size: 1.1rem;
-        margin-bottom: 12px;
-      }
-
-      .midi-stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-      }
-
-      .midi-stat-value {
-        font-size: 1.2rem;
-      }
-
-      .midi-stat-label {
-        font-size: 0.75rem;
-      }
-
       .ending-actions {
         flex-direction: column;
         align-items: center;
@@ -1568,14 +1477,6 @@
       .ending-overlay-content {
         padding: 15px 10px;
         max-width: 98%;
-      }
-
-      .performance-header h1 {
-        font-size: 1.5rem;
-      }
-
-      .performance-header .song-info {
-        font-size: 0.85rem;
       }
 
       .performance-level {
@@ -1604,11 +1505,6 @@
       .celebration-message {
         font-size: 0.9rem;
         margin-bottom: 20px;
-      }
-
-      .midi-stats-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
       }
 
       .action-button {
@@ -1659,20 +1555,6 @@
         gap: 8px;
       }
 
-      .performance-header {
-        margin-bottom: 8px;
-      }
-
-      .performance-header h1 {
-        font-size: 1.4rem;
-        margin-bottom: 3px;
-      }
-
-      .performance-header .song-info {
-        font-size: 0.8rem;
-        margin-bottom: 5px;
-      }
-
       .performance-level {
         padding: 4px 10px;
         font-size: 0.75rem;
@@ -1703,35 +1585,6 @@
 
       .metric-label {
         font-size: 0.65rem;
-        line-height: 1.1;
-      }
-
-      .midi-stats {
-        padding: 8px;
-        margin-bottom: 10px;
-      }
-
-      .midi-stats h3 {
-        font-size: 1rem;
-        margin-bottom: 6px;
-      }
-
-      .midi-stats-grid {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 4px;
-      }
-
-      .midi-stat-item {
-        padding: 4px 2px;
-      }
-
-      .midi-stat-value {
-        font-size: 0.9rem;
-        margin-bottom: 2px;
-      }
-
-      .midi-stat-label {
-        font-size: 0.6rem;
         line-height: 1.1;
       }
 
@@ -1906,12 +1759,6 @@
   <!-- Ending Overlay -->
   <div class="ending-overlay" id="endingOverlay">
     <div class="ending-overlay-content">
-      <div class="performance-header">
-        <h1>Performance Complete!</h1>
-        <p class="song-info">"Different Colors" by Walk the Moon</p>
-        <div class="performance-level excellent" id="performanceLevel">Excellent!</div>
-      </div>
-
       <div class="celebration-message" id="celebrationMessage">
         Outstanding performance! You've mastered this piece with excellent timing and accuracy.
       </div>
@@ -1936,28 +1783,6 @@
         <div class="metric-card timing">
           <span class="metric-value" id="finalTiming">0ms</span>
           <span class="metric-label">Avg Timing</span>
-        </div>
-      </div>
-
-      <div class="midi-stats" id="midiStats" style="display: none;">
-        <h3>🎹 MIDI Performance Details</h3>
-        <div class="midi-stats-grid">
-          <div class="midi-stat-item">
-            <span class="midi-stat-value" id="midiAccuracy">0%</span>
-            <span class="midi-stat-label">MIDI Accuracy</span>
-          </div>
-          <div class="midi-stat-item">
-            <span class="midi-stat-value" id="midiAttempts">0</span>
-            <span class="midi-stat-label">MIDI Notes</span>
-          </div>
-          <div class="midi-stat-item">
-            <span class="midi-stat-value" id="avgVelocity">0</span>
-            <span class="midi-stat-label">Avg Velocity</span>
-          </div>
-          <div class="midi-stat-item">
-            <span class="midi-stat-value" id="midiDevice">None</span>
-            <span class="midi-stat-label">Device Used</span>
-          </div>
         </div>
       </div>
 
@@ -2423,7 +2248,6 @@
         this.celebrationMessageElement = null;
         this.metricsElements = {};
         this.midiStatsElement = null;
-        this.midiStatsElements = {};
         this.restartButtonElement = null;
         this.isInitialized = false;
         this.onRestartCallback = null;
@@ -2439,7 +2263,6 @@
         this.overlayElement = document.getElementById('endingOverlay');
         this.performanceLevelElement = document.getElementById('performanceLevel');
         this.celebrationMessageElement = document.getElementById('celebrationMessage');
-        this.midiStatsElement = document.getElementById('midiStats');
         this.restartButtonElement = document.getElementById('restartButton');
 
         // Get metrics elements
@@ -2449,14 +2272,6 @@
           incorrect: document.getElementById('finalIncorrect'),
           streak: document.getElementById('finalStreak'),
           timing: document.getElementById('finalTiming')
-        };
-
-        // Get MIDI stats elements
-        this.midiStatsElements = {
-          accuracy: document.getElementById('midiAccuracy'),
-          attempts: document.getElementById('midiAttempts'),
-          velocity: document.getElementById('avgVelocity'),
-          device: document.getElementById('midiDevice')
         };
 
         if (!this.overlayElement || !this.performanceLevelElement || !this.celebrationMessageElement) {
@@ -2507,9 +2322,6 @@
 
         // Update performance level and message
         this.updatePerformanceLevel(performanceData);
-
-        // Update MIDI statistics if available
-        this.updateMIDIStatistics(performanceData);
 
         // Show overlay with animation
         this.overlayElement.classList.add('show');
@@ -2576,41 +2388,6 @@
       }
 
       /**
-       * Update MIDI-specific statistics if MIDI input was used
-       * @param {Object} performanceData - Performance statistics
-       */
-      updateMIDIStatistics(performanceData) {
-        const midiStats = performanceData.stats?.inputSourceBreakdown?.midi;
-        const hasMIDIActivity = midiStats && midiStats.attempts > 0;
-
-        if (hasMIDIActivity && this.midiStatsElement) {
-          // Show MIDI stats section
-          this.midiStatsElement.style.display = 'block';
-
-          // Update MIDI metrics
-          if (this.midiStatsElements.accuracy) {
-            this.midiStatsElements.accuracy.textContent = `${Math.round(midiStats.accuracy || 0)}%`;
-          }
-          if (this.midiStatsElements.attempts) {
-            this.midiStatsElements.attempts.textContent = midiStats.attempts || 0;
-          }
-          if (this.midiStatsElements.velocity) {
-            const avgVelocity = midiStats.velocitySum > 0 ? 
-              Math.round(midiStats.velocitySum / midiStats.attempts) : 0;
-            this.midiStatsElements.velocity.textContent = avgVelocity;
-          }
-          if (this.midiStatsElements.device) {
-            // Get connected MIDI device name
-            const deviceName = this.getConnectedMIDIDeviceName();
-            this.midiStatsElements.device.textContent = deviceName || 'Unknown';
-          }
-        } else if (this.midiStatsElement) {
-          // Hide MIDI stats section if no MIDI activity
-          this.midiStatsElement.style.display = 'none';
-        }
-      }
-
-      /**
        * Get the name of the currently connected MIDI device
        * @returns {string} Device name or null if no device connected
        */
@@ -2673,8 +2450,6 @@
         this.performanceLevelElement = null;
         this.celebrationMessageElement = null;
         this.metricsElements = {};
-        this.midiStatsElement = null;
-        this.midiStatsElements = {};
         this.restartButtonElement = null;
         this.onRestartCallback = null;
         this.isInitialized = false;
@@ -9707,49 +9482,6 @@
 
 
         console.log('Learning statistics reset');
-      }
-
-      /**
-       * Update the learning progress display with current statistics
-       * Enhanced to show MIDI-specific statistics when available
-       */
-
-
-      /**
-       * Show MIDI-specific statistics in the learning progress display
-       * Requirements 10.7 - Track performance statistics separately for MIDI vs virtual input
-       */
-      showMIDIStatistics() {
-        const learningProgressElement = document.getElementById('learningProgress');
-        const midiStatsElement = document.getElementById('midiStats');
-        const virtualStatsElement = document.getElementById('virtualStats');
-
-        if (!learningProgressElement || !this.learningStats) return;
-
-        // Show MIDI-specific statistics if MIDI input has been used
-        if (this.learningStats.midiAttempts > 0) {
-          learningProgressElement.classList.add('show-midi-stats');
-
-          if (midiStatsElement) {
-            const midiAccuracy = this.learningStats.inputSourceBreakdown?.midi?.accuracy || 0;
-            const midiAccuracyElement = document.getElementById('midiAccuracy');
-            if (midiAccuracyElement) {
-              midiAccuracyElement.textContent = `${midiAccuracy.toFixed(1)}%`;
-            }
-            midiStatsElement.style.display = 'flex';
-          }
-
-          if (virtualStatsElement) {
-            const virtualAccuracy = this.learningStats.inputSourceBreakdown?.virtual?.accuracy || 0;
-            const virtualAccuracyElement = document.getElementById('virtualAccuracy');
-            if (virtualAccuracyElement) {
-              virtualAccuracyElement.textContent = `${virtualAccuracy.toFixed(1)}%`;
-            }
-            virtualStatsElement.style.display = 'flex';
-          }
-
-          console.log(`📊 [MIDI-STATS] MIDI Statistics displayed - MIDI: ${this.learningStats.inputSourceBreakdown?.midi?.accuracy?.toFixed(1) || 0}%, Virtual: ${this.learningStats.inputSourceBreakdown?.virtual?.accuracy?.toFixed(1) || 0}%`);
-        }
       }
 
       /**
