@@ -279,7 +279,6 @@
       margin-bottom: 30px;
       display: flex;
       justify-content: flex-start;
-      overflow-x: auto;
       padding: 0 5px;
       position: relative;
     }
@@ -591,33 +590,20 @@
     /* MIDI Socket Styles (Realistic Design) */
     .midi-socket-container {
       position: absolute;
-      top: -12px;
+      top: -10px;
       right: 20px;
-      z-index: 100;
+      z-index: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 4px;
     }
 
-    .midi-socket-label {
-      font-size: 8px;
-      font-weight: bold;
-      color: #666;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 2px;
-    }
-
     .midi-socket {
       width: 24px;
       height: 24px;
-      border-radius: 50%;
+      border-radius: 50% 50% 0 0;
       background: linear-gradient(145deg, #e8e8e8, #d0d0d0);
-      border: 2px solid #c0c0c0;
-      box-shadow: 
-        inset 0 2px 4px rgba(0, 0, 0, 0.3),
-        0 1px 2px rgba(0, 0, 0, 0.2);
       cursor: pointer;
       position: relative;
       transition: all 0.2s ease;
@@ -638,75 +624,23 @@
       transform: translate(-50%, -50%);
       width: 16px;
       height: 16px;
-      border-radius: 50%;
+      border-radius: 50% 50% 0 0;
       background: radial-gradient(circle, #2a2a2a 0%, #1a1a1a 100%);
       box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8);
     }
 
-    .socket-pins {
-      position: relative;
-      width: 100%;
-      height: 100%;
-    }
-
-    .pin {
-      position: absolute;
-      width: 2px;
-      height: 2px;
-      background: #666;
-      border-radius: 50%;
-    }
-
-    .pin-1 { top: 3px; left: 50%; transform: translateX(-50%); }
-    .pin-2 { top: 6px; right: 3px; }
-    .pin-3 { bottom: 3px; right: 3px; }
-    .pin-4 { bottom: 3px; left: 3px; }
-    .pin-5 { top: 6px; left: 3px; }
-
-    /* MIDI Cable (hidden by default) */
-    .midi-cable {
-      position: absolute;
-      right: -8px;
-      top: 50%;
-      transform: translateY(-50%);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      pointer-events: none;
-    }
-
-    .cable-connector {
-      width: 8px;
-      height: 12px;
-      background: linear-gradient(90deg, #333, #555);
-      border-radius: 2px;
-      position: relative;
-    }
-
-    .cable-wire {
-      position: absolute;
-      top: 50%;
-      right: -10px;
-      width: 12px;
-      height: 3px;
-      background: #333;
-      border-radius: 2px;
-      transform: translateY(-50%);
-    }
-
-    /* Connected state - show cable and green glow */
-    .midi-socket.connected .midi-cable {
-      opacity: 1;
-    }
-
-    .midi-socket.connected {
-      box-shadow: 
-        inset 0 2px 4px rgba(0, 0, 0, 0.3),
-        0 1px 2px rgba(0, 0, 0, 0.2),
-        0 0 8px rgba(40, 167, 69, 0.6);
+    /* Connection status colors for socket-interior */
+    .midi-socket.disconnected .socket-interior {
+      background: radial-gradient(circle, #666 0%, #444 100%);
     }
 
     .midi-socket.connected .socket-interior {
-      background: radial-gradient(circle, #2d5a2d 0%, #1a3a1a 100%);
+      background: radial-gradient(circle, #28a745 0%, #1e7e34 100%);
+      box-shadow: 0 0 8px rgba(40, 167, 69, 0.6);
+    }
+
+    .midi-socket.connecting .socket-interior {
+      background: radial-gradient(circle, #ffc107 0%, #e0a800 100%);
     }
 
     /* Connecting state - pulse animation */
@@ -716,16 +650,10 @@
 
     @keyframes socketConnectingPulse {
       0%, 100% { 
-        box-shadow: 
-          inset 0 2px 4px rgba(0, 0, 0, 0.3),
-          0 1px 2px rgba(0, 0, 0, 0.2),
-          0 0 6px rgba(255, 193, 7, 0.4);
+        box-shadow: 0 0 6px rgba(255, 193, 7, 0.4);
       }
       50% { 
-        box-shadow: 
-          inset 0 2px 4px rgba(0, 0, 0, 0.3),
-          0 1px 2px rgba(0, 0, 0, 0.2),
-          0 0 12px rgba(255, 193, 7, 0.8);
+        box-shadow: 0 0 12px rgba(255, 193, 7, 0.8);
       }
     }
 
@@ -1044,10 +972,6 @@
       .socket-interior {
         width: 14px;
         height: 14px;
-      }
-
-      .midi-socket-label {
-        font-size: 7px;
       }
 
       .midi-config-content {
@@ -1835,28 +1759,12 @@
     </div>
 
 
-
-
-
     <!-- Virtual Piano Keyboard -->
     <div class="keyboard-container">
-      <!-- MIDI Socket (Realistic Design) - Attached to top right of piano keyboard -->
+      <!-- MIDI Socket (Simple and Clean Design) - Attached to top right of piano keyboard -->
       <div class="midi-socket-container">
-        <div class="midi-socket-label">MIDI</div>
         <button class="midi-socket" id="midiSettingsIcon" title="MIDI Device Connection" aria-label="MIDI Device Configuration">
-          <div class="socket-interior">
-            <div class="socket-pins">
-              <div class="pin pin-1"></div>
-              <div class="pin pin-2"></div>
-              <div class="pin pin-3"></div>
-              <div class="pin pin-4"></div>
-              <div class="pin pin-5"></div>
-            </div>
-          </div>
-          <div class="midi-cable" id="midiCable">
-            <div class="cable-connector"></div>
-            <div class="cable-wire"></div>
-          </div>
+          <div class="socket-interior"></div>
         </button>
       </div>
       
