@@ -1282,46 +1282,145 @@
     /* Responsive ending overlay */
     @media (max-width: 768px) {
       .ending-overlay-content {
-        padding: 30px 15px;
+        padding: 20px 15px;
+        max-width: 95%;
+      }
+
+      .performance-header {
+        margin-bottom: 25px;
       }
 
       .performance-header h1 {
-        font-size: 2.2rem;
+        font-size: 1.8rem;
+        margin-bottom: 10px;
       }
 
       .performance-header .song-info {
-        font-size: 1rem;
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+      }
+
+      .performance-level {
+        padding: 6px 16px;
+        font-size: 0.9rem;
+        margin-bottom: 20px;
       }
 
       .performance-metrics {
         grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
+        gap: 12px;
+        margin-bottom: 25px;
       }
 
       .metric-card {
-        padding: 15px;
+        padding: 12px;
       }
 
       .metric-value {
-        font-size: 1.8rem;
+        font-size: 1.4rem;
+        margin-bottom: 6px;
+      }
+
+      .metric-label {
+        font-size: 0.8rem;
+      }
+
+      .celebration-message {
+        font-size: 1rem;
+        margin-bottom: 25px;
+        line-height: 1.5;
+      }
+
+      .midi-stats {
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+
+      .midi-stats h3 {
+        font-size: 1.1rem;
+        margin-bottom: 12px;
+      }
+
+      .midi-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .midi-stat-value {
+        font-size: 1.2rem;
+      }
+
+      .midi-stat-label {
+        font-size: 0.75rem;
       }
 
       .ending-actions {
         flex-direction: column;
         align-items: center;
+        gap: 15px;
       }
 
       .action-button {
         width: 100%;
-        max-width: 250px;
+        max-width: 280px;
+        padding: 12px 25px;
+        font-size: 1rem;
+        min-width: auto;
+      }
+    }
+
+    /* Extra small screens */
+    @media (max-width: 480px) {
+      .ending-overlay-content {
+        padding: 15px 10px;
+        max-width: 98%;
       }
 
-      .midi-stats-grid {
-        grid-template-columns: repeat(2, 1fr);
+      .performance-header h1 {
+        font-size: 1.5rem;
+      }
+
+      .performance-header .song-info {
+        font-size: 0.85rem;
+      }
+
+      .performance-level {
+        padding: 5px 12px;
+        font-size: 0.8rem;
+      }
+
+      .performance-metrics {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .metric-card {
+        padding: 10px;
+      }
+
+      .metric-value {
+        font-size: 1.2rem;
+      }
+
+      .metric-label {
+        font-size: 0.75rem;
       }
 
       .celebration-message {
-        font-size: 1.1rem;
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+      }
+
+      .midi-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .action-button {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+        max-width: 250px;
       }
     }
 
@@ -1465,9 +1564,6 @@
       <div class="ending-actions">
         <button class="action-button primary" id="restartButton">
           Play Again
-        </button>
-        <button class="action-button secondary" id="returnToStartButton">
-          Return to Start
         </button>
       </div>
     </div>
@@ -1938,10 +2034,8 @@
         this.midiStatsElement = null;
         this.midiStatsElements = {};
         this.restartButtonElement = null;
-        this.returnToStartButtonElement = null;
         this.isInitialized = false;
         this.onRestartCallback = null;
-        this.onReturnToStartCallback = null;
 
         console.log('EndingOverlayManager initialized');
       }
@@ -1956,7 +2050,6 @@
         this.celebrationMessageElement = document.getElementById('celebrationMessage');
         this.midiStatsElement = document.getElementById('midiStats');
         this.restartButtonElement = document.getElementById('restartButton');
-        this.returnToStartButtonElement = document.getElementById('returnToStartButton');
 
         // Get metrics elements
         this.metricsElements = {
@@ -2000,12 +2093,7 @@
           });
         }
 
-        // Return to start button click handler
-        if (this.returnToStartButtonElement) {
-          this.returnToStartButtonElement.addEventListener('click', () => {
-            this.handleReturnToStartClick();
-          });
-        }
+
 
         // Prevent clicks on overlay content from bubbling
         const overlayContent = this.overlayElement.querySelector('.ending-overlay-content');
@@ -2167,24 +2255,11 @@
       }
 
       /**
-       * Handle return to start button click
-       */
-      handleReturnToStartClick() {
-        this.hideOverlay();
-        
-        if (this.onReturnToStartCallback) {
-          this.onReturnToStartCallback();
-        }
-      }
-
-      /**
        * Set callback functions for button actions
        * @param {Function} restartCallback - Function to call on restart
-       * @param {Function} returnToStartCallback - Function to call on return to start
        */
-      setCallbacks(restartCallback, returnToStartCallback) {
+      setCallbacks(restartCallback) {
         this.onRestartCallback = restartCallback;
-        this.onReturnToStartCallback = returnToStartCallback;
       }
 
       /**
@@ -2210,9 +2285,7 @@
         this.midiStatsElement = null;
         this.midiStatsElements = {};
         this.restartButtonElement = null;
-        this.returnToStartButtonElement = null;
         this.onRestartCallback = null;
-        this.onReturnToStartCallback = null;
         this.isInitialized = false;
 
         console.log('EndingOverlayManager disposed');
@@ -9916,7 +9989,7 @@
       /**
        * Stop and reset playback to the beginning
        */
-      handleStop() {
+      resetUIState() {
         console.log('Stopping and resetting playback');
 
         // Stop any current animation
@@ -10164,8 +10237,7 @@
           if (initialized) {
             // Set callback functions for ending overlay actions
             this.endingOverlayManager.setCallbacks(
-              () => this.handleRestartFromEnding(),
-              () => this.handleReturnToStartFromEnding()
+              () => this.handleRestartFromEnding()
             );
             console.log('✅ Ending overlay initialized successfully');
           } else {
@@ -10178,33 +10250,12 @@
        * Handle restart action from ending overlay
        */
       handleRestartFromEnding() {
-        console.log('Restarting song from ending overlay');
-        
-        // Reset performance statistics
-        this.resetLearningStats();
-        
-        // Reset playback to beginning
-        this.stopPlayback();
-        this.resetToBeginning();
-        
-        // Start playback again
-        setTimeout(() => {
-          this.startPlayback();
-        }, 100);
-      }
-
-      /**
-       * Handle return to start action from ending overlay
-       */
-      handleReturnToStartFromEnding() {
         console.log('Returning to start from ending overlay');
         
         // Reset performance statistics
         this.resetLearningStats();
         
-        // Reset playback to beginning
-        this.stopPlayback();
-        this.resetToBeginning();
+        this.resetUIState();
         
         // Show start overlay again
         if (this.startOverlayManager) {
