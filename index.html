@@ -591,8 +591,8 @@
     /* MIDI Socket Styles (Realistic Design) */
     .midi-socket-container {
       position: absolute;
-      right: 15px;
-      bottom: -12px;
+      top: -12px;
+      right: 20px;
       z-index: 100;
       display: flex;
       flex-direction: column;
@@ -1032,8 +1032,8 @@
     /* Responsive MIDI interface */
     @media (max-width: 768px) {
       .midi-socket-container {
-        right: 12px;
-        bottom: -10px;
+        top: -10px;
+        right: 15px;
       }
 
       .midi-socket {
@@ -1795,7 +1795,6 @@
 
   <div class="app-container">
 
-
     <div class="staff-container">
       <!-- Simple Progress Bar -->
       <div class="simple-progress-bar">
@@ -1841,12 +1840,7 @@
 
     <!-- Virtual Piano Keyboard -->
     <div class="keyboard-container">
-      <div class="keyboard" id="virtualKeyboard">
-        <!-- White keys will be generated here -->
-        <!-- Black keys will be generated here -->
-      </div>
-      
-      <!-- MIDI Socket (Realistic Design) -->
+      <!-- MIDI Socket (Realistic Design) - Attached to top right of piano keyboard -->
       <div class="midi-socket-container">
         <div class="midi-socket-label">MIDI</div>
         <button class="midi-socket" id="midiSettingsIcon" title="MIDI Device Connection" aria-label="MIDI Device Configuration">
@@ -1864,6 +1858,11 @@
             <div class="cable-wire"></div>
           </div>
         </button>
+      </div>
+      
+      <div class="keyboard" id="virtualKeyboard">
+        <!-- White keys will be generated here -->
+        <!-- Black keys will be generated here -->
       </div>
     </div>
 
