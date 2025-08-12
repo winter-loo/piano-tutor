@@ -603,11 +603,15 @@
       width: 24px;
       height: 24px;
       border-radius: 50% 50% 0 0;
-      background: linear-gradient(145deg, #e8e8e8, #d0d0d0);
+      border: 2px solid #444;
       cursor: pointer;
       position: relative;
       transition: all 0.2s ease;
       overflow: visible;
+    }
+
+    .midi-socket.connected {
+      border-color: #28a745;
     }
 
     .midi-socket:hover {
@@ -2009,11 +2013,11 @@
 
     <!-- Virtual Piano Keyboard -->
     <div class="keyboard-container">
-      <!-- MIDI Socket (Simple and Clean Design) - Attached to top right of piano keyboard -->
+      <!-- MIDI Connector (Simple and Clean Design) - Attached to top right of piano keyboard -->
       <div class="midi-socket-container">
-        <button class="midi-socket" id="midiSettingsIcon" title="MIDI Device Connection" aria-label="MIDI Device Configuration">
+        <div class="midi-socket" id="midiConnector" title="MIDI Device Connection" aria-label="MIDI Device Configuration">
           <div class="socket-interior"></div>
-        </button>
+        </div>
       </div>
       
       <div class="keyboard" id="virtualKeyboard">
@@ -12052,7 +12056,7 @@
 
       initialize() {
         // Get DOM elements
-        this.settingsIcon = document.getElementById('midiSettingsIcon');
+        this.settingsIcon = document.getElementById('midiConnector');
         this.configPopup = document.getElementById('midiConfigPopup');
         this.closeButton = document.getElementById('closeMidiConfig');
 
