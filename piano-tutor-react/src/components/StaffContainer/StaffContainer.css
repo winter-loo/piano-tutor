@@ -3,10 +3,8 @@
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 0px 20px;
   margin-bottom: 30px;
   position: relative;
-  overflow: visible;
   min-height: 200px;
   width: 100%;
   max-width: none;
@@ -57,7 +55,7 @@
   height: 200px;
   /* 186px for notes from A3 to B5 */
   margin-left: 90px;
-  width: calc(100vw - 140px); /* Full width minus treble clef and margins */
+  width: calc(100vw - 130px); /* Full width minus paddings and margins */
   overflow: visible;
   transition: transform 0.1s linear;
   z-index: 2;
@@ -69,14 +67,10 @@
   will-change: transform;
   /* Optimize for transform animations */
   position: absolute;
-  /*
-   * subtract 'margin-left' value of '.staff' from the left value of
-   * '.playback-line'
-   */
   left: 0px;
   top: 0;
   height: 200px;
-  width: calc(100vw - 140px); /* Full width minus treble clef and margins */
+  width: calc(100vw - 130px); /* Full width minus paddings and margins */
 }
 
 .staff-line:nth-child(1) {

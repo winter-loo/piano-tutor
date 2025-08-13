@@ -1,6 +1,7 @@
 /* App Container - full width for staff container */
 .app-container {
   width: 100%;
+  box-sizing: border-box;
   margin: 0;
   padding: 20px;
 }
