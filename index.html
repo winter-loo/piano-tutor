@@ -2244,7 +2244,6 @@
     class EndingOverlayManager {
       constructor() {
         this.overlayElement = null;
-        this.performanceLevelElement = null;
         this.celebrationMessageElement = null;
         this.metricsElements = {};
         this.midiStatsElement = null;
@@ -2261,7 +2260,6 @@
       initialize() {
         // Get DOM elements
         this.overlayElement = document.getElementById('endingOverlay');
-        this.performanceLevelElement = document.getElementById('performanceLevel');
         this.celebrationMessageElement = document.getElementById('celebrationMessage');
         this.restartButtonElement = document.getElementById('restartButton');
 
@@ -2274,7 +2272,7 @@
           timing: document.getElementById('finalTiming')
         };
 
-        if (!this.overlayElement || !this.performanceLevelElement || !this.celebrationMessageElement) {
+        if (!this.overlayElement || !this.celebrationMessageElement) {
           console.error('Ending overlay elements not found in DOM');
           return false;
         }
@@ -2377,11 +2375,6 @@
           message = 'Good effort! Focus on timing and accuracy. Every practice session makes you better!';
         }
 
-        if (this.performanceLevelElement) {
-          this.performanceLevelElement.textContent = level;
-          this.performanceLevelElement.className = `performance-level ${levelClass}`;
-        }
-
         if (this.celebrationMessageElement) {
           this.celebrationMessageElement.textContent = message;
         }
@@ -2447,7 +2440,6 @@
         }
         
         this.overlayElement = null;
-        this.performanceLevelElement = null;
         this.celebrationMessageElement = null;
         this.metricsElements = {};
         this.restartButtonElement = null;
