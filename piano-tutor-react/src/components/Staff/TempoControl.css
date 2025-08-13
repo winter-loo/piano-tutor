@@ -1,0 +1,32 @@
+/* Tempo control styles - clean minimal design */
+.tempo-control {
+  position: absolute;
+  top: 10px;
+  left: 25px;
+  z-index: 15;
+}
+
+.tempo-control .tempo-label {
+  color: #6c757d;
+  font-size: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tempo-selector {
+  color: #495057;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  min-width: 80px;
+  /* Remove default select styling to look like pure text */
+  background: none;
+  border: none;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+}

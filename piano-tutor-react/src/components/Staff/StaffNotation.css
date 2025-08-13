@@ -1,0 +1,106 @@
+/* Staff Container - Main wrapper for the staff notation area */
+.staff-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 0px 0px;
+  margin-bottom: 30px;
+  position: relative;
+  overflow: hidden;
+  min-height: 200px;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  touch-action: none;
+  -webkit-touch-callout: none;
+}
+
+/* Playback Line - Shows current playback position */
+.playback-line {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  width: 8px;
+  border-radius: 8px;
+  background-color: #bbbbbb;
+  opacity: 0.5;
+  left: 120px;
+  z-index: 10;
+}
+
+/* Static staff lines that remain fixed during animation */
+.staff-lines {
+  position: absolute;
+  top: 59px;
+  /* 40px margin + 20px staff top */
+  left: 0;
+  right: 0;
+  height: 82px;
+  z-index: 1;
+}
+
+.staff-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #dadada;
+}
+
+.staff-line:nth-child(1) {
+  top: 0;
+}
+
+.staff-line:nth-child(2) {
+  top: 20px;
+}
+
+.staff-line:nth-child(3) {
+  top: 40px;
+}
+
+.staff-line:nth-child(4) {
+  top: 60px;
+}
+
+.staff-line:nth-child(5) {
+  top: 80px;
+}
+
+/* Treble Clef - Static musical symbol */
+.treble-clef {
+  position: absolute;
+  left: 20px;
+  top: 0px;
+  font-size: 144px;
+  z-index: 4;
+}
+
+/* Animated content container - only this moves */
+.staff {
+  position: relative;
+  /* make some room to prevent hidden */
+  height: 200px;
+  /* 186px for notes from A3 to B5 */
+  margin-left: 90px;
+  overflow-x: hidden;
+  overflow-y: visible;
+  transition: transform 0.1s linear;
+  z-index: 2;
+}
+
+/* Smooth transitions for notes container during manual interaction */
+.notes-container {
+  transition: transform 0.1s linear;
+  will-change: transform;
+  /* Optimize for transform animations */
+  position: absolute;
+  /*
+   * subtract 'margin-left' value of '.staff' from the left value of
+   * '.playback-line'
+   */
+  left: 30px;
+  top: 0;
+  height: 200px;
+}

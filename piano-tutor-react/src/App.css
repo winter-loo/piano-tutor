@@ -1,0 +1,6 @@
+/* App Container - full width for staff container */
+.app-container {
+  width: 100%;
+  margin: 0;
+  padding: 20px;
+}

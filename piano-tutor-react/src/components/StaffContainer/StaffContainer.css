@@ -1,0 +1,219 @@
+/* Staff Container - full width with padding */
+.staff-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 0px 20px;
+  margin-bottom: 30px;
+  position: relative;
+  overflow: visible;
+  min-height: 200px;
+  width: 100%;
+  max-width: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  touch-action: none;
+  -webkit-touch-callout: none;
+}
+
+.playback-line {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  width: 8px;
+  border-radius: 8px;
+  background-color: #bbbbbb;
+  opacity: 0.5;
+  left: 120px;
+  z-index: 10;
+}
+
+/* Static staff lines that remain fixed during animation */
+.staff-lines {
+  position: absolute;
+  top: 59px;
+  /* 40px margin + 20px staff top */
+  left: 0;
+  right: 0;
+  height: 82px;
+  z-index: 1;
+}
+
+.staff-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #dadada;
+}
+
+/* Animated content container - only this moves */
+.staff {
+  position: relative;
+  /* make some room to prevent hidden */
+  height: 200px;
+  /* 186px for notes from A3 to B5 */
+  margin-left: 90px;
+  width: calc(100vw - 140px); /* Full width minus treble clef and margins */
+  overflow: visible;
+  transition: transform 0.1s linear;
+  z-index: 2;
+}
+
+/* Smooth transitions for notes container during manual interaction */
+.notes-container {
+  transition: transform 0.1s linear;
+  will-change: transform;
+  /* Optimize for transform animations */
+  position: absolute;
+  /*
+   * subtract 'margin-left' value of '.staff' from the left value of
+   * '.playback-line'
+   */
+  left: 0px;
+  top: 0;
+  height: 200px;
+  width: calc(100vw - 140px); /* Full width minus treble clef and margins */
+}
+
+.staff-line:nth-child(1) {
+  top: 0;
+}
+
+.staff-line:nth-child(2) {
+  top: 20px;
+}
+
+.staff-line:nth-child(3) {
+  top: 40px;
+}
+
+.staff-line:nth-child(4) {
+  top: 60px;
+}
+
+.staff-line:nth-child(5) {
+  top: 80px;
+}
+
+.treble-clef {
+  position: absolute;
+  left: 20px;
+  top: 0px;
+  font-size: 144px;
+  z-index: 4;
+}
+
+/* Tempo control styles - clean minimal design */
+.tempo-control {
+  position: absolute;
+  top: 10px;
+  left: 25px;
+  z-index: 15;
+}
+
+.tempo-control .tempo-label {
+  color: #6c757d;
+  font-size: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tempo-selector {
+  color: #495057;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  min-width: 80px;
+  /* Remove default select styling to look like pure text */
+  background: none;
+  border: none;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+}
+
+/* Note rectangle styles */
+.note-rectangle {
+  position: absolute;
+  height: 22px;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+/* Note highlighting for current playback */
+.note-rectangle.current {
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(231, 76, 60, 0.6);
+  z-index: 5;
+}
+
+/* Positive feedback for correct note matches */
+.note-rectangle.correct-note {
+  box-shadow: 0 0 15px rgba(40, 167, 69, 0.8);
+  z-index: 10;
+}
+
+/* Simple Progress Bar Styles */
+.simple-progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: rgba(0, 0, 0, 0.1);
+  z-index: 5;
+  cursor: pointer;
+  transition: height 0.2s ease;
+}
+
+.simple-progress-bar:hover {
+  height: 6px;
+  /* Slightly taller on hover for better interaction */
+}
+
+.simple-progress-fill {
+  height: 100%;
+  background: #64c83d;
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
+/* Interactive states */
+.simple-progress-bar.interacting {
+  height: 6px;
+}
+
+.simple-progress-bar.interacting .simple-progress-fill {
+  background: #5cb85c;
+  /* Slightly different color during interaction */
+}
+
+/* Smooth transitions between normal and interaction states */
+.simple-progress-bar.state-transitioning {
+  transition: height 0.2s ease, background-color 0.2s ease;
+}
+
+.simple-progress-bar.state-transitioning .simple-progress-fill {
+  transition: background 0.2s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .simple-progress-bar {
+    height: 6px;
+    /* Larger touch target on mobile */
+  }
+
+  .simple-progress-bar:hover {
+    height: 8px;
+  }
+}
