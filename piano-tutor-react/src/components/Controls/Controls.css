@@ -1,0 +1,197 @@
+/* Control Components Styles */
+
+/* ===== TEMPO CONTROL ===== */
+.tempo-control {
+  position: absolute;
+  top: 10px;
+  left: 25px;
+  z-index: 15;
+}
+
+.tempo-control.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.tempo-control.playing {
+  /* Subtle visual indication during playback */
+  opacity: 0.9;
+}
+
+.tempo-control .tempo-label {
+  color: #6c757d;
+  font-size: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tempo-selector {
+  color: #495057;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  /* Remove default select styling to look like pure text */
+  background: none;
+  border: none;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+}
+
+.tempo-selector:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+
+
+
+
+/* ===== PROGRESS BAR ===== */
+.progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: rgba(0, 0, 0, 0.1);
+  z-index: 5;
+  cursor: pointer;
+  transition: height 0.2s ease, background-color 0.2s ease;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.progress-bar:hover:not(.disabled) {
+  height: 6px;
+}
+
+.progress-bar.interacting {
+  height: 6px;
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+.progress-bar.dragging {
+  height: 6px;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.progress-bar.disabled {
+  cursor: default;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.progress-bar.playing {
+  /* Subtle animation during playback */
+  background-color: rgba(0, 0, 0, 0.12);
+}
+
+.progress-fill {
+  height: 100%;
+  background: #64c83d;
+  width: 0%;
+  transition: width 0.1s linear, background-color 0.2s ease;
+  border-radius: 0;
+}
+
+.progress-fill.interacting {
+  background: #5cb85c;
+  transition: width 0.05s linear, background-color 0.1s ease;
+}
+
+/* Smooth transitions between states */
+.progress-bar.state-transitioning {
+  transition: height 0.2s ease, background-color 0.2s ease;
+}
+
+.progress-bar.state-transitioning .progress-fill {
+  transition: background-color 0.2s ease;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  /* Responsive tempo control styles */
+  .tempo-control {
+    top: 10px;
+    left: 15px;
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  .tempo-control .tempo-label {
+    font-size: 12px;
+  }
+
+  .tempo-selector {
+    min-width: 70px;
+    font-size: 12px;
+    padding: 3px 6px;
+  }
+
+
+
+  /* Progress Bar Mobile Adjustments */
+  .progress-bar {
+    height: 6px; /* Larger touch target on mobile */
+  }
+
+  .progress-bar:hover:not(.disabled) {
+    height: 8px;
+  }
+
+  .progress-bar.interacting,
+  .progress-bar.dragging {
+    height: 8px;
+  }
+}
+
+
+
+/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+@media (prefers-reduced-motion: reduce) {
+  .progress-bar,
+  .progress-fill {
+    transition: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .progress-bar {
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 1px solid #000;
+  }
+
+  .progress-fill {
+    background: #000;
+  }
+}
+
+/* Focus indicators for keyboard navigation */
+.progress-bar:focus {
+  outline: 2px solid rgba(100, 200, 61, 0.5);
+  outline-offset: 2px;
+}
+
+/* ===== ANIMATION KEYFRAMES ===== */
+@keyframes progress-pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.8; }
+  100% { opacity: 1; }
+}
+
+.progress-bar.playing .progress-fill {
+  animation: progress-pulse 2s ease-in-out infinite;
+}
+
+/* Disable animations if user prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .progress-bar.playing .progress-fill {
+    animation: none;
+  }
+}

@@ -11,21 +11,22 @@ export const useStaff = (initialNotes = []) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [tempo, setTempo] = useState(DEFAULT_TEMPO);
   const [progressPercentage, setProgressPercentage] = useState(0);
-  
+
   const notePositioning = useRef(new NotePositioning());
   const playbackTimer = useRef(null);
   const startTime = useRef(null);
 
   // Calculate total duration of the piece
-  const totalDuration = notes.length > 0 
-    ? Math.max(...notes.map(note => note.startTime + (note.duration || 1)))
-    : 0;
+  const totalDuration =
+    notes.length > 0
+      ? Math.max(...notes.map(note => note.startTime + (note.duration || 1)))
+      : 0;
 
   // Position notes when notes or tempo change
   const positionedNotes = notePositioning.current.positionNotes(notes, tempo);
 
   // Handle tempo changes
-  const handleTempoChange = (newTempo) => {
+  const handleTempoChange = newTempo => {
     setTempo(newTempo);
     // If playing, restart with new tempo
     if (isPlaying) {
@@ -38,17 +39,17 @@ export const useStaff = (initialNotes = []) => {
   const handlePlay = () => {
     if (!isPlaying) {
       setIsPlaying(true);
-      startTime.current = Date.now() - (currentTime * 1000);
-      
+      startTime.current = Date.now() - currentTime * 1000;
+
       playbackTimer.current = setInterval(() => {
         const elapsed = (Date.now() - startTime.current) / 1000;
         setCurrentTime(elapsed);
-        
+
         // Update progress percentage
         if (totalDuration > 0) {
           setProgressPercentage((elapsed / totalDuration) * 100);
         }
-        
+
         // Stop when reaching the end
         if (elapsed >= totalDuration) {
           handlePause();
@@ -68,13 +69,13 @@ export const useStaff = (initialNotes = []) => {
   };
 
   // Handle progress bar clicks
-  const handleProgressClick = (percentage) => {
+  const handleProgressClick = percentage => {
     const newTime = (percentage / 100) * totalDuration;
     setCurrentTime(newTime);
     setProgressPercentage(percentage);
-    
+
     if (isPlaying) {
-      startTime.current = Date.now() - (newTime * 1000);
+      startTime.current = Date.now() - newTime * 1000;
     }
   };
 
@@ -102,7 +103,7 @@ export const useStaff = (initialNotes = []) => {
     tempo,
     progressPercentage,
     totalDuration,
-    
+
     // Actions
     handlePlay,
     handlePause,
@@ -110,8 +111,8 @@ export const useStaff = (initialNotes = []) => {
     handleTempoChange,
     handleProgressClick,
     setNotes,
-    
+
     // Utilities
-    notePositioning: notePositioning.current
+    notePositioning: notePositioning.current,
   };
 };

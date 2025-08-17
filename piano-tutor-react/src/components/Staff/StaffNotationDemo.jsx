@@ -1,87 +1,110 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import StaffNotation from './StaffNotation';
-import { useStaff } from '../../hooks/useStaff';
-
-// Sample notes for demonstration
-const sampleNotes = [
-  { pitch: 'C4', startTime: 0, duration: 1, type: 'quarter' },
-  { pitch: 'D4', startTime: 1, duration: 1, type: 'quarter' },
-  { pitch: 'E4', startTime: 2, duration: 1, type: 'quarter' },
-  { pitch: 'F4', startTime: 3, duration: 1, type: 'quarter' },
-  { pitch: 'G4', startTime: 4, duration: 2, type: 'half' },
-  { pitch: 'A4', startTime: 6, duration: 1, type: 'quarter' },
-  { pitch: 'B4', startTime: 7, duration: 1, type: 'quarter' },
-  { pitch: 'C5', startTime: 8, duration: 2, type: 'half' },
-];
+import { NotePositioning } from '../../utils/notePositioning';
 
 const StaffNotationDemo = () => {
-  const {
-    notes,
-    currentTime,
-    isPlaying,
-    tempo,
-    progressPercentage,
-    handlePlay,
-    handlePause,
-    handleReset,
-    handleTempoChange,
-    handleProgressClick
-  } = useStaff(sampleNotes);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [tempo, setTempo] = useState(60);
+
+  // Original song data from index.html - "Different Colors" by Walk the Moon
+  const originalSongData = {
+    measures: [
+      {
+        notes: [
+          { pitch: 'D4', duration: 'quarter', fingering: 2 },
+          { pitch: 'F4', duration: 'quarter', fingering: 4 },
+          { pitch: 'C4', duration: 'quarter', fingering: 1 },
+          { pitch: 'rest', duration: 'quarter', fingering: null },
+        ],
+      },
+      {
+        notes: [
+          { pitch: 'G4', duration: 'quarter', fingering: 5 },
+          { pitch: 'A4', duration: 'eighth', fingering: 1 },
+          { pitch: 'G4', duration: 'eighth', fingering: 5 },
+          { pitch: 'F4', duration: 'quarter', fingering: 4 },
+        ],
+      },
+      {
+        notes: [
+          { pitch: 'A4', duration: 'quarter', fingering: 1 },
+          { pitch: 'C5', duration: 'quarter', fingering: 3 },
+          { pitch: 'A4', duration: 'dotted_quarter', fingering: 1 },
+          { pitch: 'F4', duration: 'eighth', fingering: 4 },
+        ],
+      },
+    ],
+  };
+
+  // Calculate positioned notes using the positioning system
+  const notePositioning = useMemo(() => new NotePositioning(), []);
+  const sampleNotes = useMemo(() => {
+    return notePositioning.calculateAllNotePositions(originalSongData.measures);
+  }, [notePositioning]);
+
+  // Calculate total song duration
+  const totalDuration = useMemo(() => {
+    if (sampleNotes.length === 0) return 10;
+    return Math.max(...sampleNotes.map(note => note.startTime + (note.duration || 1)));
+  }, [sampleNotes]);
+
+  // Simulate playback
+  useEffect(() => {
+    let interval;
+    if (isPlaying) {
+      interval = setInterval(() => {
+        setCurrentTime(prev => {
+          const next = prev + 0.1;
+          if (next >= totalDuration) {
+            setIsPlaying(false);
+            return 0;
+          }
+          return next;
+        });
+      }, 100);
+    }
+    return () => clearInterval(interval);
+  }, [isPlaying, totalDuration]);
+
+  const handlePlay = () => {
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleReset = () => {
+    setCurrentTime(0);
+    setIsPlaying(false);
+  };
+
+  const handleTempoChange = newTempo => {
+    setTempo(newTempo);
+  };
+
+  const handleProgressClick = percentage => {
+    const newTime = (percentage / 100) * totalDuration;
+    setCurrentTime(newTime);
+  };
+
+  const progressPercentage = (currentTime / totalDuration) * 100;
 
   return (
     <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <h1>StaffNotation Component Demo</h1>
-      
-      {/* Control Panel */}
-      <div style={{ 
-        marginBottom: '20px', 
-        padding: '15px', 
-        backgroundColor: '#f8f9fa', 
-        borderRadius: '8px',
-        display: 'flex',
-        gap: '10px',
-        alignItems: 'center'
-      }}>
-        <button 
-          onClick={isPlaying ? handlePause : handlePlay}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: isPlaying ? '#dc3545' : '#28a745',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
+      <h2>StaffNotation Component Demo</h2>
+
+      <div style={{ marginBottom: '20px' }}>
+        <button onClick={handlePlay} style={{ marginRight: '10px' }}>
           {isPlaying ? 'Pause' : 'Play'}
         </button>
-        
-        <button 
-          onClick={handleReset}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: '#6c757d',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
+        <button onClick={handleReset} style={{ marginRight: '10px' }}>
           Reset
         </button>
-        
-        <span style={{ marginLeft: '20px' }}>
-          Time: {currentTime.toFixed(1)}s
-        </span>
-        
-        <span>
-          Progress: {progressPercentage.toFixed(1)}%
-        </span>
+        <span>Current Time: {currentTime.toFixed(1)}s</span>
+        <span style={{ marginLeft: '20px' }}>Tempo: {tempo} BPM</span>
       </div>
 
-      {/* Staff Notation Component */}
       <StaffNotation
-        notes={notes}
+        notes={sampleNotes}
+        measures={originalSongData.measures}
         currentTime={currentTime}
         isPlaying={isPlaying}
         tempo={tempo}
@@ -90,30 +113,14 @@ const StaffNotationDemo = () => {
         progressPercentage={progressPercentage}
       />
 
-      {/* Component Info */}
-      <div style={{ 
-        marginTop: '30px', 
-        padding: '20px', 
-        backgroundColor: '#e9ecef', 
-        borderRadius: '8px' 
-      }}>
-        <h3>Component Features</h3>
+      <div style={{ marginTop: '20px', fontSize: '14px', color: '#666' }}>
+        <p>This demo shows the StaffNotation component with:</p>
         <ul>
-          <li><strong>Interactive Progress Bar:</strong> Click to jump to any position</li>
-          <li><strong>Tempo Control:</strong> Change playback speed (40-120 BPM)</li>
-          <li><strong>Real-time Playback:</strong> Visual indication of current note</li>
-          <li><strong>Note Positioning:</strong> Automatic positioning based on pitch and timing</li>
-          <li><strong>Responsive Design:</strong> Adapts to different screen sizes</li>
-        </ul>
-        
-        <h4 style={{ marginTop: '15px' }}>Component Structure:</h4>
-        <ul>
-          <li><code>StaffNotation.jsx</code> - Main container component</li>
-          <li><code>PlaybackLine.jsx</code> - Shows current playback position</li>
-          <li><code>NotesContainer.jsx</code> - Container for all notes</li>
-          <li><code>NoteRectangle.jsx</code> - Individual note rendering</li>
-          <li><code>TempoControl.jsx</code> - Tempo selection control</li>
-          <li><code>ProgressBar.jsx</code> - Interactive progress indicator</li>
+          <li>5 sample notes (C4, D4, E4, F4, G4)</li>
+          <li>Playback line animation</li>
+          <li>Note highlighting during playback</li>
+          <li>Tempo control</li>
+          <li>Progress bar with click-to-seek</li>
         </ul>
       </div>
     </div>

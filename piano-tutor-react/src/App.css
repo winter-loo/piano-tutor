@@ -1,7 +1,363 @@
-/* App Container - full width for staff container */
+/* App Container - responsive and mobile-optimized */
 .app-container {
   width: 100%;
+  min-height: 100vh;
   box-sizing: border-box;
   margin: 0;
+  padding: var(--app-padding, 20px);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: var(--bg-primary, #ffffff);
+  color: var(--text-primary, #333333);
+  transition: var(--transition-all, all 0.3s ease);
+  gap: var(--component-gap, 1rem);
+  /* Prevent horizontal scrolling */
+  overflow-x: hidden;
+  /* Improve touch scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Application state-specific styles */
+.app-state-start {
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+}
+
+.app-state-playing {
+  /* Normal playing state - styles can be added here */
+}
+
+.app-state-paused {
+  /* Paused state - could add visual indicators */
+  opacity: 0.8;
+}
+
+.app-state-ended {
+  /* Game ended state - styles can be added here */
+}
+
+.app-state-ready {
+  /* Ready to play state - styles can be added here */
+}
+
+/* Loading state */
+.app-container.loading {
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Error state */
+.app-container.error {
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.error-message {
+  text-align: center;
+  padding: 2rem;
+  background: #ffebee;
+  border: 1px solid #ffcdd2;
+  border-radius: 8px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.error-message h2 {
+  color: #c62828;
+  margin-bottom: 1rem;
+}
+
+.error-message p {
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.error-button {
+  background: #1976d2;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.error-button:hover {
+  background: #1565c0;
+}
+
+.error-button:active {
+  background: #0d47a1;
+}
+
+/* Main interface layout when overlays are hidden */
+.app-container:not(.app-state-start) {
+  gap: var(--component-gap, 1rem);
+}
+
+/* ===== TOUCH INTERACTION IMPROVEMENTS ===== */
+
+/* Improve touch targets on mobile */
+@media (max-width: 768px) {
+  .app-container button {
+    min-height: var(--touch-target-min, 44px);
+    min-width: var(--touch-target-min, 44px);
+    padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  }
+
+  /* Prevent zoom on form inputs */
+  .app-container input,
+  .app-container select,
+  .app-container textarea {
+    font-size: 16px !important;
+    /* Prevents zoom on iOS */
+  }
+}
+
+/* ===== MOBILE-SPECIFIC OPTIMIZATIONS ===== */
+
+/* Prevent text selection on interactive elements */
+.app-container .piano-key,
+.app-container .note-rectangle,
+.app-container .progress-bar,
+.app-container .tempo-control,
+.app-container .midi-socket {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Improve tap highlighting */
+.app-container .piano-key,
+.app-container .note-rectangle,
+.app-container button {
+  -webkit-tap-highlight-color: rgba(0, 123, 255, 0.1);
+}
+
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+
+/* Hardware acceleration for smooth animations */
+.app-container {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Optimize scrolling performance */
+.app-container {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* ===== ACCESSIBILITY IMPROVEMENTS ===== */
+
+/* Larger focus indicators on mobile */
+@media (max-width: 768px) {
+  .app-container *:focus-visible {
+    outline: 3px solid var(--color-primary, #007bff);
+    outline-offset: 2px;
+  }
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Mobile portrait design - allow app to show but optimize layout */
+@media screen and (max-width: 768px) and (orientation: portrait) {
+  .app-container {
+    padding: var(--spacing-sm, 10px);
+    gap: var(--spacing-sm, 8px);
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+  
+  /* Show rotation message as overlay instead of hiding app */
+  .rotation-message {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    color: white;
+    text-align: center;
+    padding: 20px;
+  }
+}
+
+/* Tablet responsive design */
+@media (max-width: 1024px) {
+  .app-container {
+    max-width: 100%;
+    padding: var(--spacing-lg, 15px);
+  }
+}
+
+/* Mobile landscape design */
+@media (max-width: 768px) and (orientation: landscape) {
+  .app-container {
+    padding: var(--spacing-sm, 8px);
+    gap: var(--spacing-sm, 8px);
+    /* Use full viewport height in landscape */
+    min-height: 100vh;
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+
+  /* Compact layout for mobile landscape */
+  .app-container>* {
+    margin-bottom: var(--spacing-sm, 8px);
+  }
+
+  .app-container>*:last-child {
+    margin-bottom: 0;
+  }
+}
+
+/* Extra small screens in landscape */
+@media (max-width: 480px) and (orientation: landscape) {
+  .app-container {
+    padding: var(--spacing-xs, 5px);
+    gap: var(--spacing-xs, 5px);
+  }
+}
+
+/* Large screens - constrain max width */
+@media (min-width: 1400px) {
+  .app-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  .app-container {
+    --background-color: #1a1a1a;
+    --text-color: #ffffff;
+  }
+
+  .error-message {
+    background: #2d1b1b;
+    border-color: #4a2c2c;
+    color: #ffffff;
+  }
+
+  .error-message h2 {
+    color: #ff6b6b;
+  }
+
+  .error-message p {
+    color: #cccccc;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .app-container {
+    border: 2px solid currentColor;
+  }
+
+  .error-button {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .app-container {
+    transition: none;
+  }
+
+  .error-button {
+    transition: none;
+  }
+}
+
+/* ===== DEMO CONTAINER STYLES ===== */
+
+.demo-container {
+  min-height: 100vh;
+  background: #f8f9fa;
   padding: 20px;
+  font-family: var(--font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+}
+
+.demo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.demo-header h1 {
+  margin: 0;
+  color: #333;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.back-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 16px;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.back-link:hover {
+  background-color: #007bff;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.back-link:active {
+  transform: translateY(0);
+}
+
+/* Demo responsive design */
+@media (max-width: 768px) {
+  .demo-container {
+    padding: 15px;
+  }
+
+  .demo-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .demo-header h1 {
+    font-size: 1.5rem;
+  }
+}
+
+/* Dark theme for demo */
+@media (prefers-color-scheme: dark) {
+  .demo-container {
+    background: #1a1a1a;
+    color: #ffffff;
+  }
+
+  .demo-header {
+    border-bottom-color: #333;
+  }
+
+  .demo-header h1 {
+    color: #ffffff;
+  }
 }

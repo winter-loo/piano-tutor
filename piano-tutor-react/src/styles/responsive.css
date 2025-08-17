@@ -1,0 +1,535 @@
+/* Responsive Design and Mobile Compatibility Styles */
+
+/* ===== VIEWPORT AND BASE RESPONSIVE SETUP ===== */
+html {
+  /* Prevent horizontal scrolling on mobile */
+  overflow-x: hidden;
+}
+
+body {
+  /* Prevent zoom on input focus on iOS */
+  -webkit-text-size-adjust: 100%;
+  /* Prevent horizontal scrolling */
+  overflow-x: hidden;
+  /* Improve touch scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ===== MOBILE LANDSCAPE MODE ENFORCEMENT ===== */
+.rotate-message {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.rotate-message-content {
+  max-width: 300px;
+}
+
+.rotate-message h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.rotate-message p {
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+  opacity: 0.9;
+}
+
+.rotate-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Show rotation message in portrait mode on mobile */
+@media screen and (max-width: 768px) and (orientation: portrait) {
+  .app-container {
+    display: none !important;
+  }
+  
+  .rotate-message {
+    display: flex !important;
+  }
+}
+
+/* Hide rotation message in landscape mode */
+@media screen and (max-width: 768px) and (orientation: landscape) {
+  .rotate-message {
+    display: none !important;
+  }
+}
+
+/* ===== RESPONSIVE BREAKPOINTS ===== */
+
+/* Large tablets and small desktops (1024px and down) */
+@media (max-width: 1024px) {
+  .app-container {
+    max-width: 100%;
+    padding: 15px;
+  }
+}
+
+/* Tablets (768px and down) */
+@media (max-width: 768px) {
+  .app-container {
+    padding: 10px;
+    gap: 15px;
+  }
+  
+  /* Reduce margins and spacing */
+  .staff-container,
+  .keyboard-container {
+    margin-bottom: 20px;
+  }
+  
+  /* Adjust font sizes for better readability */
+  body {
+    font-size: 14px;
+  }
+  
+  /* Improve touch targets */
+  button, .piano-key, .tempo-selector {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Mobile devices (480px and down) */
+@media (max-width: 480px) {
+  .app-container {
+    padding: 5px;
+    gap: 10px;
+  }
+  
+  /* Further reduce spacing */
+  .staff-container,
+  .keyboard-container {
+    margin-bottom: 15px;
+  }
+  
+  /* Smaller font sizes for very small screens */
+  body {
+    font-size: 13px;
+  }
+  
+  /* Ensure touch targets remain accessible */
+  button, .piano-key, .tempo-selector {
+    min-height: 40px;
+    min-width: 40px;
+  }
+}
+
+/* ===== MOBILE LANDSCAPE OPTIMIZATIONS ===== */
+@media (max-width: 768px) and (orientation: landscape) {
+  .app-container {
+    padding: 8px;
+    gap: 8px;
+    /* Use full viewport height in landscape */
+    min-height: 100vh;
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+  
+  /* Compact layout for landscape mobile */
+  .staff-container {
+    margin-bottom: 10px;
+    min-height: 140px;
+  }
+  
+  .keyboard-container {
+    margin-bottom: 10px;
+  }
+  
+  /* Smaller text in landscape to fit more content */
+  body {
+    font-size: 12px;
+  }
+}
+
+/* Extra small screens in landscape (480px and down) */
+@media (max-width: 480px) and (orientation: landscape) {
+  .app-container {
+    padding: 5px;
+    gap: 5px;
+  }
+  
+  .staff-container {
+    min-height: 120px;
+    margin-bottom: 8px;
+  }
+  
+  .keyboard-container {
+    margin-bottom: 8px;
+  }
+  
+  /* Very compact text for tiny landscape screens */
+  body {
+    font-size: 11px;
+  }
+}
+
+/* ===== TOUCH INTERACTION IMPROVEMENTS ===== */
+
+/* Improve touch targets for all interactive elements */
+@media (max-width: 768px) {
+  /* Piano keys - already handled in PianoKeyboard.css */
+  
+  /* Progress bar - larger touch area */
+  .progress-bar {
+    height: 8px;
+    cursor: pointer;
+  }
+  
+  .progress-bar:hover {
+    height: 10px;
+  }
+  
+  /* Tempo control - larger touch area */
+  .tempo-selector {
+    padding: 8px 12px;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+  
+  /* MIDI socket - larger touch area */
+  .midi-socket {
+    width: 32px;
+    height: 32px;
+    margin: 8px;
+  }
+  
+  .socket-interior {
+    width: 24px;
+    height: 24px;
+  }
+  
+  /* Buttons - ensure minimum touch target size */
+  button {
+    padding: 12px 16px;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+  
+  /* Note rectangles - larger touch targets */
+  .note-rectangle {
+    min-height: 28px;
+    cursor: pointer;
+  }
+}
+
+/* ===== PREVENT ZOOM AND IMPROVE MOBILE UX ===== */
+
+/* Prevent zoom on form inputs */
+input, select, textarea {
+  font-size: 16px !important; /* Prevents zoom on iOS */
+}
+
+/* Improve scrolling performance */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent text selection on interactive elements */
+.piano-key,
+.note-rectangle,
+.progress-bar,
+.tempo-control,
+.midi-socket {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Improve tap highlighting */
+.piano-key,
+.note-rectangle,
+button {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+/* ===== RESPONSIVE TYPOGRAPHY ===== */
+
+/* Scale headings appropriately */
+@media (max-width: 768px) {
+  h1 { font-size: 1.8rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.3rem; }
+  h4 { font-size: 1.1rem; }
+}
+
+@media (max-width: 480px) {
+  h1 { font-size: 1.6rem; }
+  h2 { font-size: 1.3rem; }
+  h3 { font-size: 1.1rem; }
+  h4 { font-size: 1rem; }
+}
+
+/* ===== RESPONSIVE IMAGES AND MEDIA ===== */
+
+/* Ensure images scale properly */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ===== ACCESSIBILITY IMPROVEMENTS FOR MOBILE ===== */
+
+/* Larger focus indicators on mobile */
+@media (max-width: 768px) {
+  *:focus-visible {
+    outline: 3px solid #007bff;
+    outline-offset: 2px;
+  }
+}
+
+/* ===== HIGH DPI DISPLAY SUPPORT ===== */
+
+/* Optimize for retina displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Sharper borders and shadows */
+  .piano-key,
+  .note-rectangle,
+  .staff-container,
+  .keyboard-container {
+    border-width: 0.5px;
+  }
+  
+  /* Crisper text rendering */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ===== RESPONSIVE GRID LAYOUTS ===== */
+
+/* Performance metrics responsive grid */
+@media (max-width: 768px) {
+  .performance-metrics {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .performance-metrics {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* ===== RESPONSIVE MODAL AND POPUP BEHAVIOR ===== */
+
+@media (max-width: 768px) {
+  /* Full-screen modals on mobile */
+  .midi-config-popup .midi-config-content {
+    width: 95%;
+    max-width: none;
+    margin: 10px;
+    max-height: 90vh;
+  }
+  
+  /* Overlay content adjustments */
+  .start-overlay-content,
+  .ending-overlay-content {
+    width: 95%;
+    max-width: none;
+    margin: 10px;
+    padding: 20px;
+  }
+}
+
+/* ===== RESPONSIVE NAVIGATION AND CONTROLS ===== */
+
+@media (max-width: 768px) {
+  /* Stack controls vertically if needed */
+  .controls-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  /* Adjust control positioning */
+  .tempo-control {
+    position: relative;
+    top: auto;
+    left: auto;
+    margin-bottom: 10px;
+  }
+}
+
+/* ===== RESPONSIVE ANIMATIONS ===== */
+
+/* Reduce animations on mobile for better performance */
+@media (max-width: 768px) {
+  .note-rectangle,
+  .piano-key {
+    transition-duration: 0.1s;
+  }
+  
+  /* Disable complex animations on very small screens */
+  @media (max-width: 480px) {
+    .note-rectangle.current {
+      animation: none;
+      transform: scale(1.05);
+    }
+    
+    .piano-key.correct-C,
+    .piano-key.correct-D,
+    .piano-key.correct-E,
+    .piano-key.correct-F,
+    .piano-key.correct-G,
+    .piano-key.correct-A,
+    .piano-key.correct-B {
+      animation: none;
+    }
+  }
+}
+
+/* ===== RESPONSIVE ERROR HANDLING ===== */
+
+@media (max-width: 768px) {
+  .error-message {
+    margin: 10px;
+    padding: 15px;
+    font-size: 14px;
+  }
+  
+  .error-message h2 {
+    font-size: 1.2rem;
+  }
+}
+
+/* ===== RESPONSIVE LOADING STATES ===== */
+
+@media (max-width: 768px) {
+  .loading-spinner {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .loading-text {
+    font-size: 14px;
+    margin-top: 10px;
+  }
+}
+
+/* ===== DEVICE-SPECIFIC OPTIMIZATIONS ===== */
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  /* Fix viewport height issues on iOS */
+  .app-container {
+    min-height: -webkit-fill-available;
+  }
+  
+  /* Prevent bounce scrolling */
+  body {
+    position: fixed;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .app-container {
+    overflow-y: auto;
+    height: 100vh;
+    height: -webkit-fill-available;
+  }
+}
+
+/* Android Chrome specific fixes */
+@media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: .001dpcm) {
+  /* Improve scrolling performance on Android */
+  .app-container {
+    transform: translateZ(0);
+  }
+  
+  .staff-container,
+  .keyboard-container {
+    transform: translateZ(0);
+  }
+}
+
+/* ===== RESPONSIVE UTILITY CLASSES ===== */
+
+/* Hide elements on mobile */
+.hide-mobile {
+  @media (max-width: 768px) {
+    display: none !important;
+  }
+}
+
+/* Show only on mobile */
+.show-mobile {
+  display: none !important;
+  
+  @media (max-width: 768px) {
+    display: block !important;
+  }
+}
+
+/* Hide in landscape */
+.hide-landscape {
+  @media (orientation: landscape) {
+    display: none !important;
+  }
+}
+
+/* Show only in landscape */
+.show-landscape {
+  display: none !important;
+  
+  @media (orientation: landscape) {
+    display: block !important;
+  }
+}
+
+/* ===== RESPONSIVE DEBUGGING (DEVELOPMENT ONLY) ===== */
+
+/* Uncomment for responsive debugging */
+/*
+body::before {
+  content: 'XS';
+  position: fixed;
+  top: 0;
+  right: 0;
+  background: red;
+  color: white;
+  padding: 5px;
+  z-index: 10000;
+  font-size: 12px;
+}
+
+@media (min-width: 481px) {
+  body::before { content: 'SM'; background: orange; }
+}
+
+@media (min-width: 769px) {
+  body::before { content: 'MD'; background: green; }
+}
+
+@media (min-width: 1025px) {
+  body::before { content: 'LG'; background: blue; }
+}
+*/

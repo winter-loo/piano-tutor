@@ -7091,21 +7091,12 @@
         keyElement.textContent = keyData.label;
 
         // Add mouse event handlers for press/hold/release
-        keyElement.addEventListener('mousedown', (event) => this.handleKeyDown(event, keyData));
-        keyElement.addEventListener('mouseup', (event) => this.handleKeyUp(event, keyData));
-        keyElement.addEventListener('mouseenter', (event) => this.handleKeyHover(event, keyData, true));
-        keyElement.addEventListener('mouseleave', (event) => this.handleKeyLeave(event, keyData));
+        keyElement.addEventListener('mousedown', (event) => this.handlePianoKeyDown(event, keyData));
+        keyElement.addEventListener('mouseup', (event) => this.handlePianoKeyUp(event, keyData));
 
         // Add touch event handlers with better touch support for sustained notes
-        keyElement.addEventListener('touchstart', (event) => this.handleKeyDown(event, keyData), {passive: false});
-        keyElement.addEventListener('touchend', (event) => this.handleKeyUp(event, keyData), {passive: false});
-        keyElement.addEventListener('touchmove', (event) => this.handleTouchMove(event, keyData), {passive: false});
-
-        // Add keyboard accessibility support for sustained notes
-        keyElement.addEventListener('keydown', (event) => this.handleKeyboardInput(event, keyData));
-        keyElement.addEventListener('keyup', (event) => this.handleKeyboardInput(event, keyData));
-        keyElement.addEventListener('focus', (event) => this.handleKeyFocus(event, keyData, true));
-        keyElement.addEventListener('blur', (event) => this.handleKeyFocus(event, keyData, false));
+        keyElement.addEventListener('touchstart', (event) => this.handlePianoKeyDown(event, keyData), {passive: false});
+        keyElement.addEventListener('touchend', (event) => this.handlePianoKeyUp(event, keyData), {passive: false});
 
         // Prevent context menu on right click
         keyElement.addEventListener('contextmenu', (event) => event.preventDefault());
@@ -7131,118 +7122,11 @@
       }
 
       /**
-       * Handle touch move events to prevent accidental key presses and stuck notes
-       * @param {TouchEvent} event - The touch move event
-       * @param {Object} keyData - Key configuration object
-       */
-      handleTouchMove(event, keyData) {
-        event.preventDefault();
-
-        // If touch moves significantly, consider it a scroll/drag gesture
-        const touch = event.touches[0];
-        if (touch) {
-          const keyElement = this.keys.get(keyData.note);
-          if (!keyElement) return;
-
-          const rect = keyElement.getBoundingClientRect();
-
-          // Check if touch is still within key bounds with tolerance
-          const tolerance = 10; // pixels
-          const isWithinKey = (
-            touch.clientX >= (rect.left - tolerance) &&
-            touch.clientX <= (rect.right + tolerance) &&
-            touch.clientY >= (rect.top - tolerance) &&
-            touch.clientY <= (rect.bottom + tolerance)
-          );
-
-          // If touch moved outside key bounds, release it to prevent stuck notes
-          if (!isWithinKey && (this.pressedKeys.has(keyData.note) || this.pendingOperations.has(keyData.note))) {
-            console.log(`🎹 [ASYNC-SERIALIZE] Touch moved outside key bounds, releasing: ${keyData.note}`);
-            this.handleKeyRelease(event, keyData, 'touch-leave');
-          }
-        }
-      }
-
-      /**
-       * Handle keyboard input for accessibility
-       * @param {KeyboardEvent} event - The keyboard event
-       * @param {Object} keyData - Key configuration object
-       */
-      async handleKeyboardInput(event, keyData) {
-        // Handle Enter and Space for sustained notes (keydown starts, keyup releases)
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-
-          if (event.type === 'keydown' && !event.repeat) {
-            // Start sustained note on keydown (if not already pressed)
-            await this.handleKeyDown(event, keyData);
-          } else if (event.type === 'keyup') {
-            // Release sustained note on keyup
-            await this.handleKeyUp(event, keyData);
-          }
-        }
-
-        // Handle arrow keys for navigation
-        if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-          event.preventDefault();
-          this.navigateKeys(keyData.note, event.key === 'ArrowRight');
-        }
-      }
-
-      /**
-       * Handle key focus for accessibility
-       * @param {Event} event - The focus event
-       * @param {Object} keyData - Key configuration object
-       * @param {boolean} isFocusing - True if focusing, false if blurring
-       */
-      handleKeyFocus(event, keyData, isFocusing) {
-        const keyElement = this.keys.get(keyData.note);
-        if (!keyElement) return;
-
-        if (isFocusing) {
-          keyElement.style.outline = '2px solid #007bff';
-          keyElement.style.outlineOffset = '2px';
-        } else {
-          keyElement.style.outline = '';
-          keyElement.style.outlineOffset = '';
-        }
-      }
-
-      /**
-       * Navigate between keys using keyboard
-       * @param {string} currentNote - Currently focused note
-       * @param {boolean} forward - True for forward navigation, false for backward
-       */
-      navigateKeys(currentNote, forward) {
-        const whiteKeys = this.keyLayout.filter(key => !this.isBlackKey(key)).map(key => key.note);
-        const currentIndex = whiteKeys.indexOf(currentNote);
-
-        if (currentIndex === -1) return;
-
-        let nextIndex;
-        if (forward) {
-          nextIndex = (currentIndex + 1) % whiteKeys.length;
-        } else {
-          nextIndex = (currentIndex - 1 + whiteKeys.length) % whiteKeys.length;
-        }
-
-        const nextKey = this.keys.get(whiteKeys[nextIndex]);
-        if (nextKey) {
-          nextKey.focus();
-        }
-      }
-
-      /**
-       * Handle key press events (mouse click or touch)
-       * @param {Event} event - The interaction event
-       * @param {Object} keyData - Key configuration object
-       */
-      /**
        * Enhanced key down handler with proper async event serialization
        * @param {Event} event - The key down event (mousedown/touchstart)
        * @param {Object} keyData - Key configuration object
        */
-      async handleKeyDown(event, keyData) {
+      async handlePianoKeyDown(event, keyData) {
         event.preventDefault();
         event.stopPropagation();
 
@@ -7353,7 +7237,7 @@
        * @param {Event} event - The key up event (mouseup/touchend)
        * @param {Object} keyData - Key configuration object
        */
-      async handleKeyUp(event, keyData) {
+      async handlePianoKeyUp(event, keyData) {
         event.preventDefault();
         event.stopPropagation();
 

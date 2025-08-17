@@ -1,0 +1,155 @@
+/* Rotation Message Component Styles */
+
+.rotate-message {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: var(--z-index-rotation-message, 10000);
+  color: white;
+  text-align: center;
+  padding: var(--spacing-xl, 20px);
+  box-sizing: border-box;
+  font-family: var(--font-family-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+}
+
+.rotate-message-content {
+  max-width: 300px;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.rotate-message h2 {
+  font-size: var(--font-size-2xl, 1.5rem);
+  margin-bottom: var(--spacing-lg, 1rem);
+  font-weight: var(--font-weight-semibold, 600);
+  color: white;
+}
+
+.rotate-message p {
+  font-size: var(--font-size-base, 1rem);
+  margin-bottom: var(--spacing-lg, 1rem);
+  line-height: var(--line-height-relaxed, 1.5);
+  opacity: 0.9;
+  color: white;
+}
+
+.rotate-message .rotate-hint {
+  font-size: var(--font-size-sm, 0.875rem);
+  opacity: 0.8;
+  font-style: italic;
+  margin-bottom: 0;
+}
+
+.rotate-icon {
+  font-size: var(--font-size-5xl, 3rem);
+  margin-bottom: var(--spacing-lg, 1rem);
+  animation: rotateIcon 2s linear infinite;
+  display: block;
+  line-height: 1;
+}
+
+/* Rotation animation for the icon */
+@keyframes rotateIcon {
+  from { 
+    transform: rotate(0deg); 
+  }
+  to { 
+    transform: rotate(360deg); 
+  }
+}
+
+/* Fade in animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Show rotation message in portrait mode on mobile devices only */
+@media screen and (max-width: 768px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
+  .rotate-message {
+    display: flex !important;
+  }
+}
+
+/* Fallback for mobile devices that don't support hover/pointer queries */
+@media screen and (max-width: 480px) and (orientation: portrait) {
+  .rotate-message {
+    display: flex !important;
+  }
+}
+
+/* Hide rotation message in landscape mode */
+@media screen and (max-width: 768px) and (orientation: landscape) {
+  .rotate-message {
+    display: none !important;
+  }
+}
+
+/* Responsive adjustments for very small screens */
+@media screen and (max-width: 480px) and (orientation: portrait) {
+  .rotate-message {
+    padding: var(--spacing-lg, 16px);
+  }
+  
+  .rotate-message-content {
+    max-width: 280px;
+  }
+  
+  .rotate-message h2 {
+    font-size: var(--font-size-xl, 1.25rem);
+    margin-bottom: var(--spacing-md, 12px);
+  }
+  
+  .rotate-message p {
+    font-size: var(--font-size-sm, 0.875rem);
+    margin-bottom: var(--spacing-md, 12px);
+  }
+  
+  .rotate-icon {
+    font-size: var(--font-size-4xl, 2.25rem);
+    margin-bottom: var(--spacing-md, 12px);
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .rotate-icon {
+    animation: none;
+  }
+  
+  .rotate-message-content {
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .rotate-message {
+    background: #000000;
+    border: 2px solid #ffffff;
+  }
+  
+  .rotate-message h2,
+  .rotate-message p {
+    color: #ffffff;
+  }
+}
+
+/* Dark theme adjustments */
+@media (prefers-color-scheme: dark) {
+  .rotate-message {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  }
+}

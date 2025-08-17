@@ -16,7 +16,7 @@
   -webkit-touch-callout: none;
 }
 
-/* Playback Line - Shows current playback position */
+/* Playback Line - Shows current playback position with smooth animation */
 .playback-line {
   position: absolute;
   top: 2px;
@@ -27,6 +27,18 @@
   opacity: 0.5;
   left: 120px;
   z-index: 10;
+  transition: opacity 0.3s ease;
+}
+
+.playback-line.playing {
+  opacity: 0.8;
+  background-color: #e74c3c;
+  box-shadow: 0 0 8px rgba(231, 76, 60, 0.4);
+}
+
+.playback-line.paused {
+  opacity: 0.5;
+  background-color: #bbbbbb;
 }
 
 /* Static staff lines that remain fixed during animation */
@@ -46,6 +58,7 @@
   right: 0;
   height: 2px;
   background-color: #dadada;
+  transition: background-color 0.3s ease;
 }
 
 .staff-line:nth-child(1) {
@@ -75,9 +88,11 @@
   top: 0px;
   font-size: 144px;
   z-index: 4;
+  color: #333;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Animated content container - only this moves */
+/* Animated content container - container for notes */
 .staff {
   position: relative;
   /* make some room to prevent hidden */
@@ -86,11 +101,20 @@
   margin-left: 90px;
   overflow-x: hidden;
   overflow-y: visible;
-  transition: transform 0.1s linear;
   z-index: 2;
+  cursor: grab;
 }
 
-/* Smooth transitions for notes container during manual interaction */
+/* Manual navigation interaction states */
+.staff:active {
+  cursor: grabbing;
+}
+
+.staff.dragging {
+  cursor: grabbing;
+}
+
+/* Notes container - this element gets transformed for staff movement */
 .notes-container {
   transition: transform 0.1s linear;
   will-change: transform;
@@ -103,4 +127,227 @@
   left: 30px;
   top: 0;
   height: 200px;
+}
+
+/* During manual navigation, transitions are disabled for immediate response */
+.staff.dragging .notes-container {
+  transition: none;
+}
+
+/* Measure bars - vertical lines that separate musical measures */
+.measure-bars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* Allow clicks to pass through to notes */
+  z-index: 3;
+}
+
+.measure-bar {
+  position: absolute;
+  top: 59px; /* Align with staff lines */
+  height: 82px; /* Height of staff lines area */
+  width: 2px;
+  background-color: #dadada;
+  z-index: 3;
+}
+
+/* Note Rectangle Styles - Enhanced with visual feedback states */
+.note-rectangle {
+  position: absolute;
+  height: 22px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  z-index: 5;
+}
+
+/* Note highlighting for current playback */
+.note-rectangle.current {
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(231, 76, 60, 0.6);
+  z-index: 15;
+  animation: pulse 1s ease-in-out infinite alternate;
+}
+
+/* Positive feedback for correct note matches */
+.note-rectangle.correct-note {
+  box-shadow: 0 0 15px rgba(40, 167, 69, 0.8);
+  z-index: 10;
+  transform: scale(1.05);
+  animation: correctPulse 0.5s ease-out;
+}
+
+/* State-based styling */
+.note-rectangle.state-default {
+  opacity: 1;
+}
+
+.note-rectangle.state-current {
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(231, 76, 60, 0.6);
+  z-index: 15;
+}
+
+.note-rectangle.state-correct {
+  box-shadow: 0 0 15px rgba(40, 167, 69, 0.8);
+  z-index: 10;
+  transform: scale(1.05);
+}
+
+/* Timing feedback styles */
+.note-rectangle.timing-early {
+  border: 2px solid #f39c12;
+  animation: timingWarning 0.3s ease-out;
+}
+
+.note-rectangle.timing-late {
+  border: 2px solid #e67e22;
+  animation: timingWarning 0.3s ease-out;
+}
+
+.note-rectangle.timing-perfect {
+  border: 2px solid #27ae60;
+  animation: perfectTiming 0.5s ease-out;
+}
+
+/* Note label styling */
+.note-label {
+  font-size: 10px;
+  font-weight: bold;
+  text-align: center;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* Note: Hover effects removed to match original HTML behavior */
+
+.note-rectangle:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* Animations */
+@keyframes pulse {
+  0% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1.15);
+  }
+}
+
+@keyframes correctPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 5px rgba(40, 167, 69, 0.4);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(40, 167, 69, 1);
+  }
+  100% {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(40, 167, 69, 0.8);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes timingWarning {
+  0% {
+    border-width: 0px;
+  }
+  50% {
+    border-width: 3px;
+  }
+  100% {
+    border-width: 2px;
+  }
+}
+
+@keyframes perfectTiming {
+  0% {
+    border-width: 0px;
+    box-shadow: 0 0 5px rgba(39, 174, 96, 0.4);
+  }
+  50% {
+    border-width: 3px;
+    box-shadow: 0 0 20px rgba(39, 174, 96, 1);
+  }
+  100% {
+    border-width: 2px;
+    box-shadow: 0 0 15px rgba(39, 174, 96, 0.8);
+  }
+}
+
+/* Responsive design adjustments */
+@media (max-width: 768px) {
+  .staff-container {
+    margin-bottom: 20px;
+    min-height: 180px;
+  }
+  
+  .treble-clef {
+    font-size: 120px;
+    left: 15px;
+  }
+  
+  .staff {
+    margin-left: 70px;
+  }
+  
+  .notes-container {
+    left: 25px;
+  }
+  
+  .note-rectangle {
+    height: 20px;
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 480px) {
+  .staff-container {
+    min-height: 160px;
+  }
+  
+  .treble-clef {
+    font-size: 100px;
+    left: 10px;
+  }
+  
+  .staff {
+    margin-left: 60px;
+  }
+  
+  .notes-container {
+    left: 20px;
+  }
+  
+  .note-rectangle {
+    height: 18px;
+    font-size: 8px;
+  }
 }

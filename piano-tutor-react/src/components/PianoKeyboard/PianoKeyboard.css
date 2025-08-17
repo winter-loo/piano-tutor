@@ -1,0 +1,211 @@
+/* Virtual Piano Keyboard Styles */
+.keyboard-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 0 5px;
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: flex-start;
+  position: relative;
+}
+
+.keyboard {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  height: 200px;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  min-width: fit-content;
+}
+
+/* Piano key container - holds both white and black keys */
+.piano-key-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin-right: 1px;
+}
+
+/* Base piano key styles */
+.piano-key {
+  cursor: pointer;
+  transition: all 0.1s ease;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+  padding-bottom: 8px;
+  border: 1px solid #333333;
+}
+
+/* White piano keys */
+.piano-key.white {
+  width: 87px;
+  height: 200px;
+  background-color: #ffffff;
+  border-radius: 0 0 6px 6px;
+  z-index: 1;
+}
+
+/* Black piano keys - positioned between white keys */
+.piano-key.black {
+  position: absolute;
+  top: 0;
+  right: -25px;
+  /* Half of black key width (49px/2 ≈ 25px) to center between white keys */
+  width: 49px;
+  height: 130px;
+  background-color: #333333;
+  border: 1px solid #000000;
+  border-radius: 0 0 3px 3px;
+  z-index: 2;
+  color: #ffffff;
+  font-size: 12px;
+}
+
+.piano-key.white:hover {
+  background-color: #f0f0f0;
+}
+
+.piano-key.white:active,
+.piano-key.white.pressed {
+  background-color: #e0e0e0;
+}
+
+
+
+.piano-key.black:hover {
+  background-color: #555555;
+}
+
+.piano-key.black:active,
+.piano-key.black.pressed {
+  background-color: #666666;
+}
+
+/* Key highlighting states */
+.piano-key.active {
+  background-color: #007bff !important;
+  color: white;
+  box-shadow: 0 0 10px rgba(0, 123, 255);
+}
+
+.piano-key.correct {
+  background-color: #28a745 !important;
+  color: white;
+  box-shadow: 0 0 10px rgba(40, 167, 69, 0.6);
+}
+
+.piano-key.incorrect {
+  background-color: #dc3545 !important;
+  color: white;
+  box-shadow: 0 0 10px rgba(220, 53, 69, 0.6);
+}
+
+/*
+ * piano key highlight effect for correct press
+ */
+.piano-key.correct-C {
+  background-color: #CE82FF !important;
+  color: white;
+}
+
+.piano-key.correct-D {
+  background-color: #FF9602 !important;
+  color: white;
+}
+
+.piano-key.correct-E {
+  background-color: #57CD03 !important;
+  color: white;
+}
+
+.piano-key.correct-F {
+  background-color: #CC348E !important;
+  color: white;
+}
+
+.piano-key.correct-G {
+  background-color: #7090FF !important;
+  color: white;
+}
+
+.piano-key.correct-A {
+  background-color: #FF87D0 !important;
+  color: white;
+}
+
+.piano-key.correct-B {
+  background-color: #00CE9C !important;
+  color: white;
+}
+
+.piano-key.incorrect-gray::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(204, 204, 204, 0.2);
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Timing feedback styles for piano keys */
+.piano-key.timing-early {
+  background-color: #ffc107 !important;
+  color: white;
+  box-shadow: 0 0 12px rgba(255, 193, 7, 0.8);
+}
+
+.piano-key.timing-late {
+  background-color: #ff5722 !important;
+  color: white;
+  box-shadow: 0 0 12px rgba(255, 87, 34, 0.8);
+}
+
+.piano-key.timing-neutral {
+  background-color: #6c757d !important;
+  color: white;
+  box-shadow: 0 0 12px rgba(108, 117, 125, 0.8);
+}
+
+/* Disabled state */
+.piano-key.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.piano-key.disabled:hover {
+  background-color: inherit;
+}
+
+/* Key label styling */
+.key-label {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+@media (max-width: 768px) {
+  .piano-key.white {
+    width: 37px;
+    height: 120px;
+  }
+  
+  .piano-key.black {
+    width: 22px;
+    height: 80px;
+    right: -11px;
+  }
+}

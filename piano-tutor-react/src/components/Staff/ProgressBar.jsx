@@ -4,13 +4,13 @@ import './ProgressBar.css';
 const ProgressBar = ({ percentage = 0, onClick }) => {
   const [isInteracting, setIsInteracting] = useState(false);
 
-  const handleClick = (event) => {
+  const handleClick = event => {
     if (!onClick) return;
 
     const rect = event.currentTarget.getBoundingClientRect();
     const clickX = event.clientX - rect.left;
     const clickPercentage = (clickX / rect.width) * 100;
-    
+
     onClick(Math.max(0, Math.min(100, clickPercentage)));
   };
 
@@ -24,18 +24,20 @@ const ProgressBar = ({ percentage = 0, onClick }) => {
 
   const progressBarClasses = [
     'simple-progress-bar',
-    isInteracting ? 'interacting' : ''
-  ].filter(Boolean).join(' ');
+    isInteracting ? 'interacting' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
-    <div 
+    <div
       className={progressBarClasses}
       onClick={handleClick}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
-      <div 
+      <div
         className="simple-progress-fill"
         style={{ width: `${Math.max(0, Math.min(100, percentage))}%` }}
       />

@@ -1,0 +1,534 @@
+/* MIDI Socket Styles (Realistic Design) */
+.midi-socket-container {
+  position: absolute;
+  top: -10px;
+  right: 20px;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.midi-socket {
+  width: 24px;
+  height: 24px;
+  border-radius: 50% 50% 0 0;
+  border: 2px solid #444;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  overflow: visible;
+}
+
+.midi-socket.connected {
+  border-color: #28a745;
+}
+
+.midi-socket:hover {
+  background: linear-gradient(145deg, #f0f0f0, #d8d8d8);
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.25),
+    0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.socket-interior {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50% 50% 0 0;
+  background: radial-gradient(circle, #2a2a2a 0%, #1a1a1a 100%);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+/* Connection status colors for socket-interior */
+.midi-socket.disconnected .socket-interior {
+  background: radial-gradient(circle, #666 0%, #444 100%);
+}
+
+.midi-socket.connected .socket-interior {
+  background: radial-gradient(circle, #28a745 0%, #1e7e34 100%);
+  box-shadow: 0 0 8px rgba(40, 167, 69, 0.6);
+}
+
+.midi-socket.connecting .socket-interior {
+  background: radial-gradient(circle, #ffc107 0%, #e0a800 100%);
+}
+
+/* Connecting state - pulse animation */
+.midi-socket.connecting {
+  animation: socketConnectingPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes socketConnectingPulse {
+  0%, 100% { 
+    box-shadow: 0 0 6px rgba(255, 193, 7, 0.4);
+  }
+  50% { 
+    box-shadow: 0 0 12px rgba(255, 193, 7, 0.8);
+  }
+}
+
+/* MIDI Configuration Popup Styles */
+.midi-config-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.midi-config-popup.show {
+  display: flex;
+  opacity: 1;
+}
+
+.midi-config-content {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+
+.midi-config-popup.show .midi-config-content {
+  transform: scale(1);
+}
+
+.midi-config-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 0 24px;
+  border-bottom: 1px solid #e9ecef;
+  margin-bottom: 24px;
+}
+
+.midi-config-header h3 {
+  color: #2c3e50;
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.close-popup-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background-color: transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  transition: all 0.2s ease;
+}
+
+.close-popup-btn:hover {
+  background-color: #f8f9fa;
+  color: #495057;
+}
+
+.midi-config-body {
+  padding: 0 24px 24px 24px;
+}
+
+.device-status-section {
+  margin-bottom: 24px;
+}
+
+.status-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.device-selection-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.status-indicator {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.status-indicator.connected {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.status-indicator.disconnected {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.status-indicator.connecting {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.status-indicator.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.status-indicator.auto-connected {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+  animation: autoConnectPulse 2s ease-in-out;
+}
+
+@keyframes autoConnectPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.device-name {
+  color: #6c757d;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.device-preferences {
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+}
+
+.preference-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.preference-item input[type="checkbox"] {
+  display: none;
+}
+
+.checkmark {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #6c757d;
+  border-radius: 3px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.preference-item input[type="checkbox"]:checked+.checkmark {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.preference-item input[type="checkbox"]:checked+.checkmark::after {
+  content: '✓';
+  position: absolute;
+  top: -2px;
+  left: 2px;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.device-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.device-controls label {
+  color: #495057;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.device-select-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.device-select {
+  flex: 1;
+  padding: 10px 12px;
+  border: 2px solid #ced4da;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #495057;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.device-select:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+.device-select:hover {
+  border-color: #adb5bd;
+}
+
+.device-select:disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+}
+
+.device-select option {
+  padding: 8px;
+}
+
+.refresh-btn {
+  padding: 10px 12px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  background-color: #5a6268;
+  transform: translateY(-1px);
+}
+
+.refresh-btn:active {
+  transform: translateY(0);
+}
+
+.refresh-btn:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.refresh-icon {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.connection-help {
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  padding: 15px;
+  border-left: 4px solid #007bff;
+}
+
+.connection-help h4 {
+  color: #007bff;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.connection-help p {
+  margin-bottom: 8px;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+.connection-help ul {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.connection-help li {
+  margin-bottom: 4px;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+.connection-error {
+  background-color: #f8d7da;
+  border-radius: 6px;
+  padding: 15px;
+  border-left: 4px solid #dc3545;
+}
+
+.connection-error h4 {
+  color: #721c24;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.connection-error p {
+  color: #721c24;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.connection-stats {
+  background-color: #e7f3ff;
+  border-radius: 6px;
+  padding: 15px;
+  border-left: 4px solid #007bff;
+}
+
+.connection-stats h4 {
+  color: #0056b3;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #495057;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #007bff;
+}
+
+.stat-value.error {
+  color: #dc3545;
+}
+
+.troubleshooting {
+  border-top: 1px solid #dee2e6;
+  padding-top: 15px;
+  margin-top: 15px;
+}
+
+.troubleshooting h4 {
+  color: #dc3545;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.troubleshooting ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.troubleshooting li {
+  margin-bottom: 8px;
+  color: #495057;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.troubleshooting li strong {
+  color: #495057;
+  font-weight: 600;
+}
+
+/* Responsive MIDI interface */
+@media (max-width: 768px) {
+  .midi-socket-container {
+    top: -10px;
+    right: 15px;
+  }
+
+  .midi-socket {
+    width: 20px;
+    height: 20px;
+  }
+
+  .socket-interior {
+    width: 14px;
+    height: 14px;
+  }
+
+  .midi-config-content {
+    width: 95%;
+    margin: 10px;
+  }
+
+  .midi-config-header {
+    padding: 20px 20px 0 20px;
+  }
+
+  .midi-config-header h3 {
+    font-size: 1.2rem;
+  }
+
+  .midi-config-body {
+    padding: 0 20px 20px 20px;
+  }
+
+  .status-display {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .device-select-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .refresh-btn {
+    align-self: flex-end;
+    min-width: auto;
+    width: 44px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
