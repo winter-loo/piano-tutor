@@ -616,7 +616,7 @@
 
     .midi-socket:hover {
       background: linear-gradient(145deg, #f0f0f0, #d8d8d8);
-      box-shadow: 
+      box-shadow:
         inset 0 2px 4px rgba(0, 0, 0, 0.25),
         0 2px 4px rgba(0, 0, 0, 0.15);
     }
@@ -653,10 +653,12 @@
     }
 
     @keyframes socketConnectingPulse {
-      0%, 100% { 
+      0%,
+      100% {
         box-shadow: 0 0 6px rgba(255, 193, 7, 0.4);
       }
-      50% { 
+
+      50% {
         box-shadow: 0 0 12px rgba(255, 193, 7, 0.8);
       }
     }
@@ -1080,6 +1082,50 @@
       margin-right: auto;
     }
 
+    .song-selection {
+      margin: 30px 0;
+      text-align: center;
+    }
+
+    .song-select-label {
+      display: block;
+      font-size: 1.2rem;
+      font-weight: 500;
+      margin-bottom: 15px;
+      color: white;
+      opacity: 0.9;
+    }
+
+    .song-select {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      color: white;
+      font-size: 1.1rem;
+      padding: 12px 20px;
+      min-width: 300px;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .song-select:hover {
+      border-color: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .song-select:focus {
+      outline: none;
+      border-color: #28a745;
+      box-shadow: 0 0 20px rgba(40, 167, 69, 0.3);
+    }
+
+    .song-select option {
+      background: #2c3e50;
+      color: white;
+      padding: 10px;
+    }
+
     .start-button {
       background: linear-gradient(45deg, #28a745, #20c997);
       color: white;
@@ -1157,6 +1203,7 @@
         opacity: 0;
         transform: translateY(30px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
@@ -1413,6 +1460,7 @@
         opacity: 0;
         transform: translateY(50px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
@@ -1638,10 +1686,12 @@
     }
 
     @keyframes rotateDevice {
-      0%, 100% { 
+      0%,
+      100% {
         transform: rotate(0deg);
       }
-      50% { 
+
+      50% {
         transform: rotate(90deg);
       }
     }
@@ -1651,15 +1701,15 @@
       .app-container {
         display: none !important;
       }
-      
+
       .start-overlay {
         display: none !important;
       }
-      
+
       .ending-overlay {
         display: none !important;
       }
-      
+
       .rotate-message {
         display: flex !important;
       }
@@ -1741,10 +1791,20 @@
         <span class="logo">🎹</span>
       </div>
       <h1>Piano Tutor</h1>
-      <p class="subtitle">Learn to play "Different Colors" by Walk the Moon</p>
+      <p class="subtitle">Choose a song to learn</p>
+      
+      <div class="song-selection">
+        <label for="songSelect" class="song-select-label">Select Song:</label>
+        <select id="songSelect" class="song-select">
+          <option value="0">Different Colors - Walk the Moon</option>
+          <option value="1">Living in America - The Sounds</option>
+          <option value="2">Ai De Gong Yang - Traditional</option>
+        </select>
+      </div>
+      
       <p class="description">
         Interactive piano learning with real-time feedback, MIDI support, and professional audio synthesis.
-        Click Start to begin your musical journey!
+        Choose your song and click Start to begin your musical journey!
       </p>
       <button class="start-button" id="startButton">
         Start Learning
@@ -1840,11 +1900,12 @@
     <div class="keyboard-container">
       <!-- MIDI Connector (Simple and Clean Design) - Attached to top right of piano keyboard -->
       <div class="midi-socket-container">
-        <div class="midi-socket" id="midiConnector" title="MIDI Device Connection" aria-label="MIDI Device Configuration">
+        <div class="midi-socket" id="midiConnector" title="MIDI Device Connection"
+          aria-label="MIDI Device Configuration">
           <div class="socket-interior"></div>
         </div>
       </div>
-      
+
       <div class="keyboard" id="virtualKeyboard">
         <!-- White keys will be generated here -->
         <!-- Black keys will be generated here -->
@@ -1858,7 +1919,9 @@
           <h3>🎹 MIDI Device Configuration</h3>
           <button class="close-popup-btn" id="closeMidiConfig" title="Close">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"/>
+              <path
+                d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                fill="currentColor" />
             </svg>
           </button>
         </div>
@@ -1901,7 +1964,7 @@
 
   <script>
     // Hardcoded note data structure for "Different Colors" by Walk the Moon
-    const SONG_DATA = {
+    const SONG_DATA_DIFFERENT_COLORS = {
       title: "Different Colors",
       artist: "Walk the Moon",
       measures: [
@@ -2003,8 +2066,310 @@
       ]
     };
 
+    const SONG_DATA_LIVING_IN_AMERICA = {
+      title: "Living in America",
+      artist: "James Brown",
+      timeSignature: "4/4",
+      measures: [
+        {
+          notes: [
+            {pitch: "D4", duration: "quarter", fingering: 1},
+            {pitch: "rest", duration: "quarter", fingering: null},
+            {pitch: "rest", duration: "half", fingering: null},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "D4", duration: "quarter", fingering: 1},
+            {pitch: "F4", duration: "quarter", fingering: 3},
+            {pitch: "rest", duration: "half", fingering: null},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "D4", duration: "quarter", fingering: 1},
+            {pitch: "D4", duration: "quarter", fingering: 1},
+            {pitch: "rest", duration: "quarter", fingering: null},
+            {pitch: "F4", duration: "quarter", fingering: 3},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "D4", duration: "quarter", fingering: 1},
+            {pitch: "rest", duration: "quarter", fingering: null},
+            {pitch: "rest", duration: "half", fingering: null},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "A4", duration: "quarter", fingering: 5},
+            {pitch: "G4", duration: "quarter", fingering: 4},
+            {pitch: "G4", duration: "quarter", fingering: 4},
+            {pitch: "rest", duration: "quarter", fingering: null},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "D4", duration: "quarter", fingering: 1},
+            {pitch: "D4", duration: "quarter", fingering: 1},
+            {pitch: "rest", duration: "half", fingering: null},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "C4", duration: "quarter", fingering: 2},
+            {pitch: "C4", duration: "quarter", fingering: 2},
+            {pitch: "D4", duration: "quarter", fingering: 3},
+            {pitch: "rest", duration: "quarter", fingering: null},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "G4", duration: "quarter", fingering: 4},
+            {pitch: "F4", duration: "quarter", fingering: 3},
+            {pitch: "A4", duration: "quarter", fingering: 5},
+            {pitch: "D4", duration: "quarter", fingering: 1},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "G4", duration: "quarter", fingering: 4},
+            {pitch: "F4", duration: "quarter", fingering: 3},
+            {pitch: "E4", duration: "eighth", fingering: 2},
+            {pitch: "D4", duration: "eighth", fingering: 1},
+            {pitch: "rest", duration: "quarter", fingering: null},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "G4", duration: "quarter", fingering: 4},
+            {pitch: "F4", duration: "quarter", fingering: 3},
+            {pitch: "rest", duration: "half", fingering: null},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "G4", duration: "quarter", fingering: 4},
+            {pitch: "G4", duration: "quarter", fingering: 4},
+            {pitch: "G4", duration: "quarter", fingering: 4},
+            {pitch: "rest", duration: "quarter", fingering: null},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "G4", duration: "quarter", fingering: 4},
+            {pitch: "G4", duration: "quarter", fingering: 4},
+            {pitch: "A4", duration: "quarter", fingering: 5},
+            {pitch: "rest", duration: "quarter", fingering: null},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "F4", duration: "quarter", fingering: 3},
+            {pitch: "G4", duration: "eighth", fingering: 4},
+            {pitch: "A4", duration: "eighth", fingering: 5},
+            {pitch: "G4", duration: "quarter", fingering: 4},
+            {pitch: "F4", duration: "eighth", fingering: 3},
+            {pitch: "D4", duration: "eighth", fingering: 1},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "rest", duration: "quarter", fingering: null},
+            {pitch: "D5", duration: "quarter", fingering: 5},
+            {pitch: "rest", duration: "half", fingering: null},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "D4", duration: "quarter", fingering: 1},
+            {pitch: "D4", duration: "quarter", fingering: 1},
+            {pitch: "rest", duration: "half", fingering: null},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "C4", duration: "eighth", fingering: 2},
+            {pitch: "D4", duration: "eighth", fingering: 3},
+            {pitch: "rest", duration: "eighth", fingering: null},
+            {pitch: "F4", duration: "eighth", fingering: 4},
+            {pitch: "D4", duration: "quarter", fingering: 1},
+            {pitch: "rest", duration: "quarter", fingering: null},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "F4", duration: "quarter", fingering: 3},
+            {pitch: "G4", duration: "eighth", fingering: 4},
+            {pitch: "A4", duration: "eighth", fingering: 5},
+            {pitch: "G4", duration: "quarter", fingering: 4},
+            {pitch: "F4", duration: "eighth", fingering: 3},
+            {pitch: "D4", duration: "eighth", fingering: 1},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "rest", duration: "whole", fingering: null},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "A4", duration: "quarter", fingering: 5},
+            {pitch: "G4", duration: "quarter", fingering: 4},
+            {pitch: "rest", duration: "half", fingering: null},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "D4", duration: "quarter", fingering: 1},
+            {pitch: "F4", duration: "eighth", fingering: 3},
+            {pitch: "D4", duration: "eighth", fingering: 1},
+            {pitch: "rest", duration: "half", fingering: null},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "F4", duration: "quarter", fingering: 3},
+            {pitch: "G4", duration: "eighth", fingering: 4},
+            {pitch: "A4", duration: "eighth", fingering: 5},
+            {pitch: "G4", duration: "quarter", fingering: 4},
+            {pitch: "F4", duration: "eighth", fingering: 3},
+            {pitch: "D4", duration: "eighth", fingering: 1},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "rest", duration: "quarter", fingering: null},
+            {pitch: "E4", duration: "quarter", fingering: 2},
+            {pitch: "G4", duration: "quarter", fingering: 4},
+            {pitch: "C5", duration: "quarter", fingering: 5},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "D5", duration: "quarter", fingering: 5},
+            {pitch: "rest", duration: "quarter", fingering: null},
+            {pitch: "rest", duration: "quarter", fingering: null},
+            {pitch: "rest", duration: "quarter", fingering: null},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "D5", duration: "quarter", fingering: 5},
+            {pitch: "D5", duration: "quarter", fingering: 5},
+            {pitch: "D5", duration: "quarter", fingering: 5},
+            {pitch: "rest", duration: "quarter", fingering: null},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "rest", duration: "whole", fingering: null},
+          ],
+        },
+        {
+          notes: [
+            {pitch: "rest", duration: "whole", fingering: null},
+          ],
+        },
+      ]
+    };
+
+    const SONG_DATA_AI_DE_GONG_YANG = {
+      title: "爱的供养",
+      artist: "杨幂",
+      timeSignature: "4/4",
+      measures: [
+        {
+          notes: [
+            {pitch: "A4", duration: "sixteenth"},
+            {pitch: "B4", duration: "sixteenth"},
+            {pitch: "C5", duration: "sixteenth"},
+            {pitch: "E5", duration: "sixteenth"},
+            {pitch: "A4", duration: "sixteenth"},
+            {pitch: "B4", duration: "sixteenth"},
+            {pitch: "C5", duration: "sixteenth"},
+            {pitch: "E5", duration: "sixteenth"},
+            {pitch: "A4", duration: "sixteenth"},
+            {pitch: "B4", duration: "sixteenth"},
+            {pitch: "C5", duration: "sixteenth"},
+            {pitch: "E5", duration: "sixteenth"},
+            {pitch: "A4", duration: "sixteenth"},
+            {pitch: "B4", duration: "sixteenth"},
+            {pitch: "C5", duration: "sixteenth"},
+            {pitch: "E5", duration: "sixteenth"},
+          ]
+        },
+        {
+          notes: [
+            {pitch: "G4", duration: "sixteenth"},
+            {pitch: "A4", duration: "sixteenth"},
+            {pitch: "B4", duration: "sixteenth"},
+            {pitch: "D5", duration: "sixteenth"},
+            {pitch: "G4", duration: "sixteenth"},
+            {pitch: "A4", duration: "sixteenth"},
+            {pitch: "B4", duration: "sixteenth"},
+            {pitch: "D5", duration: "sixteenth"},
+            {pitch: "G4", duration: "sixteenth"},
+            {pitch: "A4", duration: "sixteenth"},
+            {pitch: "B4", duration: "sixteenth"},
+            {pitch: "D5", duration: "sixteenth"},
+            {pitch: "G4", duration: "sixteenth"},
+            {pitch: "A4", duration: "sixteenth"},
+            {pitch: "B4", duration: "sixteenth"},
+            {pitch: "D5", duration: "sixteenth"},
+          ]
+        },
+        {
+          notes: [
+            {pitch: "F4", duration: "sixteenth"},
+            {pitch: "G4", duration: "sixteenth"},
+            {pitch: "A4", duration: "sixteenth"},
+            {pitch: "C5", duration: "sixteenth"},
+            {pitch: "F4", duration: "sixteenth"},
+            {pitch: "G4", duration: "sixteenth"},
+            {pitch: "A4", duration: "sixteenth"},
+            {pitch: "C5", duration: "sixteenth"},
+            {pitch: "G4", duration: "sixteenth"},
+            {pitch: "A4", duration: "sixteenth"},
+            {pitch: "B4", duration: "sixteenth"},
+            {pitch: "D5", duration: "sixteenth"},
+            {pitch: "G4", duration: "sixteenth"},
+            {pitch: "A4", duration: "sixteenth"},
+            {pitch: "B4", duration: "sixteenth"},
+            {pitch: "D5", duration: "sixteenth"},
+          ]
+        },
+        {
+          notes: [
+            {pitch: "E4", duration: "sixteenth"},
+            {pitch: "G4", duration: "sixteenth"},
+            {pitch: "B4", duration: "sixteenth"},
+            {pitch: "D5", duration: "sixteenth"},
+            {pitch: "B4", duration: "sixteenth"},
+            {pitch: "G4", duration: "sixteenth"},
+            {pitch: "E4", duration: "sixteenth"},
+            {pitch: "G4", duration: "sixteenth"},
+            {pitch: "A4", duration: "sixteenth"},
+            {pitch: "B4", duration: "sixteenth"},
+            {pitch: "C5", duration: "sixteenth"},
+            {pitch: "E5", duration: "sixteenth"},
+            {pitch: "A4", duration: "quarter"},
+          ]
+        },
+        {
+          notes: [
+            {pitch: "rest", duration: "whole"},
+          ]
+        }
+      ]
+    };
+
+    const SONGS = [SONG_DATA_DIFFERENT_COLORS, SONG_DATA_LIVING_IN_AMERICA, SONG_DATA_AI_DE_GONG_YANG];
+    let selectedSong = SONGS[0];
+
     // Note duration values in milliseconds (for timing calculations)
     const NOTE_DURATIONS = {
+      "sixteenth": 125,
       "eighth": 250,
       "quarter": 500,
       "dotted_quarter": 750,
@@ -2072,8 +2437,9 @@
         this.overlayElement = document.getElementById('startOverlay');
         this.startButtonElement = document.getElementById('startButton');
         this.loadingIndicatorElement = document.getElementById('loadingIndicator');
+        this.songSelectElement = document.getElementById('songSelect');
 
-        if (!this.overlayElement || !this.startButtonElement || !this.loadingIndicatorElement) {
+        if (!this.overlayElement || !this.startButtonElement || !this.loadingIndicatorElement || !this.songSelectElement) {
           console.error('Start overlay elements not found in DOM');
           return false;
         }
@@ -2094,6 +2460,11 @@
         // Start button click handler
         this.startButtonElement.addEventListener('click', () => {
           this.handleStartButtonClick();
+        });
+
+        // Song selection change handler
+        this.songSelectElement.addEventListener('change', (event) => {
+          this.handleSongSelection(event);
         });
 
         // Prevent clicks on overlay content from bubbling to overlay background
@@ -2133,6 +2504,21 @@
       }
 
       /**
+       * Handle song selection change - update current song and re-initialize if needed
+       */
+      handleSongSelection(event) {
+        const selectedIndex = parseInt(event.target.value);
+        selectedSong = SONGS[selectedIndex];
+        
+        console.log(`Song changed to: ${selectedSong.title} by ${selectedSong.artist}`);
+          
+        // If the app is already initialized, re-initialize the notes
+        if (window.pianoApp && window.pianoApp.isInitialized) {
+          window.pianoApp.reinitializeSong();
+        }
+      }
+
+      /**
        * Show loading indicator during initialization
        */
       showLoadingIndicator() {
@@ -2156,7 +2542,7 @@
       hideOverlay() {
         if (this.overlayElement) {
           this.overlayElement.classList.add('fade-out');
-          
+
           // Remove overlay from DOM after animation completes
           setTimeout(() => {
             if (this.overlayElement && this.overlayElement.parentNode) {
@@ -2173,12 +2559,12 @@
         if (this.overlayElement) {
           this.overlayElement.classList.remove('fade-out');
           this.overlayElement.style.display = 'flex';
-          
+
           // Reset button state
           this.startButtonElement.disabled = false;
           this.startButtonElement.style.opacity = '1';
           this.startButtonElement.style.cursor = 'pointer';
-          
+
           // Hide loading indicator
           this.hideLoadingIndicator();
         }
@@ -2217,9 +2603,9 @@
        * @returns {boolean} True if overlay is visible
        */
       isVisible() {
-        return this.overlayElement && 
-               !this.overlayElement.classList.contains('fade-out') &&
-               this.overlayElement.style.display !== 'none';
+        return this.overlayElement &&
+          !this.overlayElement.classList.contains('fade-out') &&
+          this.overlayElement.style.display !== 'none';
       }
 
       /**
@@ -2229,7 +2615,7 @@
         if (this.overlayElement && this.overlayElement.parentNode) {
           this.overlayElement.parentNode.removeChild(this.overlayElement);
         }
-        
+
         this.overlayElement = null;
         this.startButtonElement = null;
         this.loadingIndicatorElement = null;
@@ -2323,7 +2709,7 @@
 
         // Show overlay with animation
         this.overlayElement.classList.add('show');
-        
+
         console.log('Ending overlay displayed with performance data:', performanceData);
       }
 
@@ -2397,7 +2783,7 @@
       hideOverlay() {
         if (this.overlayElement) {
           this.overlayElement.classList.add('fade-out');
-          
+
           setTimeout(() => {
             this.overlayElement.classList.remove('show', 'fade-out');
           }, 500); // Match CSS transition duration
@@ -2409,7 +2795,7 @@
        */
       handleRestartClick() {
         this.hideOverlay();
-        
+
         if (this.onRestartCallback) {
           this.onRestartCallback();
         }
@@ -2438,7 +2824,7 @@
         if (this.overlayElement && this.overlayElement.parentNode) {
           this.overlayElement.parentNode.removeChild(this.overlayElement);
         }
-        
+
         this.overlayElement = null;
         this.celebrationMessageElement = null;
         this.metricsElements = {};
@@ -2790,7 +3176,7 @@
           this.statusIndicatorElement.classList.add('connecting');
           this.statusIndicatorElement.textContent = 'Connecting...';
           this.deviceNameElement.textContent = 'Establishing connection...';
-          
+
           // Update popup manager icon status
           if (window.midiPopupManager && window.midiPopupManager.isInitialized) {
             window.midiPopupManager.updateConnectingStatus(true);
@@ -2799,7 +3185,7 @@
           this.statusIndicatorElement.classList.add('error');
           this.statusIndicatorElement.textContent = 'Error';
           this.deviceNameElement.textContent = 'Connection failed';
-          
+
           // Update popup manager icon status
           if (window.midiPopupManager && window.midiPopupManager.isInitialized) {
             window.midiPopupManager.updateConnectionStatus(false);
@@ -2827,7 +3213,7 @@
           this.statusIndicatorElement.classList.add('connected');
           this.statusIndicatorElement.textContent = 'Connected';
           this.deviceNameElement.textContent = deviceName;
-          
+
           // Update popup manager icon status
           if (window.midiPopupManager && window.midiPopupManager.isInitialized) {
             window.midiPopupManager.updateConnectionStatus(true, deviceName);
@@ -2836,7 +3222,7 @@
           this.statusIndicatorElement.classList.add('disconnected');
           this.statusIndicatorElement.textContent = 'Disconnected';
           this.deviceNameElement.textContent = 'No device selected';
-          
+
           // Update popup manager icon status
           if (window.midiPopupManager && window.midiPopupManager.isInitialized) {
             window.midiPopupManager.updateConnectionStatus(false);
@@ -5167,6 +5553,7 @@
        */
       getNoteWidth(duration) {
         const widthMap = {
+          "sixteenth": 19,
           "eighth": 38,
           "quarter": 76,
           "dotted_quarter": 114,
@@ -8487,6 +8874,8 @@
         this.initializeProgressBar();
         this.initializeStartOverlay();
         this.initializeEndingOverlay();
+
+        this.isInitialized = true;
       }
 
       /**
@@ -8623,7 +9012,7 @@
 
       initializeNotes() {
         // Calculate positions for all notes in the song
-        this.positionedNotes = this.notePositioning.calculateAllNotePositions(SONG_DATA.measures);
+        this.positionedNotes = this.notePositioning.calculateAllNotePositions(selectedSong.measures);
 
         // Render the note rectangles
         this.renderNotes();
@@ -8632,6 +9021,52 @@
         this.renderMeasureBars();
 
         this.attachToFirstNote();
+      }
+
+      /**
+       * Re-initialize the song when a new song is selected
+       */
+      reinitializeSong() {
+        console.log(`Re-initializing song: ${selectedSong.title} by ${selectedSong.artist}`);
+        
+        // Stop any current playback
+        // this.stopPlayback();
+        
+        // Reset playback state
+        this.isPlaying = false;
+        this.isPaused = false;
+        this.currentPosition = 0;
+        this.startTime = null;
+        this.pausedTime = 0;
+        this.nextNoteToPlayIndex = 0;
+        this.lastTriggeredNoteIndex = null;
+        
+        // Reset learning stats
+        this.learningStats.correctMatches = 0;
+        this.learningStats.incorrectAttempts = 0;
+        this.learningStats.totalAttempts = 0;
+        this.learningStats.currentStreak = 0;
+        this.learningStats.lastPlayedKey = null;
+        
+        // Clear existing notes from the staff
+        const staffContainer = document.querySelector('.staff');
+        if (staffContainer) {
+          const existingNotes = staffContainer.querySelectorAll('.note');
+          const existingMeasureBars = staffContainer.querySelectorAll('.measure-bar');
+          existingNotes.forEach(note => note.remove());
+          existingMeasureBars.forEach(bar => bar.remove());
+        }
+        
+        // Re-initialize notes with new song data
+        this.initializeNotes();
+        
+        // Reset progress bar
+        const progressBar = document.querySelector('.progress-bar');
+        if (progressBar) {
+          progressBar.style.width = '0%';
+        }
+        
+        console.log('Song re-initialization complete');
       }
 
       /**
@@ -8996,7 +9431,7 @@
           }
 
           // Update the learning progress display
-  
+
 
           return timingResult.isCorrect;
         }
@@ -9912,11 +10347,11 @@
        */
       handleSongCompletion() {
         console.log('Song playback completed');
-        
+
         // Stop the playback animation
         this.isPlaying = false;
         this.setPlaybackActive(false);
-        
+
         if (this.animationId) {
           cancelAnimationFrame(this.animationId);
           this.animationId = null;
@@ -10257,12 +10692,12 @@
        */
       handleRestartFromEnding() {
         console.log('Returning to start from ending overlay');
-        
+
         // Reset performance statistics
         this.resetLearningStats();
-        
+
         this.resetUIState();
-        
+
         // Show start overlay again
         if (this.startOverlayManager) {
           this.startOverlayManager.showOverlay();
@@ -10302,7 +10737,7 @@
 
         // Update learning progress display
 
-        
+
         console.log('Learning statistics reset');
       }
 
@@ -10314,10 +10749,10 @@
 
         // Calculate comprehensive performance data
         const performanceData = this.calculatePerformanceData();
-        
+
         // Show the ending overlay with performance data
         this.endingOverlayManager.showOverlay(performanceData);
-        
+
         console.log('Ending overlay displayed with performance data:', performanceData);
       }
 
@@ -10327,7 +10762,7 @@
        */
       calculatePerformanceData() {
         const stats = this.learningStats;
-        
+
         // Calculate average timing from timing evaluation system
         let averageTiming = 0;
         if (this.timingEvaluationSystem && this.timingEvaluationSystem.timingHistory) {
@@ -10340,12 +10775,12 @@
 
         // Update MIDI accuracy calculations
         if (stats.inputSourceBreakdown.midi.attempts > 0) {
-          stats.inputSourceBreakdown.midi.accuracy = 
+          stats.inputSourceBreakdown.midi.accuracy =
             (stats.inputSourceBreakdown.midi.correct / stats.inputSourceBreakdown.midi.attempts) * 100;
         }
 
         if (stats.inputSourceBreakdown.virtual.attempts > 0) {
-          stats.inputSourceBreakdown.virtual.accuracy = 
+          stats.inputSourceBreakdown.virtual.accuracy =
             (stats.inputSourceBreakdown.virtual.correct / stats.inputSourceBreakdown.virtual.attempts) * 100;
         }
 
@@ -11725,7 +12160,7 @@
 
         // Update socket appearance based on connection status
         this.settingsIcon.classList.remove('connected', 'connecting', 'disconnected');
-        
+
         if (isConnected) {
           this.settingsIcon.classList.add('connected');
           this.settingsIcon.title = `MIDI Device Connection - Connected: ${deviceName}`;
@@ -11739,7 +12174,7 @@
         if (!this.settingsIcon) return;
 
         this.settingsIcon.classList.remove('connected', 'connecting', 'disconnected');
-        
+
         if (isConnecting) {
           this.settingsIcon.classList.add('connecting');
           this.settingsIcon.title = 'MIDI Device Connection - Connecting...';
@@ -11758,7 +12193,7 @@
 
       // Note: MIDI system and audio engine initialization is now handled by the start overlay
       // This prevents audio context issues and provides better user experience
-      
+
       console.log('✅ Piano Tutor App ready - waiting for user to click Start');
     });
   </script>
